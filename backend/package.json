@@ -8,19 +8,48 @@
     "dev": "nodemon src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "db:test:setup": "psql -h localhost -U postgres -d bytebasket_test -f src/models/migrations/init.sql",
+    "db:test:seed": "node src/models/seeds/testSeed.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/src/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/models/migrations/**",
+      "!src/models/seeds/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
     "express-validator": "^7.0.1",
+    "exceljs": "^4.3.0",
+    "fast-csv": "^4.3.6",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^8.15.1",
     "morgan": "^1.10.0",
-    "mysql2": "^3.2.0",
-    "sequelize": "^6.30.0"
+    "pg": "^8.11.0"
   },
   "devDependencies": {
     "eslint": "^8.36.0",

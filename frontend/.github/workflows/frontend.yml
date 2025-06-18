@@ -1,3 +1,4 @@
+# frontend/.github/workflows/frontend.yml
 name: Frontend CI
 
 on:
@@ -11,7 +12,7 @@ on:
       - 'frontend/**'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -20,12 +21,13 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
@@ -38,7 +40,17 @@ jobs:
       run: npm run lint
     
     - name: Run tests
-      run: npm test -- --passWithNoTests
+      run: npm test -- --coverage --passWithNoTests --watchAll=false
+      env:
+        CI: true
     
-    - name: Build
+    - name: Build application
       run: npm run build
+    
+    - name: Upload test coverage to Codecov (optional)
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '18.x'
+      with:
+        directory: ./frontend/coverage
+        flags: frontend
+        name: frontend-coverage
