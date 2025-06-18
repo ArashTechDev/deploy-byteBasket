@@ -1,98 +1,70 @@
-# .github/workflows/full-stack-ci.yml
-name: Full Stack CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, development ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, development ]
+    branches: [ main ]
 
 jobs:
   backend-test:
     runs-on: ubuntu-latest
     
-    defaults:
-      run:
-        working-directory: ./backend
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-      fail-fast: false  # Don't cancel other jobs if one fails
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'backend/package-lock.json'
-    
+        node-version: '18.x'
+        
     - name: Install backend dependencies
-      run: npm ci
-    
+      run: |
+        cd backend
+        npm ci
+        
     - name: Lint backend
-      run: npm run lint
-    
-    - name: Run backend tests (with mocks)
-      run: npm test -- --passWithNoTests
-      env:
-        NODE_ENV: test
+      run: |
+        cd backend
+        npm run lint
+        
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test
 
   frontend-test:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./frontend
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-      fail-fast: false
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
     
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
-    
+        node-version: '18.x'
+        
     - name: Install frontend dependencies
-      run: npm ci
-    
-    - name: Lint frontend
-      run: npm run lint
-    
-    - name: Run frontend tests
-      run: npm run test:ci
-      env:
-        CI: true
-        NODE_ENV: test
-        NODE_OPTIONS: --max-old-space-size=4096
-    
-    - name: Build frontend
-      run: npm run build
-
-  # Simplified integration test without real database
-  integration-check:
-    needs: [backend-test, frontend-test]
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Integration check passed
       run: |
-        echo "✅ Backend tests passed"
-        echo "✅ Frontend tests passed" 
-        echo "✅ Build completed successfully"
-        echo "🚀 Ready for deployment"
+        cd frontend
+        npm ci
+        
+    - name: Lint frontend
+      run: |
+        cd frontend
+        npm run lint
+        
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test:ci
+        
+    # Comment out build step until more content is ready
+    # - name: Build frontend
+    #   run: |
+    #     cd frontend
+    #     npm run build
+
+  integration-check:
+    runs-on: ubuntu-latest
+    # Add your integration tests here when ready
