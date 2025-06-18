@@ -11,10 +11,6 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     
-    # Remove PostgreSQL service since we're using mocks
-    # services:
-    #   postgres: ...
-
     defaults:
       run:
         working-directory: ./backend
@@ -38,11 +34,8 @@ jobs:
     - name: Install backend dependencies
       run: npm ci
     
-    # Remove database setup since we're using mocks
-    # - name: Setup test database
-    
     - name: Lint backend
-      run: npm run lint:fix || npm run lint || echo "Linting completed"
+      run: npm run lint
     
     - name: Run backend tests (with mocks)
       run: npm test -- --passWithNoTests
@@ -76,12 +69,14 @@ jobs:
       run: npm ci
     
     - name: Lint frontend
-      run: npm run lint:fix || npm run lint || echo "Linting completed"
+      run: npm run lint
     
     - name: Run frontend tests
-      run: npm test -- --coverage --passWithNoTests --watchAll=false
+      run: npm run test:ci
       env:
         CI: true
+        NODE_ENV: test
+        NODE_OPTIONS: --max-old-space-size=4096
     
     - name: Build frontend
       run: npm run build

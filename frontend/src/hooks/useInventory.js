@@ -31,6 +31,7 @@ export const useInventory = (initialFilters = {}) => {
       setPagination(data.pagination || {});
     } catch (err) {
       setError(err.message);
+      // eslint-disable-next-line no-console
       console.error('Error fetching inventory:', err);
     } finally {
       setLoading(false);
@@ -112,6 +113,7 @@ export const useInventoryAlerts = () => {
       setAlerts({ lowStock, expiring });
     } catch (err) {
       setError(err.message);
+      // eslint-disable-next-line no-console
       console.error('Error fetching alerts:', err);
     } finally {
       setLoading(false);
@@ -148,6 +150,7 @@ export const useInventoryMetadata = () => {
       setDietaryCategories(dietary);
     } catch (err) {
       setError(err.message);
+      // eslint-disable-next-line no-console
       console.error('Error fetching metadata:', err);
     } finally {
       setLoading(false);

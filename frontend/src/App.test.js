@@ -1,5 +1,5 @@
 // frontend/src/App.test.js
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 describe('Frontend Basic Tests', () => {
@@ -12,14 +12,14 @@ describe('Frontend Basic Tests', () => {
       return <div>Test content</div>;
     };
     
-    const { getByText } = render(<TestComponent />);
-    expect(getByText('Test content')).toBeInTheDocument();
+    render(<TestComponent />);
+    expect(screen.getByText('Test content')).toBeInTheDocument();
   });
 
   test('can render a simple component', () => {
     const TestComponent = () => <div>Hello Test</div>;
-    const { getByText } = render(<TestComponent />);
-    expect(getByText('Hello Test')).toBeInTheDocument();
+    render(<TestComponent />);
+    expect(screen.getByText('Hello Test')).toBeInTheDocument();
   });
 
   test('environment is set correctly', () => {

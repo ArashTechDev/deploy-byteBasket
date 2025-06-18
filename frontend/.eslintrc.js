@@ -1,36 +1,36 @@
+// frontend/.eslintrc.js
 module.exports = {
-    env: {
-      browser: true,
-      es2021: true,
-      jest: true,
-    },
-    extends: [
-      'eslint:recommended',
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-    ],
-    parserOptions: {
-      ecmaFeatures: {
-        jsx: true,
+  extends: [
+    'react-app',
+    'react-app/jest'
+  ],
+  env: {
+    browser: true,
+    es6: true,
+    jest: true,
+    node: true
+  },
+  globals: {
+    process: 'readonly'
+  },
+  rules: {
+    // Custom rules can be added here
+    'no-console': 'warn',
+    'no-unused-vars': 'warn'
+  },
+  overrides: [
+    {
+      files: ['**/*.test.js', '**/*.test.jsx', '**/*.spec.js', '**/*.spec.jsx'],
+      env: {
+        jest: true,
+        node: true
       },
-      ecmaVersion: 12,
-      sourceType: 'module',
-    },
-    plugins: [
-      'react',
-    ],
-    rules: {
-      'indent': ['error', 2],
-      'linebreak-style': ['error', 'unix'],
-      'quotes': ['error', 'single'],
-      'semi': ['error', 'always'],
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'warn',
-      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
-    },
-    settings: {
-      react: {
-        version: 'detect',
+      globals: {
+        process: 'readonly'
       },
-    },
-  };
+      rules: {
+        'no-console': 'off' // Allow console in tests
+      }
+    }
+  ]
+};
