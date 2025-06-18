@@ -1,4 +1,4 @@
-# backend/.github/workflows/backend.yml
+# .github/workflows/backend.yml
 name: Backend CI
 
 on:
@@ -6,10 +6,12 @@ on:
     branches: [ main, development ]
     paths:
       - 'backend/**'
+      - '.github/workflows/backend.yml'
   pull_request:
     branches: [ main, development ]
     paths:
       - 'backend/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   test:
@@ -40,29 +42,21 @@ jobs:
         node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: './backend/package-lock.json'
+        cache-dependency-path: 'backend/package-lock.json'
     
     - name: Install dependencies
       run: npm ci
     
     - name: Setup test database
       run: |
-        # Set test environment variables
-        export NODE_ENV=test
-        export DB_HOST=localhost
-        export DB_PORT=5432
-        export DB_NAME=bytebasket_test
-        export DB_USER=postgres
-        export DB_PASSWORD=testpassword
-        export JWT_SECRET=test-secret-key
-        
         # Run database migrations for testing
         psql -h localhost -U postgres -d bytebasket_test -f src/models/migrations/init.sql
       env:
