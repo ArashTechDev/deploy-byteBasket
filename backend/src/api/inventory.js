@@ -83,12 +83,12 @@ router.get('/', async (req, res) => {
 
     // Expiring soon filter (next 7 days)
     if (expiring_soon === 'true') {
-      query += ` AND i.expiration_date <= CURRENT_DATE + INTERVAL '7 days' AND i.expiration_date >= CURRENT_DATE`;
+      query += ' AND i.expiration_date <= CURRENT_DATE + INTERVAL \'7 days\' AND i.expiration_date >= CURRENT_DATE';
     }
 
     // Low stock filter
     if (low_stock_only === 'true') {
-      query += ` AND i.quantity <= i.minimum_stock_level`;
+      query += ' AND i.quantity <= i.minimum_stock_level';
     }
 
     // Count query for pagination
