@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // backend/src/config/database.js
 const { Pool } = require('pg');
 

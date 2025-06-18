@@ -1,6 +1,6 @@
 const { AppError } = require('../utils/errors');
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, _req, res) => {
   let error = { ...err };
   error.message = err.message || 'Server Error';
 

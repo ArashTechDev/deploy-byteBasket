@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // backend/tests/setup.js
 const { mockPool } = require('./mocks/database');
 
