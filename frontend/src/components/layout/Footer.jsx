@@ -99,28 +99,28 @@ const Footer = () => {
             © 2025 ByteBasket. All rights reserved.
           </div>
 
-          {/* Social Media Links */}
+          {/* Social Media Buttons */}
           <div className="flex space-x-6">
-            <a href="javascript:void(0)" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 4.557c-.883.392-1.832.656-2.828.775..." />
+                <path d="M24 4.557c-.883.392-1.832.656-2.828.775..."/>
               </svg>
-            </a>
-            <a href="javascript:void(0)" className="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
+            </button>
+            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M22.46 6c-.77.35-1.6.58-2.46.69..." />
+                <path d="M22.46 6c-.77.35-1.6.58-2.46.69..."/>
               </svg>
-            </a>
-            <a href="javascript:void(0)" className="text-gray-400 hover:text-white transition-colors" aria-label="Reddit">
+            </button>
+            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Reddit">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.017 0C5.396 0 .029 5.367..." />
+                <path d="M12.017 0C5.396 0 .029 5.367..."/>
               </svg>
-            </a>
-            <a href="javascript:void(0)" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+            </button>
+            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012..." />
+                <path d="M12 2.163c3.204 0 3.584.012..."/>
               </svg>
-            </a>
+            </button>
           </div>
         </div>
       </div>
