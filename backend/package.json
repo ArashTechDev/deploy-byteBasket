@@ -18,8 +18,12 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFiles": ["<rootDir>/tests/env-setup.js"],
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "setupFiles": [
+      "<rootDir>/tests/env-setup.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
     "testMatch": [
       "**/tests/**/*.test.js",
       "**/tests/**/*.mock.test.js",
@@ -42,17 +46,22 @@
     "restoreMocks": true
   },
   "dependencies": {
+    "axios": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
+    "dotenv": "^16.5.0",
+    "exceljs": "^4.3.0",
+    "express": "^4.21.2",
     "express-rate-limit": "^6.7.0",
     "express-validator": "^7.0.1",
-    "exceljs": "^4.3.0",
     "fast-csv": "^4.3.6",
     "helmet": "^7.0.0",
-    "jsonwebtoken": "^9.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
+    "mongoose": "^8.16.0",
     "morgan": "^1.10.0",
+    "multer": "^2.0.1",
     "pg": "^8.11.0"
   },
   "devDependencies": {

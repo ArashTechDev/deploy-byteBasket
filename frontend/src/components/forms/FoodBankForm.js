@@ -25,6 +25,7 @@ const FoodBankForm = ({ initialData = {}, onSubmit, onCancel }) => {
 
   const handleChange = (field, value) => {
     setForm((f) => ({ ...f, [field]: value }));
+    
   };
 
   const handleHoursChange = (day, value) => {
@@ -54,7 +55,7 @@ const handleSubmit = (e) => {
   delete dataToSubmit.longitude;
   delete dataToSubmit.createdAt;
   delete dataToSubmit.updatedAt;
-  delete dataToSubmit.StorageLocations;
+  delete dataToSubmit.storageLocations;
 
   onSubmit(dataToSubmit);
 };

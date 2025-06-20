@@ -1,25 +1,26 @@
-// backend/src/api/index.js
 const express = require('express');
 const router = express.Router();
 
-// Import route modules
+// Import existing routes
+const foodbankRoutes = require('./foodbank');
 const inventoryRoutes = require('./inventory');
-const authRoutes = require('./auth');
-const userRoutes = require('./users');
-const foodBankRoutes = require('./foodbank');
+const storageLocationRoutes = require('./storageLocations');
 
-// Mount routes
+// Import new donation routes
+const donationRoutes = require('../routes/donation.routes');
+
+// Use routes
+router.use('/foodbank', foodbankRoutes);
 router.use('/inventory', inventoryRoutes);
-router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
-router.use('/foodbanks', foodBankRoutes);
+router.use('/storage-locations', storageLocationRoutes);
+router.use('/donations', donationRoutes);
 
-// Health check endpoint
+// Health check
 router.get('/health', (req, res) => {
   res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    service: 'ByteBasket API'
+    success: true, 
+    message: 'ByteBasket API is running!',
+    timestamp: new Date().toISOString()
   });
 });
 
