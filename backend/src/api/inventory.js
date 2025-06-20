@@ -1,22 +1,74 @@
 // backend/src/api/routes/inventory.js
 const express = require('express');
 const router = express.Router();
-const { Pool } = require('pg');
-const csv = require('fast-csv');
-const ExcelJS = require('exceljs');
+const mongoose = require('mongoose');
+const Inventory = require('../db/models/inventory/Inventory');
+const Foodbank = require('../db/models/foodbanks/Foodbank');
 
-// Database connection (using your existing setup)
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'bytebasket',
-  password: process.env.DB_PASSWORD || 'password',
-  port: process.env.DB_PORT || 5432,
+// Helper function for pagination
+const getPaginationData = (page, limit, total) => ({
+  currentPage: parseInt(page),
+  totalPages: Math.ceil(total / limit),
+  totalItems: total,
+  limit: parseInt(limit),
+  hasNext: page < Math.ceil(total / limit),
+  hasPrev: page > 1
 });
 
-// Helper function to check low stock
-const checkLowStock = (quantity, minimumStockLevel) => {
-  return quantity <= (minimumStockLevel || 10);
+// Helper function to build MongoDB query from filters
+const buildInventoryQuery = (filters) => {
+  const query = {};
+  
+  // Text search
+  if (filters.search) {
+    query.$text = { $search: filters.search };
+  }
+  
+  // Category filter
+  if (filters.category) {
+    query.category = new RegExp(filters.category, 'i');
+  }
+  
+  // Dietary category filter
+  if (filters.dietary_category) {
+    query.dietary_category = filters.dietary_category;
+  }
+  
+  // Foodbank filter
+  if (filters.foodbank_id && mongoose.Types.ObjectId.isValid(filters.foodbank_id)) {
+    query.foodbank_id = filters.foodbank_id;
+  }
+  
+  // Storage location filter
+  if (filters.location) {
+    query.storage_location = new RegExp(filters.location, 'i');
+  }
+  
+  // Expiring soon filter (next N days)
+  if (filters.expiring_soon === 'true') {
+    const days = parseInt(filters.expiring_days) || 7;
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + days);
+    
+    query.expiration_date = {
+      $gte: new Date(),
+      $lte: futureDate
+    };
+  }
+  
+  // Low stock filter
+  if (filters.low_stock_only === 'true') {
+    query.low_stock = true;
+  }
+  
+  // Date range filters
+  if (filters.date_from || filters.date_to) {
+    query.date_added = {};
+    if (filters.date_from) query.date_added.$gte = new Date(filters.date_from);
+    if (filters.date_to) query.date_added.$lte = new Date(filters.date_to);
+  }
+  
+  return query;
 };
 
 // GET /api/inventory - Get all inventory with advanced filtering and search
@@ -29,161 +81,76 @@ router.get('/', async (req, res) => {
       foodbank_id,
       location,
       expiring_soon,
+      expiring_days,
       low_stock_only,
+      date_from,
+      date_to,
       sort_by = 'date_added',
-      sort_order = 'DESC',
+      sort_order = 'desc',
       page = 1,
-      limit = 20,
-      export_format
-    } = req.query;
+      limit = 20    } = req.query;
 
-    let query = `
-      SELECT i.*, f.name as foodbank_name 
-      FROM inventory i 
-      LEFT JOIN foodbanks f ON i.foodbank_id = f.foodbank_id 
-      WHERE 1=1
-    `;
-    const params = [];
-    let paramIndex = 1;
+    // Build query
+    const query = buildInventoryQuery({
+      search, category, dietary_category, foodbank_id, location,
+      expiring_soon, expiring_days, low_stock_only, date_from, date_to
+    });
 
-    // Search functionality
-    if (search) {
-      query += ` AND (LOWER(i.item_name) LIKE LOWER($${paramIndex}) OR LOWER(i.category) LIKE LOWER($${paramIndex}))`;
-      params.push(`%${search}%`);
-      paramIndex++;
-    }
-
-    // Category filter
-    if (category) {
-      query += ` AND LOWER(i.category) = LOWER($${paramIndex})`;
-      params.push(category);
-      paramIndex++;
-    }
-
-    // Dietary category filter
-    if (dietary_category) {
-      query += ` AND i.dietary_category = $${paramIndex}`;
-      params.push(dietary_category);
-      paramIndex++;
-    }
-
-    // Food bank filter
-    if (foodbank_id) {
-      query += ` AND i.foodbank_id = $${paramIndex}`;
-      params.push(foodbank_id);
-      paramIndex++;
-    }
-
-    // Storage location filter
-    if (location) {
-      query += ` AND LOWER(i.storage_location) LIKE LOWER($${paramIndex})`;
-      params.push(`%${location}%`);
-      paramIndex++;
-    }
-
-    // Expiring soon filter (next 7 days)
-    if (expiring_soon === 'true') {
-      query += ' AND i.expiration_date <= CURRENT_DATE + INTERVAL \'7 days\' AND i.expiration_date >= CURRENT_DATE';
-    }
-
-    // Low stock filter
-    if (low_stock_only === 'true') {
-      query += ' AND i.quantity <= i.minimum_stock_level';
-    }
-
-    // Count query for pagination
-    const countQuery = query.replace('SELECT i.*, f.name as foodbank_name', 'SELECT COUNT(*)');
-    const countResult = await pool.query(countQuery, params);
-    const totalItems = parseInt(countResult.rows[0].count);
-
-    // Sorting
-    const validSortColumns = ['item_name', 'category', 'quantity', 'expiration_date', 'date_added'];
+    // Build sort object
+    const validSortColumns = ['item_name', 'category', 'quantity', 'expiration_date', 'date_added', 'last_updated'];
     const sortColumn = validSortColumns.includes(sort_by) ? sort_by : 'date_added';
-    const sortDirection = sort_order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-    
-    query += ` ORDER BY i.${sortColumn} ${sortDirection}`;
+    const sortDirection = sort_order.toLowerCase() === 'asc' ? 1 : -1;
+    const sortObj = { [sortColumn]: sortDirection };
 
-    // Handle export
-    if (export_format) {
-      const result = await pool.query(query, params);
-      
-      if (export_format === 'csv') {
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=inventory.csv');
-        
-        const csvStream = csv.format({ headers: true });
-        csvStream.pipe(res);
-        
-        result.rows.forEach(row => {
-          csvStream.write({
-            'Item Name': row.item_name,
-            'Category': row.category,
-            'Quantity': row.quantity,
-            'Expiration Date': row.expiration_date,
-            'Storage Location': row.storage_location,
-            'Dietary Category': row.dietary_category,
-            'Food Bank': row.foodbank_name,
-            'Date Added': row.date_added
-          });
-        });
-        
-        csvStream.end();
-        return;
-      }
-      
-      if (export_format === 'excel') {
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Inventory');
-        
-        worksheet.columns = [
-          { header: 'Item Name', key: 'item_name', width: 20 },
-          { header: 'Category', key: 'category', width: 15 },
-          { header: 'Quantity', key: 'quantity', width: 10 },
-          { header: 'Expiration Date', key: 'expiration_date', width: 15 },
-          { header: 'Storage Location', key: 'storage_location', width: 15 },
-          { header: 'Dietary Category', key: 'dietary_category', width: 15 },
-          { header: 'Food Bank', key: 'foodbank_name', width: 20 },
-          { header: 'Date Added', key: 'date_added', width: 15 }
-        ];
-        
-        worksheet.addRows(result.rows);
-        
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=inventory.xlsx');
-        
-        await workbook.xlsx.write(res);
-        return;
-      }
+    // Add text score sorting if searching
+    if (search) {
+      sortObj.score = { $meta: 'textScore' };
     }
 
-    // Pagination
-    const offset = (page - 1) * limit;
-    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limit, offset);
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Cap at 100 items
+    const skip = (pageNum - 1) * limitNum;
 
-    const result = await pool.query(query, params);
-    
-    // Update low_stock flag for returned items
-    const inventoryItems = result.rows.map(item => ({
+    // Execute queries
+    const [items, totalCount] = await Promise.all([
+      Inventory.find(query)
+        .populate('foodbank_id', 'name address city state')
+        .populate('created_by', 'username full_name')
+        .populate('updated_by', 'username full_name')
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(), // Use lean() for better performance
+      Inventory.countDocuments(query)
+    ]);
+
+    // Add computed fields
+    const enrichedItems = items.map(item => ({
       ...item,
-      low_stock: checkLowStock(item.quantity, item.minimum_stock_level),
-      is_expiring_soon: item.expiration_date && 
-        new Date(item.expiration_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      is_expiring_soon: item.expiration_date ? 
+        (new Date(item.expiration_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) &&
+         new Date(item.expiration_date) >= new Date()) : false,
+      days_until_expiration: item.expiration_date ? 
+        Math.ceil((new Date(item.expiration_date) - new Date()) / (1000 * 60 * 60 * 24)) : null
     }));
 
+    const pagination = getPaginationData(pageNum, limitNum, totalCount);
+
     res.json({
-      items: inventoryItems,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalItems / limit),
-        totalItems,
-        limit: parseInt(limit)
-      }
+      success: true,
+      items: enrichedItems,
+      pagination,
+      filters: { search, category, dietary_category, foodbank_id, location, expiring_soon, low_stock_only }
     });
 
   } catch (error) {
     console.error('Error fetching inventory:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
@@ -192,28 +159,36 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const query = `
-      SELECT i.*, f.name as foodbank_name 
-      FROM inventory i 
-      LEFT JOIN foodbanks f ON i.foodbank_id = f.foodbank_id 
-      WHERE i.inventory_id = $1
-    `;
-    
-    const result = await pool.query(query, [id]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Inventory item not found' });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid inventory ID' 
+      });
     }
     
-    const item = result.rows[0];
-    item.low_stock = checkLowStock(item.quantity, item.minimum_stock_level);
-    item.is_expiring_soon = item.expiration_date && 
-      new Date(item.expiration_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const item = await Inventory.findById(id)
+      .populate('foodbank_id', 'name address city state phone email')
+      .populate('created_by', 'username full_name')
+      .populate('updated_by', 'username full_name');
     
-    res.json(item);
+    if (!item) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Inventory item not found' 
+      });
+    }
+    
+    res.json({
+      success: true,
+      item
+    });
   } catch (error) {
     console.error('Error fetching inventory item:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
@@ -229,42 +204,95 @@ router.post('/', async (req, res) => {
       storage_location,
       dietary_category,
       barcode,
-      minimum_stock_level
+      minimum_stock_level,
+      created_by
     } = req.body;
 
     // Validation
     if (!foodbank_id || !item_name || !category || quantity === undefined) {
       return res.status(400).json({ 
+        success: false,
         error: 'Required fields: foodbank_id, item_name, category, quantity' 
       });
     }
 
-    const low_stock = checkLowStock(quantity, minimum_stock_level);
+    // Validate foodbank exists
+    if (!mongoose.Types.ObjectId.isValid(foodbank_id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid foodbank ID format'
+      });
+    }
 
-    const query = `
-      INSERT INTO inventory (
-        foodbank_id, item_name, category, quantity, expiration_date,
-        storage_location, dietary_category, barcode, minimum_stock_level, low_stock
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *
-    `;
+    const foodbank = await Foodbank.findById(foodbank_id);
+    if (!foodbank) {
+      return res.status(400).json({
+        success: false,
+        error: 'Foodbank not found'
+      });
+    }
 
-    const values = [
-      foodbank_id, item_name, category, quantity, expiration_date || null,
-      storage_location || null, dietary_category || null, barcode || null,
-      minimum_stock_level || 10, low_stock
-    ];
+    // Check for duplicate barcode if provided
+    if (barcode) {
+      const existingItem = await Inventory.findOne({ 
+        barcode, 
+        foodbank_id,
+        _id: { $ne: req.params.id } // Exclude current item for updates
+      });
+      
+      if (existingItem) {
+        return res.status(400).json({
+          success: false,
+          error: 'Item with this barcode already exists in this foodbank'
+        });
+      }
+    }
 
-    const result = await pool.query(query, values);
-    res.status(201).json(result.rows[0]);
+    const inventoryData = {
+      foodbank_id,
+      item_name: item_name.trim(),
+      category: category.trim(),
+      quantity: parseInt(quantity),
+      minimum_stock_level: minimum_stock_level ? parseInt(minimum_stock_level) : 10
+    };
+
+    // Add optional fields
+    if (expiration_date) inventoryData.expiration_date = new Date(expiration_date);
+    if (storage_location) inventoryData.storage_location = storage_location.trim();
+    if (dietary_category) inventoryData.dietary_category = dietary_category;
+    if (barcode) inventoryData.barcode = barcode.trim();
+    if (created_by && mongoose.Types.ObjectId.isValid(created_by)) {
+      inventoryData.created_by = created_by;
+    }
+
+    const newItem = new Inventory(inventoryData);
+    const savedItem = await newItem.save();
+    
+    // Populate the response
+    await savedItem.populate('foodbank_id', 'name');
+    
+    res.status(201).json({
+      success: true,
+      message: 'Inventory item created successfully',
+      item: savedItem
+    });
 
   } catch (error) {
     console.error('Error creating inventory item:', error);
-    if (error.code === '23503') { // Foreign key violation
-      res.status(400).json({ error: 'Invalid foodbank_id' });
-    } else {
-      res.status(500).json({ error: 'Internal server error' });
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: Object.values(error.errors).map(err => err.message)
+      });
     }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
@@ -272,6 +300,14 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid inventory ID' 
+      });
+    }
+
     const {
       foodbank_id,
       item_name,
@@ -281,49 +317,98 @@ router.put('/:id', async (req, res) => {
       storage_location,
       dietary_category,
       barcode,
-      minimum_stock_level
+      minimum_stock_level,
+      updated_by
     } = req.body;
 
     // Check if item exists
-    const existingItem = await pool.query('SELECT * FROM inventory WHERE inventory_id = $1', [id]);
-    if (existingItem.rows.length === 0) {
-      return res.status(404).json({ error: 'Inventory item not found' });
+    const existingItem = await Inventory.findById(id);
+    if (!existingItem) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Inventory item not found' 
+      });
     }
 
-    const low_stock = checkLowStock(quantity, minimum_stock_level);
+    // Validate foodbank if provided
+    if (foodbank_id && !mongoose.Types.ObjectId.isValid(foodbank_id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid foodbank ID format'
+      });
+    }
 
-    const query = `
-      UPDATE inventory SET
-        foodbank_id = $1,
-        item_name = $2,
-        category = $3,
-        quantity = $4,
-        expiration_date = $5,
-        storage_location = $6,
-        dietary_category = $7,
-        barcode = $8,
-        minimum_stock_level = $9,
-        low_stock = $10
-      WHERE inventory_id = $11
-      RETURNING *
-    `;
+    if (foodbank_id) {
+      const foodbank = await Foodbank.findById(foodbank_id);
+      if (!foodbank) {
+        return res.status(400).json({
+          success: false,
+          error: 'Foodbank not found'
+        });
+      }
+    }
 
-    const values = [
-      foodbank_id, item_name, category, quantity, expiration_date || null,
-      storage_location || null, dietary_category || null, barcode || null,
-      minimum_stock_level || 10, low_stock, id
-    ];
+    // Check for duplicate barcode if provided
+    if (barcode) {
+      const duplicateItem = await Inventory.findOne({ 
+        barcode, 
+        foodbank_id: foodbank_id || existingItem.foodbank_id,
+        _id: { $ne: id }
+      });
+      
+      if (duplicateItem) {
+        return res.status(400).json({
+          success: false,
+          error: 'Item with this barcode already exists in this foodbank'
+        });
+      }
+    }
 
-    const result = await pool.query(query, values);
-    res.json(result.rows[0]);
+    // Build update object
+    const updateData = {};
+    if (foodbank_id) updateData.foodbank_id = foodbank_id;
+    if (item_name) updateData.item_name = item_name.trim();
+    if (category) updateData.category = category.trim();
+    if (quantity !== undefined) updateData.quantity = parseInt(quantity);
+    if (minimum_stock_level !== undefined) updateData.minimum_stock_level = parseInt(minimum_stock_level);
+    if (expiration_date !== undefined) {
+      updateData.expiration_date = expiration_date ? new Date(expiration_date) : null;
+    }
+    if (storage_location !== undefined) updateData.storage_location = storage_location?.trim() || null;
+    if (dietary_category !== undefined) updateData.dietary_category = dietary_category || null;
+    if (barcode !== undefined) updateData.barcode = barcode?.trim() || null;
+    if (updated_by && mongoose.Types.ObjectId.isValid(updated_by)) {
+      updateData.updated_by = updated_by;
+    }
+
+    const updatedItem = await Inventory.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate('foodbank_id', 'name');
+
+    res.json({
+      success: true,
+      message: 'Inventory item updated successfully',
+      item: updatedItem
+    });
 
   } catch (error) {
     console.error('Error updating inventory item:', error);
-    if (error.code === '23503') { // Foreign key violation
-      res.status(400).json({ error: 'Invalid foodbank_id' });
-    } else {
-      res.status(500).json({ error: 'Internal server error' });
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: Object.values(error.errors).map(err => err.message)
+      });
     }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
@@ -332,83 +417,285 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const result = await pool.query('DELETE FROM inventory WHERE inventory_id = $1 RETURNING *', [id]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Inventory item not found' });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid inventory ID' 
+      });
     }
     
-    res.json({ message: 'Inventory item deleted successfully', item: result.rows[0] });
+    const deletedItem = await Inventory.findByIdAndDelete(id);
+    
+    if (!deletedItem) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Inventory item not found' 
+      });
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Inventory item deleted successfully', 
+      item: deletedItem 
+    });
   } catch (error) {
     console.error('Error deleting inventory item:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
 // GET /api/inventory/alerts/low-stock - Get low stock alerts
 router.get('/alerts/low-stock', async (req, res) => {
   try {
-    const query = `
-      SELECT i.*, f.name as foodbank_name 
-      FROM inventory i 
-      LEFT JOIN foodbanks f ON i.foodbank_id = f.foodbank_id 
-      WHERE i.quantity <= i.minimum_stock_level
-      ORDER BY i.quantity ASC
-    `;
+    const { foodbank_id } = req.query;
     
-    const result = await pool.query(query);
-    res.json(result.rows);
+    const query = { low_stock: true };
+    if (foodbank_id && mongoose.Types.ObjectId.isValid(foodbank_id)) {
+      query.foodbank_id = foodbank_id;
+    }
+    
+    const lowStockItems = await Inventory.find(query)
+      .populate('foodbank_id', 'name address')
+      .sort({ quantity: 1 })
+      .lean();
+    
+    res.json({
+      success: true,
+      count: lowStockItems.length,
+      items: lowStockItems
+    });
   } catch (error) {
     console.error('Error fetching low stock alerts:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
 // GET /api/inventory/alerts/expiring - Get expiring items alerts
 router.get('/alerts/expiring', async (req, res) => {
   try {
-    const { days = 7 } = req.query;
+    const { days = 7, foodbank_id } = req.query;
     
-    const query = `
-      SELECT i.*, f.name as foodbank_name 
-      FROM inventory i 
-      LEFT JOIN foodbanks f ON i.foodbank_id = f.foodbank_id 
-      WHERE i.expiration_date <= CURRENT_DATE + INTERVAL '${days} days' 
-      AND i.expiration_date >= CURRENT_DATE
-      ORDER BY i.expiration_date ASC
-    `;
+    const daysAhead = parseInt(days);
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + daysAhead);
     
-    const result = await pool.query(query);
-    res.json(result.rows);
+    const query = {
+      expiration_date: {
+        $gte: new Date(),
+        $lte: futureDate
+      }
+    };
+    
+    if (foodbank_id && mongoose.Types.ObjectId.isValid(foodbank_id)) {
+      query.foodbank_id = foodbank_id;
+    }
+    
+    const expiringItems = await Inventory.find(query)
+      .populate('foodbank_id', 'name address')
+      .sort({ expiration_date: 1 })
+      .lean();
+    
+    // Add days until expiration
+    const itemsWithDays = expiringItems.map(item => ({
+      ...item,
+      days_until_expiration: Math.ceil((new Date(item.expiration_date) - new Date()) / (1000 * 60 * 60 * 24))
+    }));
+    
+    res.json({
+      success: true,
+      count: itemsWithDays.length,
+      items: itemsWithDays
+    });
   } catch (error) {
     console.error('Error fetching expiring items alerts:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
-// GET /api/inventory/categories - Get all unique categories
+// GET /api/inventory/meta/categories - Get available categories
 router.get('/meta/categories', async (req, res) => {
   try {
-    const query = 'SELECT DISTINCT category FROM inventory ORDER BY category';
-    const result = await pool.query(query);
-    res.json(result.rows.map(row => row.category));
+    const { foodbank_id } = req.query;
+    
+    const matchStage = foodbank_id && mongoose.Types.ObjectId.isValid(foodbank_id) 
+      ? { $match: { foodbank_id: new mongoose.Types.ObjectId(foodbank_id) } }
+      : { $match: {} };
+    
+    const categories = await Inventory.aggregate([
+      matchStage,
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+      { $project: { category: '$_id', count: 1, _id: 0 } }
+    ]);
+    
+    res.json({
+      success: true,
+      categories
+    });
   } catch (error) {
     console.error('Error fetching categories:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
-// GET /api/inventory/dietary-categories - Get dietary category enums
+// GET /api/inventory/meta/dietary-categories - Get dietary categories
 router.get('/meta/dietary-categories', async (req, res) => {
   try {
-    const query = `
-      SELECT unnest(enum_range(NULL::dietary_category_enum)) as dietary_category
-    `;
-    const result = await pool.query(query);
-    res.json(result.rows.map(row => row.dietary_category));
+    // Get from schema enum
+    const dietaryCategories = Inventory.schema.path('dietary_category').enumValues;
+    
+    res.json({
+      success: true,
+      dietary_categories: dietaryCategories.map(cat => ({
+        value: cat,
+        label: cat.replace(/_/g, ' ')
+      }))
+    });
   } catch (error) {
     console.error('Error fetching dietary categories:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
+});
+
+// PATCH /api/inventory/:id/quantity - Quick quantity update
+router.patch('/:id/quantity', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity, adjustment, updated_by } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid inventory ID' 
+      });
+    }
+    
+    const item = await Inventory.findById(id);
+    if (!item) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Inventory item not found' 
+      });
+    }
+    
+    let updatedItem;
+    if (quantity !== undefined) {
+      updatedItem = await item.updateQuantity(parseInt(quantity), updated_by);
+    } else if (adjustment !== undefined) {
+      updatedItem = await item.adjustQuantity(parseInt(adjustment), updated_by);
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: 'Either quantity or adjustment must be provided'
+      });
+    }
+    
+    await updatedItem.populate('foodbank_id', 'name');
+    
+    res.json({
+      success: true,
+      message: 'Quantity updated successfully',
+      item: updatedItem
+    });
+  } catch (error) {
+    console.error('Error updating quantity:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
+});
+
+// GET /api/inventory/stats - Get inventory statistics
+router.get('/stats', async (req, res) => {
+  try {
+    const { foodbank_id } = req.query;
+    
+    const matchStage = foodbank_id && mongoose.Types.ObjectId.isValid(foodbank_id) 
+      ? { $match: { foodbank_id: new mongoose.Types.ObjectId(foodbank_id) } }
+      : { $match: {} };
+    
+    const stats = await Inventory.aggregate([
+      matchStage,
+      {
+        $group: {
+          _id: null,
+          totalItems: { $sum: 1 },
+          totalQuantity: { $sum: '$quantity' },
+          lowStockItems: { 
+            $sum: { $cond: [{ $eq: ['$low_stock', true] }, 1, 0] } 
+          },
+          expiringItems: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$expiration_date', null] },
+                    { $lte: ['$expiration_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)] },
+                    { $gte: ['$expiration_date', new Date()] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          categories: { $addToSet: '$category' },
+          avgQuantity: { $avg: '$quantity' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          totalItems: 1,
+          totalQuantity: 1,
+          lowStockItems: 1,
+          expiringItems: 1,
+          categoriesCount: { $size: '$categories' },
+          avgQuantity: { $round: ['$avgQuantity', 2] }
+        }
+      }
+    ]);
+    
+    res.json({
+      success: true,
+      stats: stats[0] || {
+        totalItems: 0,
+        totalQuantity: 0,
+        lowStockItems: 0,
+        expiringItems: 0,
+        categoriesCount: 0,
+        avgQuantity: 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching inventory stats:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error',
+      message: error.message 
+    });
   }
 });
 
