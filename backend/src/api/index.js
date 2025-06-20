@@ -6,11 +6,13 @@ const router = express.Router();
 const inventoryRoutes = require('./inventory');
 const authRoutes = require('./auth');
 const userRoutes = require('./users');
+const foodBankRoutes = require('./foodbank');
 
 // Mount routes
 router.use('/inventory', inventoryRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/foodbanks', foodBankRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
