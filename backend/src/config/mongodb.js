@@ -6,20 +6,22 @@ const connectMongoDB = async () => {
     const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/bytebasket';
     
     const options = {
-      dbName: 'ByteBasket',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      dbName: process.env.MONGO_DB_NAME || 'ByteBasket',
       maxPoolSize: 10, // Maintain up to 10 socket connections
       serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
       family: 4, // Use IPv4, skip trying IPv6
-      bufferCommands: false, // Disable mongoose buffering
-      bufferMaxEntries: 0 // Disable mongoose buffering
+      // Removed deprecated options:
+      // - useNewUrlParser (default in Mongoose 6+)
+      // - useUnifiedTopology (default in Mongoose 6+)
+      // - bufferCommands (removed)
+      // - bufferMaxEntries (removed)
     };
 
     await mongoose.connect(mongoURI, options);
     
-    console.log('✅ MongoDB connected successfully');
+    console.log(`✅ MongoDB connected successfully to ${options.dbName}`);
+    console.log(`🔗 Connection string: ${mongoURI.replace(/\/\/.*@/, '//***:***@')}`);
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
@@ -46,10 +48,27 @@ const connectMongoDB = async () => {
       }
     });
     
+    return mongoose.connection;
+    
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
+    console.error('Full error:', error);
     process.exit(1);
   }
 };
 
-module.exports = { connectMongoDB };
+// Test connection function
+const testConnection = async () => {
+  try {
+    const connection = await connectMongoDB();
+    console.log('🧪 Testing MongoDB connection...');
+    await connection.db.admin().ping();
+    console.log('✅ MongoDB connection test successful');
+    return true;
+  } catch (error) {
+    console.error('❌ MongoDB connection test failed:', error);
+    return false;
+  }
+};
+
+module.exports = { connectMongoDB, testConnection };

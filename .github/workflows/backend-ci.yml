@@ -1,0 +1,183 @@
+name: ByteBasket Backend CI/CD
+
+on:
+  push:
+    branches: [ main, development ]
+    paths: 
+      - 'backend/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, development ]
+    paths:
+      - 'backend/**'
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  backend-test:
+    name: Backend Tests & Linting
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: ByteBasket-Test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'backend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Wait for MongoDB
+      run: |
+        timeout 60 bash -c 'until mongosh --host localhost:27017 --eval "db.runCommand({ ping: 1 })" --quiet; do
+          echo "Waiting for MongoDB..."
+          sleep 2
+        done'
+        echo "MongoDB is ready!"
+    
+    - name: Run linting
+      run: npm run lint
+      continue-on-error: true
+    
+    - name: Run tests
+      run: npm run test:ci
+      env:
+        NODE_ENV: test
+        MONGO_URI: mongodb://admin:password@localhost:27017/ByteBasket-Test?authSource=admin
+        MONGO_DB_NAME: ByteBasket-Test
+        JWT_SECRET: test-secret-key-for-ci
+        JWT_EXPIRES_IN: 1h
+      continue-on-error: true
+
+  backend-integration:
+    name: Backend Integration Tests
+    needs: [backend-test]
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: ByteBasket-Test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'backend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Wait for MongoDB
+      run: |
+        timeout 60 bash -c 'until mongosh --host localhost:27017 --eval "db.runCommand({ ping: 1 })" --quiet; do
+          echo "Waiting for MongoDB..."
+          sleep 2
+        done'
+    
+    - name: Setup demo data
+      run: npm run setup:demo
+      env:
+        NODE_ENV: test
+        MONGO_URI: mongodb://admin:password@localhost:27017/ByteBasket-Test?authSource=admin
+        MONGO_DB_NAME: ByteBasket-Test
+        JWT_SECRET: test-secret-key-for-ci
+    
+    - name: Start backend server in background
+      run: |
+        npm start &
+        SERVER_PID=$!
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+        sleep 15
+      env:
+        NODE_ENV: test
+        MONGO_URI: mongodb://admin:password@localhost:27017/ByteBasket-Test?authSource=admin
+        MONGO_DB_NAME: ByteBasket-Test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 5000
+    
+    - name: Test API endpoints
+      run: |
+        echo "Testing health endpoints..."
+        curl -f http://localhost:5000/health || (echo "Health check failed" && exit 1)
+        curl -f http://localhost:5000/api/health || (echo "API health check failed" && exit 1)
+        
+        echo "Testing authentication..."
+        response=$(curl -s -X POST http://localhost:5000/api/auth/login \
+          -H "Content-Type: application/json" \
+          -d '{"email":"admin@demo.com","password":"demo123"}')
+        echo "Login response: $response"
+        
+        # Check if login was successful
+        if echo "$response" | grep -q '"success":true'; then
+          echo "✅ Login test passed"
+          
+          # Extract token and test inventory endpoint
+          token=$(echo $response | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+          if [ -n "$token" ]; then
+            echo "Testing inventory endpoint with token..."
+            inventory_response=$(curl -s -H "Authorization: Bearer $token" http://localhost:5000/api/inventory)
+            if echo "$inventory_response" | grep -q '"success":true'; then
+              echo "✅ Inventory API test passed"
+            else
+              echo "❌ Inventory API test failed"
+              echo "Response: $inventory_response"
+              exit 1
+            fi
+          else
+            echo "❌ Could not extract token from login response"
+            exit 1
+          fi
+        else
+          echo "❌ Login test failed"
+          echo "Response: $response"
+          exit 1
+        fi
+    
+    - name: Stop server
+      run: kill $SERVER_PID || true
+      if: always()

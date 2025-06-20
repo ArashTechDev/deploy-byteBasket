@@ -1,102 +1,93 @@
-const User = require('../models/User.model');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+// backend/src/controllers/auth.controller.js
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { AppError, catchAsync } = require('../utils/errors');
+const User = require('../db/models/users/User');
 
-// REGISTER FUNCTION WITH EMAIL VERIFICATION
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-
-    // Create new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-      verificationToken,
-      isVerified: false
-    });
-
-    await newUser.save();
-
-    // Email transporter setup
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: 'shahkavya.works@gmail.com',
-        pass: 'zdldalifmcbjjzhs' // Your app password
-      }
-    });
-
-    const verifyLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
-
-    // Send the email
-    await transporter.sendMail({
-      from: '"ByteBasket" <shahkavya.works@gmail.com>',
-      to: email,
-      subject: 'Verify Your ByteBasket Account',
-      html: `
-        <h3>Hello ${name},</h3>
-        <p>Click the link below to verify your email:</p>
-        <a href="${verifyLink}">${verifyLink}</a>
-      `
-    });
-
-    res.status(201).json({ message: 'Registered successfully. Please verify your email.' });
-
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
-  }
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
 };
 
-// LOGIN FUNCTION WITH TOKEN + SESSION SUPPORT
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const createSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+  
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-    // Find the user
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+  res.cookie('jwt', token, cookieOptions);
 
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(403).json({ message: 'Please verify your email before logging in.' });
-    }
+  // Remove password from output
+  user.password = undefined;
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+  res.status(statusCode).json({
+    success: true,
+    token,
+    data: {
+      user,
+    },
+  });
+};
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '2h' }
-    );
+const register = catchAsync(async (req, res, next) => {
+  const { name, email, password, role = 'donor' } = req.body;
 
-    // Return success + token
-    res.status(200).json({
-      message: 'Login successful',
-      token
-    });
-
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+  // Check if user exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new AppError('User already exists with this email', 400));
   }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  // Create user
+  const newUser = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role,
+  });
+
+  createSendToken(newUser, 201, res);
+});
+
+const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // Check if email and password exist
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password!', 400));
+  }
+
+  // Check if user exists && password is correct
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  // If everything ok, send token to client
+  createSendToken(user, 200, res);
+});
+
+const logout = catchAsync(async (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ success: true, message: 'Logged out successfully' });
+});
+
+module.exports = {
+  register,
+  login,
+  logout,
 };
