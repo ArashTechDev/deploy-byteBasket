@@ -1,5 +1,5 @@
 // backend/src/db/mongoose.js
-require('dotenv').config({ path: '../../../.env' });
+require('dotenv').config({ path: '../../.env' });
 const mongoose = require('mongoose');
 
 async function connectDB() {
@@ -17,9 +17,7 @@ async function connectDB() {
   try {
     console.log('🔌 Connecting to MongoDB...');
     await mongoose.connect(uri, {
-      dbName: 'ByteBasket',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      dbName: 'ByteBasket'
     });
     console.log('✅ Mongoose connected to ByteBasket DB');
   } catch (err) {
@@ -27,4 +25,4 @@ async function connectDB() {
   }
 }
 
-module.exports = connectDB;
+module.exports = {connectDB, mongoose};

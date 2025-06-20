@@ -44,9 +44,6 @@ jobs:
     - name: Install backend dependencies
       run: npm ci
     
-    - name: Setup test database
-      run: |
-        psql -h localhost -U postgres -d bytebasket_test -f src/models/migrations/init.sql
       env:
         PGPASSWORD: testpassword
     

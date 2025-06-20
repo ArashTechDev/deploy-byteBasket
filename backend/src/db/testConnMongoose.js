@@ -1,5 +1,5 @@
 // backend/src/scripts/testMongooseConnection.js
-const connectDB = require('./connect');
+const { connectDB } = require('./mongoose');
 
 (async () => {
   await connectDB(); // This triggers your logs
