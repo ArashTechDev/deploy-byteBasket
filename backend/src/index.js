@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const apiRouter = require('./api');
+const donationRoutes = require('./routes/donation.routes');
+
 const app = express();
 
 
@@ -11,6 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', apiRouter);
+app.use('/api/donations', donationRoutes);
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bytebasket')
