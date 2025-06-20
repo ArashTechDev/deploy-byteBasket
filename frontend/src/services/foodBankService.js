@@ -22,10 +22,11 @@ export const createFoodBank = async (data) => {
   }
 };
 
-
 export const updateFoodBank = async (id, data) => {
   try {
-    const res = await axios.put(`${baseURL}/${id}`, data);
+    const { _id, __v, ...cleanData } = data;
+
+    const res = await axios.put(`/api/foodbanks/${id}`, cleanData);
     return res.data;
   } catch (error) {
     console.error('Failed to update food bank:', error.response?.data || error.message);
@@ -35,6 +36,11 @@ export const updateFoodBank = async (id, data) => {
 
 
 export const deleteFoodBank = async (id) => {
-  const res = await axios.delete(`${baseURL}/${id}`);
-  return res.data;
+  try {
+    const res = await axios.delete(`${baseURL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error('Failed to delete food bank:', err.response?.data || err.message);
+    throw err;
+  }
 };
