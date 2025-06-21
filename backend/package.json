@@ -14,6 +14,7 @@
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "test": "jest --config tests/jest.config.js",
+    "test:ci": "jest --config tests/jest.config.js --coverage --watchAll=false --passWithNoTests",
     "test:watch": "jest --config tests/jest.config.js --watch",
     "test:coverage": "jest --config tests/jest.config.js --coverage",
     "test:integration": "jest --testPathPattern=tests/integration",
