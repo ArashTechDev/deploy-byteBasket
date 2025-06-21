@@ -26,7 +26,7 @@ export const updateFoodBank = async (id, data) => {
   try {
     const { _id, __v, ...cleanData } = data;
 
-    const res = await axios.put(`/api/foodbanks/${id}`, cleanData);
+    const res = await axios.put(`${baseURL}/${id}`, cleanData);
     return res.data;
   } catch (error) {
     console.error('Failed to update food bank:', error.response?.data || error.message);
