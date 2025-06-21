@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = '/api/foodbanks';
+const baseURL = 'http://localhost:3001/api/foodbanks';
 
 export const getFoodBanks = async () => {
   const res = await axios.get(baseURL);
