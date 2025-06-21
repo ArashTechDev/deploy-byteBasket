@@ -1,4 +1,4 @@
-const Donation = require('../models/Donation');
+const Donation = require('../db/models/Donation');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;

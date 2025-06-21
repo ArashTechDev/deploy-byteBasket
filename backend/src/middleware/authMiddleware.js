@@ -1,6 +1,6 @@
 // backend/src/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../db/models/users/User');
+const User = require('../db/models/User');
 require('../utils/errors');
 
 exports.authMiddleware = async (req, res, next) => {
