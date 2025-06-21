@@ -28,6 +28,12 @@ const HomePage = ({ onNavigate }) => (
               >
                 Inventory
               </button>
+                            <button 
+                onClick={() => onNavigate('foodbank')}
+                className="text-white border-b-2 border-white pb-1 text-lg font-medium hover:border-orange-400 transition-colors"
+              >
+                Food Bank Location 
+              </button>
             </div>
           </div>
           

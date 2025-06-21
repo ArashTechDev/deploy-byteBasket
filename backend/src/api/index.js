@@ -10,7 +10,7 @@ const storageLocationRoutes = require('./storageLocations');
 const donationRoutes = require('../routes/donation.routes');
 
 // Use routes
-router.use('/foodbank', foodbankRoutes);
+router.use('/foodbanks', foodbankRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/storage-locations', storageLocationRoutes);
 router.use('/donations', donationRoutes);
