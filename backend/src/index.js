@@ -7,16 +7,18 @@ const compression = require('compression');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// Import routes
+const apiRouter = require('./api');
+const donationRoutes = require('./routes/donation.routes');
+const authRoutes = require('./api/auth.routes');
+const inventoryRoutes = require('./api/routes/inventory');
+
 // MongoDB connection
 const { connectMongoDB } = require('./config/mongodb');
 
 // Middleware
 const errorHandler = require('./middleware/errorHandler');
 const notFound = require('./middleware/notFound');
-
-// Import route files
-const authRoutes = require('./api/auth.routes');
-const inventoryRoutes = require('./api/routes/inventory');
 
 const app = express();
 
@@ -122,16 +124,19 @@ app.get('/', (req, res) => {
     documentation: '/api/health',
     endpoints: {
       auth: '/api/auth',
-      inventory: '/api/inventory'
+      inventory: '/api/inventory',
+      donations: '/api/donations'
     }
   });
 });
 
-// API Routes
+// API Routes - Combined from both versions
+app.use('/api', apiRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/donations', donationRoutes);
 
-// API Health endpoint
+// API Health endpoint - Enhanced version
 app.get('/api/health', async (req, res) => {
   try {
     // Check database connection
@@ -144,17 +149,20 @@ app.get('/api/health', async (req, res) => {
       database: {
         type: 'MongoDB',
         status: dbStatus,
-        name: mongoose.connection.name
+        name: mongoose.connection.name || 'bytebasket'
       },
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      service: 'ByteBasket API',
+      version: '1.0.0'
     });
   } catch (error) {
     res.status(500).json({
       status: 'ERROR',
       message: 'Health check failed',
-      error: error.message
+      error: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 });

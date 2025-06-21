@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
+import DonatePage from './pages/DonatePage';
+import FoodbankPage from './pages/FoodBankManagerPage';
+import InventoryPage from './pages/InventoryManagement';
+import AdminPage from './pages/AdminDashboard';
 import Footer from './components/layout/Footer';
 
 const App = () => {
@@ -16,6 +20,14 @@ const App = () => {
         return <HomePage onNavigate={navigate} />;
       case 'signup':
         return <SignUpPage onNavigate={navigate} />;
+      case 'donate':
+        return <DonatePage onNavigate={navigate} />;
+      case 'inventory':
+        return <InventoryPage onNavigate={navigate} />;
+      case 'foodbank':
+        return <FoodbankPage onNavigate={navigate} />;
+      case 'admin':
+        return <AdminPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
