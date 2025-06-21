@@ -1,50 +1,46 @@
-// frontend/src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import InventoryManagement from './pages/InventoryManagement';
-import Login from './pages/Login';
-import ConnectionTest from './components/ConnectionTest';
-import ProtectedRoute from './components/ProtectedRoute';
-import authService from './services/authService';
+import React, { useState } from 'react';
+import HomePage from './pages/HomePage';
+import SignUpPage from './pages/SignUpPage';
+import DonatePage from './pages/DonatePage';
+import FoodbankPage from './pages/FoodBankManagerPage';
+import InventoryPage from './pages/InventoryManagement';
+import AdminPage from './pages/AdminDashboard';
+import Footer from './components/layout/Footer';
 
-function App() {
+const App = () => {
+  const [currentPage, setCurrentPage] = useState('home');
+  
+  const navigate = (page) => {
+    setCurrentPage(page);
+  };
+  
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={navigate} />;
+      case 'signup':
+        return <SignUpPage onNavigate={navigate} />;
+      case 'donate':
+        return <DonatePage onNavigate={navigate} />;
+      case 'inventory':
+        return <InventoryPage onNavigate={navigate} />;
+      case 'foodbank':
+        return <FoodbankPage onNavigate={navigate} />;
+      case 'admin':
+        return <AdminPage onNavigate={navigate} />;
+      default:
+        return <HomePage onNavigate={navigate} />;
+    }
+  };
+  
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/test-connection" element={<ConnectionTest />} />
-          
-          {/* Protected routes */}
-          <Route 
-            path="/inventory" 
-            element={
-              <ProtectedRoute>
-                <InventoryManagement />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Default route */}
-          <Route 
-            path="/" 
-            element={
-              authService.isAuthenticated() 
-                ? <Navigate to="/inventory" replace /> 
-                : <Navigate to="/login" replace />
-            } 
-          />
-          
-          {/* Catch all route */}
-          <Route 
-            path="*" 
-            element={<Navigate to="/" replace />} 
-          />
-        </Routes>
+    <div className="App min-h-screen flex flex-col">
+      <div className="flex-grow">
+        {renderPage()}
       </div>
-    </Router>
+      <Footer />
+    </div>
   );
-}
+};
 
 export default App;
