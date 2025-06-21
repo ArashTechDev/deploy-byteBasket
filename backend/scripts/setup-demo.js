@@ -1,5 +1,6 @@
 /* eslint-disable linebreak-style */
-// backend/scripts/setupDemo.js
+// backend/scripts/setup-demo.js
+require('dotenv').config(); // Load environment variables from .env file
 const mongoose = require('mongoose');
 const FoodBank = require('../src/db/models/FoodBank');
 const User = require('../src/db/models/User');
@@ -7,66 +8,41 @@ const Inventory = require('../src/db/models/Inventory');
 
 const setupDemo = async () => {
   try {
-    const mongoUri = 'mongodb+srv://yasharth77:1T8jOyEr3CzSSdKr@cluster0.eabzdc3.mongodb.net/ByteBasket?retryWrites=true&w=majority&appName=Cluster0';
+    // Use environment variable instead of hardcoded connection string
+    const mongoUri = process.env.MONGO_URI;
+    
+    if (!mongoUri) {
+      console.error('❌ MONGO_URI not found in environment variables');
+      console.error('   Please create a .env file based on .env.example');
+      console.error('   Make sure MONGO_URI is properly set in your .env file');
+      process.exit(1);
+    }
     
     console.log('🚀 Setting up demo data...');
     console.log('🔗 Using MongoDB URI: Atlas Connection');
     
-    await mongoose.connect(mongoUri);
+    // Connect with proper options
+    await mongoose.connect(mongoUri, {
+      dbName: process.env.MONGO_DB_NAME || 'ByteBasket',
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    
     console.log(`✅ MongoDB connected successfully to ${mongoose.connection.name}`);
     console.log(`🔗 Connection string: ${mongoUri.split('@')[0]}@***`);
     
-    // 🔧 FIX INDEXES FIRST - before clearing data
-    console.log('\n🔧 Setting up proper indexes...');
-    try {
-      const inventoryCollection = mongoose.connection.db.collection('inventory');
-      
-      // Drop any existing problematic barcode indexes
-      try {
-        const indexes = await inventoryCollection.indexes();
-        const barcodeIndexes = indexes.filter(idx => 
-          idx.name.includes('barcode') && 
-          idx.name !== '_id_' && 
-          !idx.name.includes('partial_unique')
-        );
-        
-        for (const idx of barcodeIndexes) {
-          await inventoryCollection.dropIndex(idx.name);
-          console.log(`✅ Dropped old index: ${idx.name}`);
-        }
-      } catch (error) {
-        console.log('ℹ️ No old barcode indexes to drop');
-      }
+    // Clear existing demo data
+    console.log('\n🧹 Clearing existing demo data...');
+    await User.deleteMany({ email: { $regex: '@demo.com$' } });
+    await FoodBank.deleteMany({ name: { $in: ['Downtown Food Bank', 'Community Care Center'] } });
+    await Inventory.deleteMany({});
+    
+    // Skip index setup for now to avoid compatibility issues
+    console.log('\n🔧 Skipping index setup (will be handled by model definitions)...');
 
-      // Create proper partial index for barcodes
-      await inventoryCollection.createIndex(
-        { barcode: 1, foodbank_id: 1 }, 
-        { 
-          unique: true,
-          partialFilterExpression: { 
-            // eslint-disable-next-line no-dupe-keys
-            barcode: { $exists: true, $ne: null, $ne: '' } 
-          },
-          name: 'barcode_foodbank_partial_unique'
-        }
-      );
-      console.log('✅ Created proper barcode partial index');
-      
-    } catch (error) {
-      console.log('⚠️ Index setup warning:', error.message);
-    }
-
-    // Clear existing data
-    console.log('\n🗑️ Clearing existing data...');
-    await Promise.all([
-      Inventory.deleteMany({}),
-      FoodBank.deleteMany({}),
-      User.deleteMany({})
-    ]);
-    console.log('✅ Cleared existing data');
-
-    // Create sample food banks
-    console.log('\n🏢 Creating sample food banks...');
+    // Create demo food banks first (needed for user foodbank_id references)
+    console.log('\n🏢 Creating demo food banks...');
     const foodBanks = await FoodBank.create([
       {
         name: 'Downtown Food Bank',
@@ -74,117 +50,112 @@ const setupDemo = async () => {
           address: '123 Main Street',
           city: 'Toronto',
           province: 'Ontario',
-          postal_code: 'M5V 3A1',
+          postal_code: 'M5V 1A1',
           coordinates: { lat: 43.6426, lng: -79.3871 }
         },
         contact: {
-          phone: '(416) 555-0123',
-          email: 'info@downtownfoodbank.org',
+          phone: '+1416555001',
+          email: 'contact@downtownfoodbank.org',
           website: 'https://downtownfoodbank.org'
         },
-        capacity: 1500,
+        capacity: 500,
+        current_inventory_count: 0,
         operating_hours: {
           monday: { open: '09:00', close: '17:00' },
           tuesday: { open: '09:00', close: '17:00' },
           wednesday: { open: '09:00', close: '17:00' },
           thursday: { open: '09:00', close: '17:00' },
           friday: { open: '09:00', close: '17:00' },
-          saturday: { open: '10:00', close: '15:00' },
+          saturday: { open: '10:00', close: '14:00' },
           sunday: { open: 'closed', close: 'closed' }
-        }
+        },
+        status: 'active'
       },
       {
         name: 'Community Care Center',
         location: {
-          address: '456 Queen Street West',
+          address: '456 Oak Avenue',
           city: 'Toronto',
           province: 'Ontario',
-          postal_code: 'M5V 2A2',
+          postal_code: 'M4K 2L8',
           coordinates: { lat: 43.6433, lng: -79.4000 }
         },
         contact: {
-          phone: '(416) 555-0456',
-          email: 'contact@communitycare.org'
+          phone: '+1416555002',
+          email: 'help@communitycare.org'
         },
-        capacity: 1200,
+        capacity: 300,
+        current_inventory_count: 0,
         operating_hours: {
           monday: { open: '08:00', close: '18:00' },
           tuesday: { open: '08:00', close: '18:00' },
           wednesday: { open: '08:00', close: '18:00' },
           thursday: { open: '08:00', close: '18:00' },
           friday: { open: '08:00', close: '18:00' },
-          saturday: { open: '09:00', close: '16:00' },
-          sunday: { open: '10:00', close: '14:00' }
-        }
+          saturday: { open: '09:00', close: '15:00' },
+          sunday: { open: 'closed', close: 'closed' }
+        },
+        status: 'active'
       }
     ]);
-    console.log('✅ Created sample food banks');
+    
+    console.log(`✅ Created ${foodBanks.length} demo food banks`);
 
-    // Create sample users
-    console.log('\n👥 Creating sample users...');
+    // Now create demo users (User model will hash passwords automatically)
+    console.log('\n👥 Creating demo users...');
+    
     const users = await User.create([
       {
-        name: 'Admin User',
+        name: 'Demo Administrator',
         email: 'admin@demo.com',
-        password: 'demo123',
+        password: 'demo123', // Will be hashed by pre-save middleware
         role: 'admin',
-        foodbank_id: foodBanks[0]._id
+        foodbank_id: foodBanks[0]._id, // Required for admin role
+        isActive: true,
+        isVerified: true
       },
       {
-        name: 'Staff Member',
-        email: 'staff@demo.com', 
-        password: 'demo123',
+        name: 'Demo Staff Member',
+        email: 'staff@demo.com',
+        password: 'demo123', // Will be hashed by pre-save middleware
         role: 'staff',
-        foodbank_id: foodBanks[0]._id
+        foodbank_id: foodBanks[1]._id, // Required for staff role
+        isActive: true,
+        isVerified: true
       },
       {
-        name: 'Donor User',
+        name: 'Demo Donor',
         email: 'donor@demo.com',
-        password: 'demo123', 
-        role: 'donor'
+        password: 'demo123', // Will be hashed by pre-save middleware
+        role: 'donor',
+        // foodbank_id not required for donor role
+        isActive: true,
+        isVerified: true
       }
     ]);
-    console.log('✅ Created sample users');
+    
+    console.log(`✅ Created ${users.length} demo users`);
 
-    // Create sample inventory items (with proper null barcode handling)
+    // Update food banks with manager IDs
+    console.log('\n🔄 Updating food bank managers...');
+    await FoodBank.findByIdAndUpdate(foodBanks[0]._id, { manager_id: users[0]._id });
+    await FoodBank.findByIdAndUpdate(foodBanks[1]._id, { manager_id: users[1]._id });
+
+    // Create sample inventory items
     console.log('\n📦 Creating sample inventory items...');
     const inventoryItems = [
       {
         foodbank_id: foodBanks[0]._id,
-        item_name: 'Canned Beans (Black)',
+        item_name: 'Canned Beans',
         category: 'Canned Goods',
-        quantity: 50,
-        minimum_stock_level: 20,
+        quantity: 5, // Low stock to trigger alert
+        minimum_stock_level: 10,
         unit: 'cans',
         expiration_date: new Date('2025-12-31'),
         storage_location: 'Aisle 1, Shelf A',
         dietary_category: 'Vegan',
-        // barcode: null (let it default to null)
+        barcode: 'DEMO001',
         created_by: users[0]._id
-      },
-      {
-        foodbank_id: foodBanks[0]._id,
-        item_name: 'Rice (Brown, 1kg)',
-        category: 'Grains',
-        quantity: 8, // Low stock item
-        minimum_stock_level: 15,
-        unit: 'bags',
-        storage_location: 'Aisle 2, Shelf C',
-        dietary_category: 'Vegan',
-        barcode: 'DEMO001', // This one has a barcode
-        created_by: users[1]._id
-      },
-      {
-        foodbank_id: foodBanks[0]._id,
-        item_name: 'Bread (Whole Wheat)',
-        category: 'Bakery',
-        quantity: 15,
-        minimum_stock_level: 5,
-        unit: 'loaves',
-        expiration_date: new Date('2025-06-25'), // Expiring soon
-        storage_location: 'Bread Section',
-        // barcode: null (let it default to null)
-        created_by: users[1]._id
       },
       {
         foodbank_id: foodBanks[0]._id,
@@ -196,7 +167,7 @@ const setupDemo = async () => {
         expiration_date: new Date('2025-06-30'),
         storage_location: 'Refrigerator A',
         dietary_category: 'Vegetarian',
-        barcode: 'DEMO002', // This one has a barcode
+        barcode: 'DEMO002',
         created_by: users[0]._id
       },
       {
@@ -208,7 +179,6 @@ const setupDemo = async () => {
         unit: 'boxes',
         storage_location: 'Dry Goods',
         dietary_category: 'Vegan',
-        // barcode: null (let it default to null)
         created_by: users[0]._id
       },
       {
@@ -221,7 +191,6 @@ const setupDemo = async () => {
         expiration_date: new Date('2026-01-15'),
         storage_location: 'Aisle 1, Shelf B',
         dietary_category: 'Vegan',
-        // barcode: null (let it default to null)
         created_by: users[0]._id
       }
     ];
@@ -260,6 +229,16 @@ const setupDemo = async () => {
   } catch (error) {
     console.error('❌ Demo setup failed:', error);
     console.error('Error details:', error.message);
+    
+    // Provide specific error guidance
+    if (error.message.includes('authentication') || error.message.includes('bad auth')) {
+      console.error('\n🔑 Authentication Error - Possible solutions:');
+      console.error('   1. Check your MongoDB Atlas username and password in .env');
+      console.error('   2. Verify your MongoDB Atlas cluster is running');
+      console.error('   3. Check if your IP address is whitelisted in MongoDB Atlas');
+      console.error('   4. Ensure your MongoDB Atlas user has proper permissions');
+    }
+    
     process.exit(1);
   } finally {
     await mongoose.connection.close();
