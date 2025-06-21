@@ -1,9 +1,11 @@
 // frontend/src/pages/Login.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import authService from '../services/authService';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -11,6 +13,13 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/inventory', { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,8 +34,8 @@ const Login = () => {
 
     try {
       await authService.login(credentials);
-      // Redirect to inventory page after successful login
-      window.location.href = '/inventory';
+      // Use React Router navigation instead of window.location.href
+      navigate('/inventory', { replace: true });
     } catch (error) {
       setError(error.message);
     } finally {
@@ -92,36 +101,16 @@ const Login = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-gray-400" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
+                    <Eye className="h-4 w-4 text-gray-400" />
                   )}
                 </button>
               </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                Forgot your password?
-              </a>
             </div>
           </div>
 
@@ -164,7 +153,7 @@ const Login = () => {
                 // Store a dummy token for testing
                 localStorage.setItem('authToken', 'dummy-token-for-testing');
                 localStorage.setItem('user', JSON.stringify({ email: 'test@example.com', role: 'admin' }));
-                window.location.href = '/inventory';
+                navigate('/inventory', { replace: true });
               }}
               className="text-xs px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
             >
