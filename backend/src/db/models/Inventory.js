@@ -14,7 +14,7 @@ const dietaryCategoryEnum = [
 const inventorySchema = new mongoose.Schema({
   foodbank_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Foodbank',
+    ref: 'FoodBank', // FIXED: Changed from 'Foodbank' to 'FoodBank'
     required: true,
     index: true
   },
@@ -109,7 +109,7 @@ inventorySchema.index({ foodbank_id: 1, low_stock: 1 });
 inventorySchema.index({ expiration_date: 1, quantity: 1 });
 inventorySchema.index({ item_name: 'text', category: 'text' });
 
-// 🔧 UPDATED: Unique barcode per foodbank with PARTIAL INDEX (better than sparse for nulls)
+// Unique barcode per foodbank with PARTIAL INDEX (better than sparse for nulls)
 inventorySchema.index(
   { barcode: 1, foodbank_id: 1 }, 
   { 
