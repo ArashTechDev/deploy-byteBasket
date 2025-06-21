@@ -1,95 +1,225 @@
-// backend/src/db/models/users/User.js
+/* eslint-disable linebreak-style */
+// backend/scripts/setup-demo.js
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') }); // Fixed path to .env
 const mongoose = require('mongoose');
+
+const { connectMongoDB } = require('../src/config/mongodb');
+const FoodBank = require('../src/db/models/FoodBank');
+const User = require('../src/db/models/User');
+// FIXED: Updated path to match your new structure
+const Inventory = require('../src/models/Inventory');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please provide your name'],
-    trim: true,
-    maxlength: [50, 'Name cannot be more than 50 characters']
-  },
-  email: {
-    type: String,
-    required: [true, 'Please provide your email'],
-    unique: true,
-    lowercase: true,
-    match: [
-      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email'
-    ]
-  },
-  password: {
-    type: String,
-    required: [true, 'Please provide a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false
-  },
-  role: {
-    type: String,
-    enum: ['admin', 'staff', 'volunteer', 'donor'],
-    default: 'donor'
-  },
-  foodbank_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FoodBank',
-    required: function() {
-      return ['admin', 'staff'].includes(this.role);
+const setupDemo = async () => {
+  try {
+    console.log('🚀 Setting up demo data...');
+    console.log('🔗 Using MongoDB URI:', process.env.MONGO_URI ? 'Atlas Connection' : 'Local Connection');
+    
+    // Connect to MongoDB
+    await connectMongoDB();
+    
+    // Clear existing data (for demo purposes)
+    console.log('🗑️  Clearing existing data...');
+    await Promise.all([
+      FoodBank.deleteMany({}),
+      User.deleteMany({}),
+      Inventory.deleteMany({})
+    ]);
+    
+    console.log('✅ Cleared existing data');
+    
+    // Create sample food banks
+    console.log('🏢 Creating sample food banks...');
+    const foodBanks = await FoodBank.create([
+      {
+        name: 'Downtown Food Bank',
+        location: {
+          address: '123 Main Street',
+          city: 'Toronto',
+          province: 'Ontario',
+          postal_code: 'M5V 1A1',
+          coordinates: { lat: 43.6426, lng: -79.3871 }
+        },
+        contact: {
+          phone: '416-555-0001',
+          email: 'info@downtownfoodbank.org'
+        },
+        operating_hours: {
+          monday: { open: '09:00', close: '17:00' },
+          tuesday: { open: '09:00', close: '17:00' },
+          wednesday: { open: '09:00', close: '17:00' },
+          thursday: { open: '09:00', close: '17:00' },
+          friday: { open: '09:00', close: '17:00' },
+          saturday: { open: '10:00', close: '15:00' },
+          sunday: { open: 'closed', close: 'closed' }
+        }
+      },
+      {
+        name: 'Community Care Center',
+        location: {
+          address: '456 Oak Avenue',
+          city: 'Toronto',
+          province: 'Ontario',
+          postal_code: 'M4E 2B8',
+          coordinates: { lat: 43.6532, lng: -79.3832 }
+        },
+        contact: {
+          phone: '416-555-0002',
+          email: 'help@communitycare.org'
+        }
+      }
+    ]);
+    
+    console.log('✅ Created sample food banks');
+    
+    // Create sample users
+    console.log('👥 Creating sample users...');
+    const hashedPassword = await bcrypt.hash('demo123', 12);
+    
+    const users = await User.create([
+      {
+        name: 'Admin User',
+        email: 'admin@demo.com',
+        password: hashedPassword,
+        role: 'admin',
+        foodbank_id: foodBanks[0]._id,
+        isVerified: true
+      },
+      {
+        name: 'Staff Member',
+        email: 'staff@demo.com',
+        password: hashedPassword,
+        role: 'staff',
+        foodbank_id: foodBanks[0]._id,
+        isVerified: true
+      },
+      {
+        name: 'John Donor',
+        email: 'donor@demo.com',
+        password: hashedPassword,
+        role: 'donor',
+        isVerified: true
+      }
+    ]);
+    
+    console.log('✅ Created sample users');
+    
+    // Create sample inventory items (WITHOUT barcodes to avoid index issues)
+    console.log('📦 Creating sample inventory items...');
+    const inventoryItems = [
+      {
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Canned Tomatoes',
+        category: 'Canned Goods',
+        quantity: 50,
+        minimum_stock_level: 10,
+        unit: 'cans',
+        expiration_date: new Date('2025-12-31'),
+        storage_location: 'Shelf A1',
+        dietary_category: 'Vegan',
+        created_by: users[0]._id
+      },
+      {
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Rice (White)',
+        category: 'Grains',
+        quantity: 25,
+        minimum_stock_level: 15,
+        unit: 'kg',
+        storage_location: 'Storage Room B',
+        dietary_category: 'Vegan',
+        created_by: users[0]._id
+      },
+      {
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Chicken Breast (Frozen)',
+        category: 'Meat',
+        quantity: 8, // Low stock for demo
+        minimum_stock_level: 10,
+        unit: 'packages',
+        expiration_date: new Date('2025-08-15'),
+        storage_location: 'Freezer C',
+        created_by: users[1]._id
+      },
+      {
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Bread (Whole Wheat)',
+        category: 'Bakery',
+        quantity: 15,
+        minimum_stock_level: 5,
+        unit: 'loaves',
+        expiration_date: new Date('2025-06-25'), // Expiring soon
+        storage_location: 'Bread Section',
+        created_by: users[1]._id
+      },
+      {
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Milk (2%)',
+        category: 'Dairy',
+        quantity: 12,
+        minimum_stock_level: 8,
+        unit: 'cartons',
+        expiration_date: new Date('2025-06-30'),
+        storage_location: 'Refrigerator A',
+        dietary_category: 'Vegetarian',
+        created_by: users[0]._id
+      },
+      {
+        foodbank_id: foodBanks[1]._id,
+        item_name: 'Pasta (Whole Grain)',
+        category: 'Grains',
+        quantity: 30,
+        minimum_stock_level: 10,
+        unit: 'boxes',
+        storage_location: 'Dry Goods',
+        dietary_category: 'Vegan',
+        created_by: users[0]._id
+      }
+    ];
+    
+    // Insert items one by one to handle any barcode index issues
+    console.log('📦 Inserting inventory items...');
+    for (let i = 0; i < inventoryItems.length; i++) {
+      try {
+        await Inventory.create(inventoryItems[i]);
+        console.log(`✅ Created item ${i + 1}: ${inventoryItems[i].item_name}`);
+      } catch (error) {
+        console.log(`⚠️ Skipped item ${i + 1} (${inventoryItems[i].item_name}): ${error.message}`);
+      }
     }
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  verificationToken: String,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  lastLogin: Date
-}, {
-  timestamps: true
-});
-
-// Create only necessary indexes (no duplicates)
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ role: 1 });
-userSchema.index({ foodbank_id: 1 });
-
-// Virtual for ID
-userSchema.virtual('id').get(function() {
-  return this._id.toHexString();
-});
-
-// Ensure virtual fields are serialised and exclude sensitive data
-userSchema.set('toJSON', {
-  virtuals: true,
-  transform: function(doc, ret) {
-    delete ret.password;
-    delete ret.__v;
-    delete ret.verificationToken;
-    delete ret.passwordResetToken;
-    delete ret.passwordResetExpires;
-    return ret;
+    
+    // Update food bank inventory counts
+    console.log('📊 Updating food bank statistics...');
+    for (const foodBank of foodBanks) {
+      const count = await Inventory.countDocuments({ foodbank_id: foodBank._id });
+      await FoodBank.findByIdAndUpdate(foodBank._id, { current_inventory_count: count });
+    }
+    
+    console.log('✅ Demo setup completed successfully!');
+    console.log('\n📋 Demo Login Credentials:');
+    console.log('Admin: admin@demo.com / demo123');
+    console.log('Staff: staff@demo.com / demo123');
+    console.log('Donor: donor@demo.com / demo123');
+    console.log('\n🏢 Food Banks Created:');
+    console.log('- Downtown Food Bank (Toronto)');
+    console.log('- Community Care Center (Toronto)');
+    console.log('\n📦 Sample Inventory Items: 6 items created');
+    console.log('- Including low stock items and expiring items for demo');
+    
+  } catch (error) {
+    console.error('❌ Demo setup failed:', error);
+    console.error('Error details:', error.message);
+  } finally {
+    await mongoose.connection.close();
+    console.log('🔒 Database connection closed');
+    process.exit(0);
   }
-});
-
-// Pre-save middleware to hash password
-userSchema.pre('save', async function(next) {
-  // Only run this function if password was actually modified
-  if (!this.isModified('password')) return next();
-
-  // Hash the password with cost of 12
-  this.password = await bcrypt.hash(this.password, 12);
-
-  next();
-});
-
-// Instance method to check password
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-module.exports = mongoose.model('User', userSchema);
+// Run setup if called directly
+if (require.main === module) {
+  setupDemo();
+}
+
+module.exports = setupDemo;

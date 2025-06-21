@@ -1,7 +1,8 @@
+/* eslint-disable no-unused-vars */
 // backend/src/api/routes/inventory.js  
 const express = require('express');
 const router = express.Router();
-const Inventory = require('../../db/models/inventory/Inventory');
+const Inventory = require('../../db/models/Inventory');
 const { authenticate, authorize } = require('../../middleware/auth');
 const { authMiddleware, requireRole } = require('../../middleware/authMiddleware'); // Use existing middleware
 const { catchAsync } = require('../../utils/errors');

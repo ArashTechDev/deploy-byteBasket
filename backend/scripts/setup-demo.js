@@ -5,9 +5,9 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') }); // Fixed pa
 const mongoose = require('mongoose');
 
 const { connectMongoDB } = require('../src/config/mongodb');
-const FoodBank = require('../src/db/models/foodbanks/FoodBank');
-const User = require('../src/db/models/users/User');
-const Inventory = require('../src/db/models/inventory/Inventory');
+const FoodBank = require('../src/db/models/FoodBank');
+const User = require('../src/db/models/User');
+const Inventory = require('../src/db/models/Inventory');
 const bcrypt = require('bcryptjs');
 
 const setupDemo = async () => {

@@ -1,90 +1,167 @@
 // backend/src/controllers/auth.controller.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { AppError, catchAsync } = require('../utils/errors');
-const User = require('../db/models/User');
+
+// Try to import User model from different possible paths
+let User;
+try {
+  User = require('../db/models/User');
+} catch (e1) {
+  try {
+    User = require('../models/User');
+  } catch (e2) {
+    try {
+      User = require('../models/User.model');
+    } catch (e3) {
+      console.error('Could not find User model. Please check the path.');
+    }
+  }
+}
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback-secret', {
+    expiresIn: '7d',
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
-  const token = generateToken(user._id);
-  
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  };
-  
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+const register = async (req, res) => {
+  try {
+    const { name, email, password, role = 'donor' } = req.body;
 
-  res.cookie('jwt', token, cookieOptions);
+    // Validation
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide name, email and password'
+      });
+    }
 
-  // Remove password from output
-  user.password = undefined;
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
 
-  res.status(statusCode).json({
-    success: true,
-    token,
-    data: {
-      user,
-    },
-  });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
+
+    // Generate token
+    const token = generateToken(newUser._id);
+
+    // Remove password from response
+    const userResponse = {
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      token,
+      data: {
+        user: userResponse
+      }
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
 };
 
-const register = catchAsync(async (req, res, next) => {
-  const { name, email, password, role = 'donor' } = req.body;
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  // Check if user exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return next(new AppError('User already exists with this email', 400));
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findOne({ email }).select('+password');
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect email or password'
+      });
+    }
+
+    // Check password
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordCorrect) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect email or password'
+      });
+    }
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    // Remove password from response
+    const userResponse = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      data: {
+        user: userResponse
+      }
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
+};
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 12);
-
-  // Create user
-  const newUser = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role,
-  });
-
-  createSendToken(newUser, 201, res);
-});
-
-const login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  // Check if email and password exist
-  if (!email || !password) {
-    return next(new AppError('Please provide email and password!', 400));
+const logout = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during logout'
+    });
   }
-
-  // Check if user exists && password is correct
-  const user = await User.findOne({ email }).select('+password');
-
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return next(new AppError('Incorrect email or password', 401));
-  }
-
-  // If everything ok, send token to client
-  createSendToken(user, 200, res);
-});
-
-const logout = catchAsync(async (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
-  res.status(200).json({ success: true, message: 'Logged out successfully' });
-});
+};
 
 module.exports = {
   register,

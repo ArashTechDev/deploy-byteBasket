@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 // tests/inventory.integration.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
@@ -21,8 +22,8 @@ describe('Inventory API Integration Tests', () => {
     });
 
     // Import models and app after connection
-    Inventory = require('../src/db/models/inventory/Inventory');
-    Foodbank = require('../src/db/models/foodbanks/Foodbank');
+    Inventory = require('../src/db/models/Inventory');
+    Foodbank = require('../src/db/models/Foodbank');
     
     // Create express app for testing
     const express = require('express');
