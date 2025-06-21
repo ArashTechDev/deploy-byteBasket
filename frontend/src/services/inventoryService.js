@@ -1,7 +1,25 @@
 // frontend/src/services/inventoryService.js
 class InventoryService {
   constructor() {
-    this.baseURL = '/api/inventory';
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+    this.inventoryEndpoint = `${this.baseURL}/inventory`;
+  }
+
+  // Get auth token from localStorage or context
+  getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  }
+
+  async handleResponse(response) {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
   }
 
   async getAll(filters = {}) {
@@ -12,93 +30,108 @@ class InventoryService {
       }
     });
 
-    const response = await fetch(`${this.baseURL}?${params}`);
-    if (!response.ok) throw new Error('Failed to fetch inventory');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}?${params}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return {
+      items: data.data || [],
+      pagination: data.pagination || {}
+    };
   }
 
   async getById(id) {
-    const response = await fetch(`${this.baseURL}/${id}`);
-    if (!response.ok) throw new Error('Failed to fetch inventory item');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return data.data;
   }
 
-  async create(data) {
-    const response = await fetch(this.baseURL, {
+  async create(itemData) {
+    const response = await fetch(this.inventoryEndpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(itemData)
     });
-    if (!response.ok) throw new Error('Failed to create inventory item');
-    return response.json();
+    
+    const data = await this.handleResponse(response);
+    return data.data;
   }
 
-  async update(id, data) {
-    const response = await fetch(`${this.baseURL}/${id}`, {
+  async update(id, itemData) {
+    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(itemData)
     });
-    if (!response.ok) throw new Error('Failed to update inventory item');
-    return response.json();
+    
+    const data = await this.handleResponse(response);
+    return data.data;
   }
 
   async delete(id) {
-    const response = await fetch(`${this.baseURL}/${id}`, {
-      method: 'DELETE'
+    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Failed to delete inventory item');
-    return response.json();
+    
+    return this.handleResponse(response);
   }
 
   async getLowStockAlerts() {
-    const response = await fetch(`${this.baseURL}/alerts/low-stock`);
-    if (!response.ok) throw new Error('Failed to fetch low stock alerts');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}/alerts/low-stock`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return data.data || [];
   }
 
   async getExpiringAlerts(days = 7) {
-    const response = await fetch(`${this.baseURL}/alerts/expiring?days=${days}`);
-    if (!response.ok) throw new Error('Failed to fetch expiring alerts');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}/alerts/expiring?days=${days}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return data.data || [];
   }
 
   async getCategories() {
-    const response = await fetch(`${this.baseURL}/meta/categories`);
-    if (!response.ok) throw new Error('Failed to fetch categories');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}/meta/categories`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return data.data || [];
   }
 
   async getDietaryCategories() {
-    const response = await fetch(`${this.baseURL}/meta/dietary-categories`);
-    if (!response.ok) throw new Error('Failed to fetch dietary categories');
-    return response.json();
+    const response = await fetch(`${this.inventoryEndpoint}/meta/dietary-categories`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
+    });
+    
+    const data = await this.handleResponse(response);
+    return data.data || [];
   }
 
-  async export(filters = {}, format = 'csv') {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== '' && value !== false && value !== null && value !== undefined) {
-        params.append(key, value);
-      }
+  async getStats() {
+    const response = await fetch(`${this.inventoryEndpoint}/stats`, {
+      method: 'GET',
+      headers: this.getAuthHeaders()
     });
-    params.append('export_format', format);
-
-    const response = await fetch(`${this.baseURL}?${params}`);
-    if (!response.ok) throw new Error('Failed to export data');
     
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `inventory.${format}`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    const data = await this.handleResponse(response);
+    return data.data || {};
   }
 }
 
-// Create instance and export it
-const inventoryService = new InventoryService();
-export default inventoryService;
+export default new InventoryService();

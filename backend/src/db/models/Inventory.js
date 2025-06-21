@@ -1,7 +1,7 @@
-// backend/src/db/models/inventory/Inventory.js (UPDATED TO MATCH YOUR COLLECTION SCHEMA)
+// backend/src/db/models/Inventory.js 
 const mongoose = require('mongoose');
 
-// Define the dietary category enum - MATCHING your existing collection exactly
+// Define the dietary category enum 
 const dietaryCategoryEnum = [
   'Vegan',
   'Vegetarian', 
@@ -109,10 +109,17 @@ inventorySchema.index({ foodbank_id: 1, low_stock: 1 });
 inventorySchema.index({ expiration_date: 1, quantity: 1 });
 inventorySchema.index({ item_name: 'text', category: 'text' });
 
-// Unique barcode per foodbank (sparse allows nulls)
+// 🔧 UPDATED: Unique barcode per foodbank with PARTIAL INDEX (better than sparse for nulls)
 inventorySchema.index(
   { barcode: 1, foodbank_id: 1 }, 
-  { unique: true, sparse: true }
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      // eslint-disable-next-line no-dupe-keys
+      barcode: { $exists: true, $ne: null, $ne: '' } 
+    },
+    name: 'barcode_foodbank_partial_unique'
+  }
 );
 
 // Virtual for checking if item is expiring soon
@@ -152,62 +159,32 @@ inventorySchema.pre(['updateOne', 'findOneAndUpdate'], function(next) {
 });
 
 // Static methods for common queries
-inventorySchema.statics.findLowStock = function(foodbankId = null) {
-  const query = { low_stock: true };
-  if (foodbankId) query.foodbank_id = foodbankId;
-  return this.find(query).populate('foodbank_id', 'name').sort({ quantity: 1 });
+inventorySchema.statics.findLowStock = function(foodbank_id) {
+  return this.find({ foodbank_id, low_stock: true });
 };
 
-inventorySchema.statics.findExpiringSoon = function(days = 7, foodbankId = null) {
+inventorySchema.statics.findExpiringSoon = function(foodbank_id, days = 7) {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + days);
-  
-  const query = {
-    expiration_date: {
-      $gte: new Date(),
-      $lte: futureDate
-    }
-  };
-  
-  if (foodbankId) query.foodbank_id = foodbankId;
-  
-  return this.find(query)
-    .populate('foodbank_id', 'name')
-    .sort({ expiration_date: 1 });
+  return this.find({
+    foodbank_id,
+    expiration_date: { $lte: futureDate, $gte: new Date() }
+  });
 };
 
-inventorySchema.statics.searchItems = function(searchTerm, filters = {}) {
-  const query = {
-    $text: { $search: searchTerm }
-  };
-  
-  // Apply additional filters
-  Object.keys(filters).forEach(key => {
-    if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
-      query[key] = filters[key];
-    }
-  });
-  
-  return this.find(query, { score: { $meta: 'textScore' } })
-    .sort({ score: { $meta: 'textScore' } })
-    .populate('foodbank_id', 'name');
+inventorySchema.statics.findByCategory = function(foodbank_id, category) {
+  return this.find({ foodbank_id, category });
 };
 
 // Instance methods
-inventorySchema.methods.updateQuantity = function(newQuantity, userId = null) {
+inventorySchema.methods.updateStock = function(newQuantity, updatedBy = null) {
   this.quantity = newQuantity;
   this.low_stock = newQuantity <= this.minimum_stock_level;
-  if (userId) this.updated_by = userId;
+  this.last_updated = new Date();
+  if (updatedBy) {
+    this.updated_by = updatedBy;
+  }
   return this.save();
 };
-
-inventorySchema.methods.adjustQuantity = function(adjustment, userId = null) {
-  const newQuantity = Math.max(0, this.quantity + adjustment);
-  return this.updateQuantity(newQuantity, userId);
-};
-
-// Ensure virtuals are included in JSON output
-inventorySchema.set('toJSON', { virtuals: true });
-inventorySchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Inventory', inventorySchema);
