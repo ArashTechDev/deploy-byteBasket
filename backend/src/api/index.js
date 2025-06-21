@@ -12,7 +12,7 @@ const donationRoutes = require('../routes/donation.routes');
 // Use routes
 router.use('/foodbanks', foodbankRoutes);
 router.use('/inventory', inventoryRoutes);
-router.use('/storage-locations', storageLocationRoutes);
+router.use('/storage', storageLocationRoutes);
 router.use('/donations', donationRoutes);
 
 // Health check
