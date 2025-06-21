@@ -53,3 +53,4 @@ Thumbs.db
 # Ignore Templates and Documentation folders
 Templates/
 Documentation/
+.vercel
