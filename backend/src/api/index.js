@@ -8,6 +8,9 @@ const storageLocationRoutes = require('./storageLocations');
 const authRoutes = require('./auth.routes');
 const donationRoutes = require('../routes/donation.routes');
 
+// Middleware to parse JSON bodies
+router.use(express.json());
+
 // Use routes
 router.use('/foodbanks', foodbankRoutes);
 router.use('/inventory', inventoryRoutes);
