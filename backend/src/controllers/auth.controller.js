@@ -1,167 +1,104 @@
 // backend/src/controllers/auth.controller.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-// Try to import User model from different possible paths
-let User;
-try {
-  User = require('../db/models/User');
-} catch (e1) {
-  try {
-    User = require('../models/User');
-  } catch (e2) {
-    try {
-      User = require('../models/User.model');
-    } catch (e3) {
-      console.error('Could not find User model. Please check the path.');
-    }
-  }
-}
+const { AppError, catchAsync } = require('../utils/errors');
+const User = require('../db/models/users/User');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback-secret', {
-    expiresIn: '7d',
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
 
-const register = async (req, res) => {
-  try {
-    const { name, email, password, role = 'donor' } = req.body;
+const createSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+  
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-    // Validation
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    success: true,
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
+const register = async (req, res, next) => {
+  try {
+    let { name, email, password, role = 'donor' } = req.body;
+
     if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide name, email and password'
-      });
+      return next(new AppError('Please provide name, email and password', 400));
     }
 
-    // Check if user exists
+    role = role.toLowerCase();
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists with this email'
-      });
+      return next(new AppError('User already exists with this email', 400));
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create user
+    // Pass plain password here, model pre-save hook will hash it
     const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       role,
     });
 
-    // Generate token
-    const token = generateToken(newUser._id);
-
-    // Remove password from response
-    const userResponse = {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role
-    };
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      token,
-      data: {
-        user: userResponse
-      }
-    });
-
+    createSendToken(newUser, 201, res);
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during registration',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-    });
+    console.error('Register error:', error);
+    next(error);
   }
 };
 
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  console.log(`Login attempt for email: ${email}`);
 
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide email and password'
-      });
-    }
-
-    // Check if user exists
-    const user = await User.findOne({ email }).select('+password');
-    
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Incorrect email or password'
-      });
-    }
-
-    // Check password
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordCorrect) {
-      return res.status(401).json({
-        success: false,
-        message: 'Incorrect email or password'
-      });
-    }
-
-    // Generate token
-    const token = generateToken(user._id);
-
-    // Remove password from response
-    const userResponse = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    };
-
-    res.status(200).json({
-      success: true,
-      message: 'Login successful',
-      token,
-      data: {
-        user: userResponse
-      }
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during login',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-    });
+  if (!email || !password) {
+    console.log('Email or password missing');
+    return next(new AppError('Please provide email and password!', 400));
   }
-};
 
-const logout = async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: 'Logged out successfully'
-    });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during logout'
-    });
+  const user = await User.findOne({ email }).select('+password');
+  if (!user) {
+    console.log('User not found');
+    return next(new AppError('Incorrect email or password', 401));
   }
-};
+
+  const isPasswordCorrect = await user.correctPassword(password, user.password);
+  console.log(`Password match: ${isPasswordCorrect}`);
+
+  if (!isPasswordCorrect) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  createSendToken(user, 200, res);
+});
+
+
+const logout = catchAsync(async (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ success: true, message: 'Logged out successfully' });
+});
 
 module.exports = {
   register,
