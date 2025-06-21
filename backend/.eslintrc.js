@@ -17,6 +17,6 @@ module.exports = {
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
     'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-console': 'off',
   },
 };

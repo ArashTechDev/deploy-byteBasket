@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const FoodBank = require('../models/FoodBank');
-const StorageLocation = require('../models/StorageLocation');
+const FoodBank = require('../db/models/FoodBank');
+const StorageLocation = require('../db/models/StorageLocation');
 const geocodeAddress = require('../utils/geocodeAddress');
 const { validateCreateFoodBank, validateUpdateFoodBank } = require('../middleware/validateFoodBank');
 

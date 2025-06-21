@@ -18,9 +18,15 @@ const SignUpPage = ({ onNavigate }) => {
           
           <div className="bg-gray-600 rounded-lg p-8">
             {!isSignIn ? (
-              <SignUpForm onToggleForm={() => setIsSignIn(true)} />
+              <SignUpForm 
+                onToggleForm={() => setIsSignIn(true)} 
+                onNavigate={onNavigate} 
+              />
             ) : (
-              <SignInForm onToggleForm={() => setIsSignIn(false)} />
+              <SignInForm 
+                onToggleForm={() => setIsSignIn(false)} 
+                onNavigate={onNavigate} 
+              />
             )}
           </div>
         </div>

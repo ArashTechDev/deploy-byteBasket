@@ -1,102 +1,107 @@
-const User = require('../models/User.model');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+// backend/src/controllers/auth.controller.js
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { AppError, catchAsync } = require('../utils/errors');
+const User = require('../db/models/users/User');
 
-// REGISTER FUNCTION WITH EMAIL VERIFICATION
-exports.register = async (req, res) => {
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+  
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    success: true,
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
+const register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    let { name, email, password, role = 'donor' } = req.body;
 
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
+    if (!name || !email || !password) {
+      return next(new AppError('Please provide name, email and password', 400));
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    role = role.toLowerCase();
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return next(new AppError('User already exists with this email', 400));
+    }
 
-    // Create new user
-    const newUser = new User({
+    // Pass plain password here, model pre-save hook will hash it
+    const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       role,
-      verificationToken,
-      isVerified: false
     });
 
-    await newUser.save();
-
-    // Email transporter setup
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: 'shahkavya.works@gmail.com',
-        pass: 'zdldalifmcbjjzhs' // Your app password
-      }
-    });
-
-    const verifyLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
-
-    // Send the email
-    await transporter.sendMail({
-      from: '"ByteBasket" <shahkavya.works@gmail.com>',
-      to: email,
-      subject: 'Verify Your ByteBasket Account',
-      html: `
-        <h3>Hello ${name},</h3>
-        <p>Click the link below to verify your email:</p>
-        <a href="${verifyLink}">${verifyLink}</a>
-      `
-    });
-
-    res.status(201).json({ message: 'Registered successfully. Please verify your email.' });
-
+    createSendToken(newUser, 201, res);
   } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    console.error('Register error:', error);
+    next(error);
   }
 };
 
-// LOGIN FUNCTION WITH TOKEN + SESSION SUPPORT
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  console.log(`Login attempt for email: ${email}`);
 
-    // Find the user
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(403).json({ message: 'Please verify your email before logging in.' });
-    }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '2h' }
-    );
-
-    // Return success + token
-    res.status(200).json({
-      message: 'Login successful',
-      token
-    });
-
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+  if (!email || !password) {
+    console.log('Email or password missing');
+    return next(new AppError('Please provide email and password!', 400));
   }
+
+  const user = await User.findOne({ email }).select('+password');
+  if (!user) {
+    console.log('User not found');
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  const isPasswordCorrect = await user.correctPassword(password, user.password);
+  console.log(`Password match: ${isPasswordCorrect}`);
+
+  if (!isPasswordCorrect) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  createSendToken(user, 200, res);
+});
+
+
+const logout = catchAsync(async (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ success: true, message: 'Logged out successfully' });
+});
+
+module.exports = {
+  register,
+  login,
+  logout,
 };

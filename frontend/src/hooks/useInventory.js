@@ -12,11 +12,8 @@ export const useInventory = (initialFilters = {}) => {
     category: '',
     dietary_category: '',
     foodbank_id: '',
-    location: '',
-    expiring_soon: false,
-    low_stock_only: false,
-    sort_by: 'date_added',
-    sort_order: 'DESC',
+    low_stock: false,
+    sort: '-date_added',
     page: 1,
     limit: 20,
     ...initialFilters
@@ -31,7 +28,6 @@ export const useInventory = (initialFilters = {}) => {
       setPagination(data.pagination || {});
     } catch (err) {
       setError(err.message);
-      // eslint-disable-next-line no-console
       console.error('Error fetching inventory:', err);
     } finally {
       setLoading(false);
@@ -110,10 +106,10 @@ export const useInventoryAlerts = () => {
         inventoryService.getLowStockAlerts(),
         inventoryService.getExpiringAlerts()
       ]);
+      
       setAlerts({ lowStock, expiring });
     } catch (err) {
       setError(err.message);
-      // eslint-disable-next-line no-console
       console.error('Error fetching alerts:', err);
     } finally {
       setLoading(false);
@@ -124,48 +120,41 @@ export const useInventoryAlerts = () => {
     fetchAlerts();
   }, [fetchAlerts]);
 
-  return { 
-    alerts, 
-    loading, 
+  return {
+    alerts,
+    loading,
     error,
-    refetch: fetchAlerts 
+    refetch: fetchAlerts
   };
 };
 
-export const useInventoryMetadata = () => {
-  const [categories, setCategories] = useState([]);
-  const [dietaryCategories, setDietaryCategories] = useState([]);
+export const useInventoryStats = () => {
+  const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchMetadata = useCallback(async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [categories, dietary] = await Promise.all([
-        inventoryService.getCategories(),
-        inventoryService.getDietaryCategories()
-      ]);
-      setCategories(categories);
-      setDietaryCategories(dietary);
+      const statsData = await inventoryService.getStats();
+      setStats(statsData);
     } catch (err) {
       setError(err.message);
-      // eslint-disable-next-line no-console
-      console.error('Error fetching metadata:', err);
+      console.error('Error fetching stats:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchMetadata();
-  }, [fetchMetadata]);
+    fetchStats();
+  }, [fetchStats]);
 
   return {
-    categories,
-    dietaryCategories,
+    stats,
     loading,
     error,
-    refetch: fetchMetadata
+    refetch: fetchStats
   };
 };

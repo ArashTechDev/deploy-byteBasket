@@ -3,10 +3,9 @@ const router = express.Router();
 
 // Import existing routes
 const foodbankRoutes = require('./foodbank');
-const inventoryRoutes = require('./inventory');
+const inventoryRoutes = require('./routes/inventory');
 const storageLocationRoutes = require('./storageLocations');
-
-// Import new donation routes
+const authRoutes = require('./auth.routes');
 const donationRoutes = require('../routes/donation.routes');
 
 // Use routes
@@ -14,6 +13,7 @@ router.use('/foodbanks', foodbankRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/storage', storageLocationRoutes);
 router.use('/donations', donationRoutes);
+router.use('/auth', authRoutes);
 
 // Health check
 router.get('/health', (req, res) => {

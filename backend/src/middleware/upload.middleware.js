@@ -1,5 +1,4 @@
 const multer = require('multer');
-const path = require('path');
 
 // Error handling middleware for multer
 const handleMulterError = (err, req, res, next) => {

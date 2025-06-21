@@ -49,3 +49,7 @@ Thumbs.db
 # OS files
 .DS_Store
 Thumbs.db
+
+# Ignore Templates and Documentation folders
+Templates/
+Documentation/

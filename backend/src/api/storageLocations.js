@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const StorageLocation = require('../models/StorageLocation'); 
+const StorageLocation = require('../db/models/StorageLocation');
 
 // Get storage locations (optionally filtered by foodBankId)
 router.get('/', async (req, res) => {
