@@ -11,11 +11,44 @@
     "setup:mongodb": "node src/db/models/inventory/createInventory.js",
     "setup:users": "node src/db/models/users/createUserCollection.js",
     "setup:foodbanks": "node src/db/models/foodbanks/createFoodbanks.js",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
     "test": "jest --config tests/jest.config.js",
     "test:watch": "jest --config tests/jest.config.js --watch",
     "test:coverage": "jest --config tests/jest.config.js --coverage",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix"
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "db:test:setup": "psql -h localhost -U postgres -d bytebasket_test -f src/models/migrations/init.sql",
+    "db:test:seed": "node src/models/seeds/testSeed.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/env-setup.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/tests/**/*.mock.test.js",
+      "!**/tests/inventory/inventory.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/models/migrations/**",
+      "!src/models/seeds/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    },
+    "clearMocks": true,
+    "restoreMocks": true
   },
   "dependencies": {
     "axios": "^1.10.0",
@@ -23,19 +56,20 @@
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.5.0",
     "exceljs": "^4.4.0",
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "fast-csv": "^4.3.6",
     "helmet": "^7.1.0",
-    "joi": "^17.11.0",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
     "moment": "^2.29.4",
-    "mongoose": "^8.0.3",
+    "mongoose": "^8.16.0",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.1",
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3"
   },

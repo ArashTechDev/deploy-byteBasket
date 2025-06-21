@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Import existing routes
 const foodbankRoutes = require('./foodbank');
-const inventoryRoutes = require('./inventory');
+const inventoryRoutes = require('./routes/inventory');
 const storageLocationRoutes = require('./storageLocations');
 
 // Import new donation routes
