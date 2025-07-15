@@ -9,7 +9,7 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (credentials) => {
   const res = await axios.post(`${API}/login`, credentials);
-  return res.data;
+  return res.data;  
 };
 
 export const logoutUser = async () => {
@@ -23,8 +23,16 @@ export const verifyEmail = async (token) => {
 };
 
 export const getCurrentUser = async () => {
-  const res = await axios.get(`${API}/me`);
-  return res.data;
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No token found in localStorage');
+
+  const res = await axios.get(`${API}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;  
 };
 
 export const getDashboard = async () => {

@@ -9,22 +9,17 @@ const SignInForm = ({ onToggleForm, onNavigate }) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await loginUser(formData);
-      alert(`Login successful: Welcome ${response.data.user.email}`);
-
-      const userRole = response.data.user.role;
-      if (userRole === 'admin') {
-        onNavigate('admin');
-      } else {
-        onNavigate('home');
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || 'Login failed');
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await loginUser(formData);
+    localStorage.setItem('token', response.token);
+    onNavigate('dashboard');
+  } catch (err) {
+    console.error('Login error response:', err.response);
+    alert(err.response?.data?.message || 'Login failed');
+  }
+};
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>

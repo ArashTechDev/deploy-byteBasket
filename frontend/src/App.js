@@ -4,7 +4,7 @@ import SignUpPage from './pages/SignUpPage';
 import DonatePage from './pages/DonatePage';
 import FoodbankPage from './pages/FoodBankManagerPage';
 import InventoryPage from './pages/InventoryManagement';
-import AdminPage from './pages/AdminDashboard';
+import DashboardPage from './pages/Dashboard';
 import Footer from './components/layout/Footer';
 
 const App = () => {
@@ -26,8 +26,8 @@ const App = () => {
         return <InventoryPage onNavigate={navigate} />;
       case 'foodbank':
         return <FoodbankPage onNavigate={navigate} />;
-      case 'admin':
-        return <AdminPage onNavigate={navigate} />;
+      case 'dashboard':
+        return <DashboardPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
