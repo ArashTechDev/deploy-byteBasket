@@ -1,6 +1,6 @@
 // backend/src/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../db/models/User');
+const User = require('../db/models/User.model');
 require('../utils/errors');
 
 exports.authMiddleware = async (req, res, next) => {
@@ -8,9 +8,9 @@ exports.authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: 'Access denied. No token provided.' 
+        message: 'Access denied. No token provided.',
       });
     }
 
@@ -18,21 +18,21 @@ exports.authMiddleware = async (req, res, next) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+
       // Get user from database to ensure they still exist
       const user = await User.findById(decoded.id).select('-password');
-      
+
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: 'Token is valid but user no longer exists'
+          message: 'Token is valid but user no longer exists',
         });
       }
 
       if (!user.isActive) {
         return res.status(401).json({
           success: false,
-          message: 'User account is deactivated'
+          message: 'User account is deactivated',
         });
       }
 
@@ -41,28 +41,28 @@ exports.authMiddleware = async (req, res, next) => {
         id: user._id.toString(),
         email: user.email,
         role: user.role,
-        foodbank_id: user.foodbank_id
+        foodbank_id: user.foodbank_id,
       };
-      
+
       next(); // Allow the request to proceed
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return res.status(401).json({
           success: false,
-          message: 'Token has expired'
+          message: 'Token has expired',
         });
       }
-      
+
       return res.status(403).json({
         success: false,
-        message: 'Invalid token'
+        message: 'Invalid token',
       });
     }
   } catch (error) {
     console.error('Auth middleware error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Authentication server error'
+      message: 'Authentication server error',
     });
   }
 };
@@ -73,14 +73,14 @@ exports.requireRole = (...roles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'Authentication required',
       });
     }
 
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Access forbidden: insufficient permissions'
+        message: 'Access forbidden: insufficient permissions',
       });
     }
 

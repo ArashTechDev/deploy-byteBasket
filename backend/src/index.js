@@ -12,6 +12,8 @@ const apiRouter = require('./api');
 const donationRoutes = require('./routes/donation.routes');
 const authRoutes = require('./api/auth.routes');
 const inventoryRoutes = require('./api/routes/inventory');
+const dietaryPreferencesRoutes = require('./routes/dietaryPreferences.routes');
+const dietaryRestrictionsRoutes = require('./routes/dietaryRestrictions.routes');
 
 // MongoDB connection
 const { connectMongoDB } = require('./config/mongodb');
@@ -26,17 +28,19 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security middleware
-app.use(helmet({
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ['\'self\''],
-      styleSrc: ['\'self\'', '\'unsafe-inline\''],
-      scriptSrc: ['\'self\''],
-      imgSrc: ['\'self\'', 'data:', 'https:'],
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
     },
-  },
-}));
+  })
+);
 
 // Compression middleware
 app.use(compression());
@@ -53,12 +57,12 @@ const corsOptions = {
       'http://localhost:3000',
       'http://localhost:3001',
       'https://localhost:3000',
-      process.env.FRONTEND_URL
+      process.env.FRONTEND_URL,
     ].filter(Boolean);
-    
+
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -67,7 +71,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(cors(corsOptions));
@@ -78,40 +82,42 @@ const limiter = rateLimit({
   max: process.env.NODE_ENV === 'production' ? 100 : 1000, // More generous in development
   message: {
     error: 'Too many requests from this IP, please try again later.',
-    retryAfter: 15 * 60
+    retryAfter: 15 * 60,
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
+  skip: req => {
     // Skip rate limiting for health checks
     return req.path === '/health' || req.path === '/api/health';
-  }
+  },
 });
 app.use('/api/', limiter);
 
 // Body parsing middleware
-app.use(express.json({ 
-  limit: '10mb',
-  verify: (req, res, buf) => {
-    try {
-      JSON.parse(buf);
-    } catch (e) {
-      res.status(400).json({ error: 'Invalid JSON' });
-      throw new Error('Invalid JSON');
-    }
-  }
-}));
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+      try {
+        JSON.parse(buf);
+      } catch (e) {
+        res.status(400).json({ error: 'Invalid JSON' });
+        throw new Error('Invalid JSON');
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint (before authentication)
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     service: 'ByteBasket API',
     database: 'MongoDB',
     environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 
@@ -125,8 +131,8 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       inventory: '/api/inventory',
-      donations: '/api/donations'
-    }
+      donations: '/api/donations',
+    },
   });
 });
 
@@ -135,6 +141,8 @@ app.use('/api', apiRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/dietary-preferences', dietaryPreferencesRoutes);
+app.use('/api/dietary-restrictions', dietaryRestrictionsRoutes);
 
 // API Health endpoint - Enhanced version
 app.get('/api/health', async (req, res) => {
@@ -142,27 +150,27 @@ app.get('/api/health', async (req, res) => {
     // Check database connection
     const mongoose = require('mongoose');
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-    
+
     res.json({
       status: 'OK',
       timestamp: new Date().toISOString(),
       database: {
         type: 'MongoDB',
         status: dbStatus,
-        name: mongoose.connection.name || 'bytebasket'
+        name: mongoose.connection.name || 'bytebasket',
       },
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       environment: process.env.NODE_ENV || 'development',
       service: 'ByteBasket API',
-      version: '1.0.0'
+      version: '1.0.0',
     });
   } catch (error) {
     res.status(500).json({
       status: 'ERROR',
       message: 'Health check failed',
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -178,11 +186,11 @@ const startServer = async () => {
   try {
     console.log('🔄 Starting ByteBasket Backend Server...');
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    
+
     // Connect to MongoDB first
     await connectMongoDB();
     console.log('✅ Database connection established');
-    
+
     // Start the server
     const PORT = process.env.PORT || 3001;
     const server = app.listen(PORT, () => {
@@ -190,7 +198,7 @@ const startServer = async () => {
       console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
       console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
       console.log(`📚 API Documentation: http://localhost:${PORT}/`);
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('\n👥 Demo Login Credentials:');
         console.log('   Admin: admin@demo.com / demo123');
@@ -201,27 +209,26 @@ const startServer = async () => {
     });
 
     // Handle server errors
-    server.on('error', (error) => {
+    server.on('error', error => {
       if (error.syscall !== 'listen') {
         throw error;
       }
 
       switch (error.code) {
-      case 'EACCES':
-        console.error(`❌ Port ${PORT} requires elevated privileges`);
-        process.exit(1);
-        break;
-      case 'EADDRINUSE':
-        console.error(`❌ Port ${PORT} is already in use`);
-        process.exit(1);
-        break;
-      default:
-        throw error;
+        case 'EACCES':
+          console.error(`❌ Port ${PORT} requires elevated privileges`);
+          process.exit(1);
+          break;
+        case 'EADDRINUSE':
+          console.error(`❌ Port ${PORT} is already in use`);
+          process.exit(1);
+          break;
+        default:
+          throw error;
       }
     });
 
     return server;
-    
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
     console.error('Full error:', error);
@@ -237,31 +244,43 @@ process.on('unhandledRejection', (err, promise) => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.error('🚨 Uncaught Exception:', err.message);
   console.error('Stack:', err.stack);
   process.exit(1);
 });
 
 // Graceful shutdown
-const gracefulShutdown = (signal) => {
+const gracefulShutdown = async signal => {
   console.log(`\n🔄 ${signal} received, shutting down gracefully...`);
-  
-  const mongoose = require('mongoose');
-  mongoose.connection.close(() => {
+
+  try {
+    const mongoose = require('mongoose');
+    await mongoose.connection.close(); // ✅ Using await instead of callback
     console.log('🔒 MongoDB connection closed');
     process.exit(0);
-  });
-  
-  // Force close after 10 seconds
-  setTimeout(() => {
-    console.error('❌ Forced shutdown');
+  } catch (error) {
+    console.error('❌ Error during shutdown:', error.message);
     process.exit(1);
-  }, 10000);
+  }
 };
 
+// Update the process event listeners to handle async:
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Also update the unhandled rejection handler to be less aggressive:
+process.on('unhandledRejection', (err, promise) => {
+  console.error('🚨 Unhandled Promise Rejection:', err.message);
+  console.error('Promise:', promise);
+
+  // Don't exit immediately in development
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  } else {
+    console.error('⚠️ Continuing in development mode...');
+  }
+});
 
 // Start the server
 startServer();

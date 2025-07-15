@@ -20,7 +20,9 @@
     "test:integration": "jest --testPathPattern=tests/integration",
     "test:unit": "jest --testPathPattern=tests/unit",
     "db:test:setup": "psql -h localhost -U postgres -d bytebasket_test -f src/models/migrations/init.sql",
-    "db:test:seed": "node src/models/seeds/testSeed.js"
+    "db:test:seed": "node src/models/seeds/testSeed.js",
+    "seed:dietary": "node scripts/seedDietaryRestrictions.js",
+    "check:db": "node scripts/checkDatabase.js"
   },
   "jest": {
     "testEnvironment": "node",

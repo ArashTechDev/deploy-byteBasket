@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 // tests/inventory.compatibility.test.js
 const mongoose = require('mongoose');
 require('dotenv').config({ path: '../.env' });
@@ -6,7 +7,6 @@ require('dotenv').config({ path: '../.env' });
 let Inventory;
 
 describe('Inventory Model Compatibility Tests', () => {
-  
   beforeAll(async () => {
     // Connect to test database
     const mongoURI = process.env.MONGO_URI_TEST || process.env.MONGO_URI || 'mongodb://localhost:27017/bytebasket-test';
@@ -30,7 +30,6 @@ describe('Inventory Model Compatibility Tests', () => {
   });
 
   describe('Schema Compatibility', () => {
-    
     test('should have correct dietary category enum values', () => {
       const dietaryEnum = Inventory.schema.path('dietary_category').enumValues;
       const expectedCategories = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Kosher', 'Halal'];
