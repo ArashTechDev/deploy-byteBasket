@@ -5,6 +5,7 @@ import DonatePage from './pages/DonatePage';
 import FoodbankPage from './pages/FoodBankManagerPage';
 import InventoryPage from './pages/InventoryManagement';
 import DashboardPage from './pages/Dashboard';
+import VolunteerPage from './pages/VolunteerPage';
 import Footer from './components/layout/Footer';
 
 const App = () => {
@@ -28,6 +29,8 @@ const App = () => {
         return <FoodbankPage onNavigate={navigate} />;
       case 'dashboard':
         return <DashboardPage onNavigate={navigate} />;
+      case 'volunteer':
+        return <VolunteerPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }

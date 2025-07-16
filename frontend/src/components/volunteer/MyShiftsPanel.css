@@ -1,0 +1,437 @@
+/* frontend/src/components/volunteer/MyShiftsPanel.css */
+.my-shifts-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.shifts-header {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shifts-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.hours-summary {
+  text-align: center;
+}
+
+.hours-badge {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+}
+
+.hours-number {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.hours-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.shifts-content {
+  display: grid;
+  gap: 20px;
+}
+
+.shifts-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shifts-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 3px solid #e67e22;
+  padding-bottom: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.empty-state p {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+.shifts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.shift-card {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+.shift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.shift-card.upcoming {
+  border-left: 5px solid #e67e22;
+  background: #fff9f5;
+}
+
+.shift-card.past {
+  border-left: 5px solid #28a745;
+  background: #f8fff9;
+}
+
+.shift-main-info {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+}
+
+.shift-date-time h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.shift-time {
+  margin: 0 0 8px 0;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.days-until {
+  background: #e67e22;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.shift-details h5 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.shift-location,
+.shift-duration {
+  margin: 0 0 5px 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.shift-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-confirmed {
+  background: #cce5ff;
+  color: #0066cc;
+}
+
+.status-completed {
+  background: #d4edda;
+  color: #28a745;
+}
+
+.status-cancelled {
+  background: #f8d7da;
+  color: #dc3545;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.cancel-btn {
+  background: none;
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.cancel-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.activities-summary {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.activities-summary h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 3px solid #e67e22;
+  padding-bottom: 10px;
+}
+
+.activity-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.activity-icon {
+  font-size: 1.2rem;
+}
+
+.activity-name {
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.cancel-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.modal-content {
+  padding: 25px;
+}
+
+.shift-summary {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border-left: 4px solid #e67e22;
+}
+
+.shift-summary h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.shift-summary p {
+  margin: 4px 0;
+  color: #6c757d;
+}
+
+.cancel-warning {
+  color: #856404;
+  background: #fff3cd;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin: 15px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-confirm-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex: 1;
+}
+
+.cancel-confirm-btn:hover {
+  background: #c82333;
+}
+
+.cancel-back-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex: 1;
+}
+
+.cancel-back-btn:hover {
+  background: #5a6268;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .my-shifts-container {
+    padding: 15px;
+  }
+  
+  .shifts-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .shifts-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .shift-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .shift-main-info {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .shift-actions {
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  
+  .activity-list {
+    flex-direction: column;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .shifts-section {
+    padding: 20px;
+  }
+  
+  .shift-card {
+    padding: 15px;
+  }
+  
+  .hours-badge {
+    padding: 15px;
+  }
+  
+  .hours-number {
+    font-size: 2rem;
+  }
+}
