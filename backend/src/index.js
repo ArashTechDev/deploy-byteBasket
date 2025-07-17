@@ -282,7 +282,9 @@ process.on('unhandledRejection', (err, promise) => {
   }
 });
 
-// Start the server
-startServer();
+// Start the server only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
 
 module.exports = app; // Export for testing
