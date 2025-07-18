@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React, { useState } from 'react';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
@@ -10,11 +11,11 @@ import Footer from './components/layout/Footer';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
-  
-  const navigate = (page) => {
+
+  const navigate = page => {
     setCurrentPage(page);
   };
-  
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -35,12 +36,10 @@ const App = () => {
         return <HomePage onNavigate={navigate} />;
     }
   };
-  
+
   return (
     <div className="App min-h-screen flex flex-col">
-      <div className="flex-grow">
-        {renderPage()}
-      </div>
+      <div className="flex-grow">{renderPage()}</div>
       <Footer />
     </div>
   );
