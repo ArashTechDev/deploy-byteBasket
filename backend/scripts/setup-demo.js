@@ -3,7 +3,7 @@
 require('dotenv').config(); // Load environment variables from .env file
 const mongoose = require('mongoose');
 const FoodBank = require('../src/db/models/FoodBank');
-const User = require('../src/db/models/User');
+const User = require('../src/db/models/User.model');
 const Inventory = require('../src/db/models/Inventory');
 
 const setupDemo = async () => {
@@ -46,21 +46,13 @@ const setupDemo = async () => {
     const foodBanks = await FoodBank.create([
       {
         name: 'Downtown Food Bank',
-        location: {
-          address: '123 Main Street',
-          city: 'Toronto',
-          province: 'Ontario',
-          postal_code: 'M5V 1A1',
-          coordinates: { lat: 43.6426, lng: -79.3871 }
-        },
-        contact: {
-          phone: '+1416555001',
-          email: 'contact@downtownfoodbank.org',
-          website: 'https://downtownfoodbank.org'
-        },
-        capacity: 500,
-        current_inventory_count: 0,
-        operating_hours: {
+        address: '123 Main Street',
+        city: 'Toronto',
+        province: 'Ontario',
+        postalCode: 'M5V 1A1',
+        contactEmail: 'contact@downtownfoodbank.org',
+        contactPhone: '+1416555001',
+        operatingHours: {
           monday: { open: '09:00', close: '17:00' },
           tuesday: { open: '09:00', close: '17:00' },
           wednesday: { open: '09:00', close: '17:00' },
@@ -69,33 +61,28 @@ const setupDemo = async () => {
           saturday: { open: '10:00', close: '14:00' },
           sunday: { open: 'closed', close: 'closed' }
         },
-        status: 'active'
+        latitude: 43.6426,
+        longitude: -79.3871
       },
       {
         name: 'Community Care Center',
-        location: {
-          address: '456 Oak Avenue',
-          city: 'Toronto',
-          province: 'Ontario',
-          postal_code: 'M4K 2L8',
-          coordinates: { lat: 43.6433, lng: -79.4000 }
-        },
-        contact: {
-          phone: '+1416555002',
-          email: 'help@communitycare.org'
-        },
-        capacity: 300,
-        current_inventory_count: 0,
-        operating_hours: {
-          monday: { open: '08:00', close: '18:00' },
-          tuesday: { open: '08:00', close: '18:00' },
-          wednesday: { open: '08:00', close: '18:00' },
-          thursday: { open: '08:00', close: '18:00' },
-          friday: { open: '08:00', close: '18:00' },
+        address: '456 Oak Avenue',
+        city: 'Toronto',
+        province: 'Ontario',
+        postalCode: 'M4K 2L8',
+        contactEmail: 'info@communitycare.org',
+        contactPhone: '+1416555002',
+        operatingHours: {
+          monday: { open: '10:00', close: '18:00' },
+          tuesday: { open: '10:00', close: '18:00' },
+          wednesday: { open: '10:00', close: '18:00' },
+          thursday: { open: '10:00', close: '18:00' },
+          friday: { open: '10:00', close: '18:00' },
           saturday: { open: '09:00', close: '15:00' },
           sunday: { open: 'closed', close: 'closed' }
         },
-        status: 'active'
+        latitude: 43.6532,
+        longitude: -79.3832
       }
     ]);
     
