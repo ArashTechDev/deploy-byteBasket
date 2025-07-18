@@ -6,6 +6,7 @@ import FoodbankPage from './pages/FoodBankManagerPage';
 import InventoryPage from './pages/InventoryManagement';
 import DashboardPage from './pages/Dashboard';
 import VolunteerPage from './pages/VolunteerPage';
+import ContactPage from './pages/ContactPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import Footer from './components/layout/Footer';
 
@@ -52,6 +53,8 @@ const App = () => {
         return <DashboardPage onNavigate={navigate} />;
       case 'volunteer':
         return <VolunteerPage onNavigate={navigate} />;
+      case 'contact':
+        return <ContactPage onNavigate={navigate} />;
       case 'verify-email':
         return <EmailVerificationPage onNavigate={navigate} />;
       default:
