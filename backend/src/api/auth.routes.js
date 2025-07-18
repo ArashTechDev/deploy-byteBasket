@@ -15,42 +15,42 @@ router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 
 // GET /verify-email - Email verification
-router.get('/verify-email', async (req, res) => {
+router.get('/verify-email', authController.verifyEmail);
+
+// GET /test-verify-debug - Debug verification (REMOVE IN PRODUCTION)
+router.get('/test-verify-debug', async (req, res) => {
   try {
     const { token } = req.query;
-
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing verification token'
-      });
-    }
-
+    console.log('🔍 Debug verification request:');
+    console.log('   Token received:', token);
+    console.log('   Token length:', token?.length);
+    console.log('   Token type:', typeof token);
+    
+    const usersWithTokens = await User.find({ verificationToken: { $exists: true, $ne: null } }).select('email verificationToken');
     const user = await User.findOne({ verificationToken: token });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired verification token'
-      });
-    }
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-
+    
     res.json({
       success: true,
-      message: 'Email verified successfully! You can now log in.'
+      debug: {
+        tokenReceived: token,
+        tokenLength: token?.length,
+        tokenType: typeof token,
+        userFound: !!user,
+        totalUsersWithTokens: usersWithTokens.length,
+        availableTokens: usersWithTokens.map(u => ({
+          email: u.email,
+          token: u.verificationToken,
+          matches: u.verificationToken === token
+        }))
+      }
     });
   } catch (error) {
-    console.error('Email verification error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during email verification'
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// POST /resend-verification - Resend verification email
+router.post('/resend-verification', authController.resendVerificationEmail);
 
 // GET /me - Get current user profile (protected route)
 router.get('/me', authMiddleware, async (req, res) => {

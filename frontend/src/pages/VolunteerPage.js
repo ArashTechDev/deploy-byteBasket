@@ -1,7 +1,6 @@
 // frontend/src/pages/VolunteerPage.js
 import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import VolunteerForm from '../components/forms/VolunteerForm';
 import ShiftCalendar from '../components/volunteer/ShiftCalendar';
 import MyShiftsPanel from '../components/volunteer/MyShiftsPanel';
@@ -250,8 +249,6 @@ case 'register':
       <div className="volunteer-container">
         {renderContent()}
       </div>
-      
-      <Footer />
     </div>
   );
 };

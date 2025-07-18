@@ -71,8 +71,10 @@ const corsOptions = {
     } else {
       // In development, be more permissive
       if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 CORS: Allowing origin ${origin} in development mode`);
         callback(null, true);
       } else {
+        console.log(`❌ CORS: Blocking origin ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     }
@@ -80,6 +82,7 @@ const corsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 app.use(cors(corsOptions));
