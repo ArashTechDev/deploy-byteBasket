@@ -2,10 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const shiftController = require('../controllers/shift.controller');
-const authMiddleware = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 /**
  * @route   GET /api/shifts/foodbank/:foodbank_id

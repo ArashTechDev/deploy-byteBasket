@@ -15,6 +15,11 @@ const inventoryRoutes = require('./api/routes/inventory');
 const dietaryPreferencesRoutes = require('./routes/dietaryPreferences.routes');
 const dietaryRestrictionsRoutes = require('./routes/dietaryRestrictions.routes');
 
+// Import NEW volunteer routes
+const volunteerRoutes = require('./routes/volunteer.routes');
+const shiftRoutes = require('./routes/shift.routes');
+const volunteerShiftRoutes = require('./routes/volunteerShift.routes');
+
 // MongoDB connection
 const { connectMongoDB } = require('./config/mongodb');
 
@@ -33,10 +38,10 @@ app.use(
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:', 'https:'],
+        defaultSrc: ['self'],
+        styleSrc: ['self', 'unsafe-inline'],
+        scriptSrc: ['self'],
+        imgSrc: ['self', 'data:', 'https:'],
       },
     },
   })
@@ -132,6 +137,9 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       inventory: '/api/inventory',
       donations: '/api/donations',
+      volunteers: '/api/volunteers',
+      shifts: '/api/shifts',
+      volunteerShifts: '/api/volunteer-shifts',
     },
   });
 });
@@ -143,6 +151,11 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/dietary-preferences', dietaryPreferencesRoutes);
 app.use('/api/dietary-restrictions', dietaryRestrictionsRoutes);
+
+// NEW: Add volunteer routes
+app.use('/api/volunteers', volunteerRoutes);
+app.use('/api/shifts', shiftRoutes);
+app.use('/api/volunteer-shifts', volunteerShiftRoutes);
 
 // API Health endpoint - Enhanced version
 app.get('/api/health', async (req, res) => {
@@ -205,6 +218,10 @@ const startServer = async () => {
         console.log('   Staff: staff@demo.com / demo123');
         console.log('   Donor: donor@demo.com / demo123');
         console.log('\n📦 To setup demo data: npm run setup:demo');
+        console.log('\n🆕 NEW Volunteer Endpoints:');
+        console.log('   📋 /api/volunteers');
+        console.log('   📅 /api/shifts');
+        console.log('   🤝 /api/volunteer-shifts');
       }
     });
 
