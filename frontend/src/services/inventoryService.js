@@ -1,22 +1,30 @@
 // frontend/src/services/inventoryService.js
 class InventoryService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     this.inventoryEndpoint = `${this.baseURL}/inventory`;
   }
 
   // Get auth token from localStorage or context
   getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
   async handleResponse(response) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
+      // Handle token expiration
+      if (response.status === 401 && errorData.message === 'Token has expired') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return;
+      }
+
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     return response.json();
@@ -32,22 +40,22 @@ class InventoryService {
 
     const response = await fetch(`${this.inventoryEndpoint}?${params}`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return {
       items: data.data || [],
-      pagination: data.pagination || {}
+      pagination: data.pagination || {},
     };
   }
 
   async getById(id) {
     const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data;
   }
@@ -56,9 +64,9 @@ class InventoryService {
     const response = await fetch(this.inventoryEndpoint, {
       method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(itemData)
+      body: JSON.stringify(itemData),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data;
   }
@@ -67,9 +75,9 @@ class InventoryService {
     const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(itemData)
+      body: JSON.stringify(itemData),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data;
   }
@@ -77,18 +85,18 @@ class InventoryService {
   async delete(id) {
     const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
       method: 'DELETE',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     return this.handleResponse(response);
   }
 
   async getLowStockAlerts() {
     const response = await fetch(`${this.inventoryEndpoint}/alerts/low-stock`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data || [];
   }
@@ -96,9 +104,9 @@ class InventoryService {
   async getExpiringAlerts(days = 7) {
     const response = await fetch(`${this.inventoryEndpoint}/alerts/expiring?days=${days}`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data || [];
   }
@@ -106,9 +114,9 @@ class InventoryService {
   async getCategories() {
     const response = await fetch(`${this.inventoryEndpoint}/meta/categories`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data || [];
   }
@@ -116,9 +124,9 @@ class InventoryService {
   async getDietaryCategories() {
     const response = await fetch(`${this.inventoryEndpoint}/meta/dietary-categories`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data || [];
   }
@@ -126,9 +134,9 @@ class InventoryService {
   async getStats() {
     const response = await fetch(`${this.inventoryEndpoint}/stats`, {
       method: 'GET',
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
-    
+
     const data = await this.handleResponse(response);
     return data.data || {};
   }
