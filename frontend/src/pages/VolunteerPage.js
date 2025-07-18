@@ -6,7 +6,7 @@ import ShiftCalendar from '../components/volunteer/ShiftCalendar';
 import MyShiftsPanel from '../components/volunteer/MyShiftsPanel';
 import './VolunteerPage.css';
 
-const VolunteerPage = () => {
+const VolunteerPage = ({ onNavigate }) => {
   const [currentView, setCurrentView] = useState('landing'); // landing, register, schedule, myshifts
   const [isRegistered, setIsRegistered] = useState(false);
   const [userShifts, setUserShifts] = useState([]);
@@ -21,24 +21,18 @@ const VolunteerPage = () => {
         setCurrentView('landing');
         break;
       case 'home':
-        // Navigate to home page
-        window.location.href = '/';
-        break;
       case 'dashboard':
-        // Navigate to dashboard
-        window.location.href = '/dashboard';
-        break;
       case 'signup':
-        // Navigate to signup
-        window.location.href = '/signup';
-        break;
       case 'contact':
-        // Navigate to contact
-        window.location.href = '/contact';
-        break;
       case 'donate':
-        // Navigate to donate
-        window.location.href = '/donate';
+        // Use the proper navigation function passed from App
+        if (onNavigate) {
+          onNavigate(page);
+        } else {
+          // Fallback for direct access (shouldn't happen in normal flow)
+          console.warn('onNavigate not provided, using fallback navigation');
+          window.location.href = page === 'home' ? '/' : `/${page}`;
+        }
         break;
       default:
         // Unknown navigation - do nothing

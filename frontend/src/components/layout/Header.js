@@ -7,28 +7,17 @@ import logo from '../../images/logo.png';
 const Header = ({ currentPage, onNavigate }) => {
   // Provide default functions if props are not passed
   const handleNavigation = onNavigate || ((page) => {
-    // Default navigation - you can customize this
+    // Fallback navigation - this should rarely be used
+    console.warn('Header: onNavigate prop not provided, using fallback. Page:', page);
     switch(page) {
       case 'home':
+        // For home, we can reload to root which should work
         window.location.href = '/';
         break;
-      case 'dashboard':
-        window.location.href = '/dashboard';
-        break;
-      case 'volunteer':
-        window.location.href = '/volunteer';
-        break;
-      case 'signup':
-        window.location.href = '/signup';
-        break;
-      case 'contact':
-        window.location.href = '/contact';
-        break;
-      case 'donate':
-        window.location.href = '/donate';
-        break;
       default:
-        // Unknown page - do nothing
+        // For other pages, we can't navigate properly without the navigation function
+        console.error('Cannot navigate to', page, 'without proper onNavigate function');
+        alert(`Navigation to ${page} is not properly configured. Please refresh the page.`);
         break;
     }
   });
