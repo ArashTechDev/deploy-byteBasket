@@ -56,7 +56,10 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3002',
       'https://localhost:3000',
+      'https://localhost:3001',
+      'https://localhost:3002',
       process.env.FRONTEND_URL,
     ].filter(Boolean);
 
@@ -66,7 +69,12 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, be more permissive
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
