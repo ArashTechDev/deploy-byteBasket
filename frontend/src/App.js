@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
@@ -12,31 +13,26 @@ import Footer from './components/layout/Footer';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
-  
-  // Check URL parameters on page load to handle direct links
+
+  // Handle URL parameters for deep linking
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const pageParam = urlParams.get('page');
     const path = window.location.pathname;
-    
-    // Handle direct email verification links like /verify-email?token=...
+
     if (path === '/verify-email' || path.includes('verify-email')) {
       setCurrentPage('verify-email');
-    }
-    // Handle legacy URL format ?page=verify&token=...
-    else if (pageParam === 'verify') {
+    } else if (pageParam === 'verify') {
       setCurrentPage('verify-email');
-    }
-    // Handle other page parameters
-    else if (pageParam) {
+    } else if (pageParam) {
       setCurrentPage(pageParam);
     }
   }, []);
-  
+
   const navigate = (page) => {
     setCurrentPage(page);
   };
-  
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -61,12 +57,10 @@ const App = () => {
         return <HomePage onNavigate={navigate} />;
     }
   };
-  
+
   return (
     <div className="App min-h-screen flex flex-col">
-      <div className="flex-grow">
-        {renderPage()}
-      </div>
+      <div className="flex-grow">{renderPage()}</div>
       <Footer />
     </div>
   );

@@ -2,10 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const volunteerController = require('../controllers/volunteer.controller');
-const authMiddleware = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 /**
  * @route   GET /api/volunteers/foodbank/:foodbank_id

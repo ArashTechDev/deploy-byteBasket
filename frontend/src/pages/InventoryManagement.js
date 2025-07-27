@@ -1,6 +1,17 @@
 // frontend/src/pages/InventoryManagement.js
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Plus, Edit, Trash2, AlertTriangle, Calendar, Package, X } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Calendar,
+  Package,
+  X,
+} from 'lucide-react';
 import { useInventory, useInventoryAlerts } from '../hooks/useInventory';
 import inventoryService from '../services/inventoryService';
 
@@ -17,11 +28,11 @@ const InventoryManagement = () => {
     createItem,
     updateItem,
     deleteItem,
-    refetch
+    refetch,
   } = useInventory();
 
   const { alerts } = useInventoryAlerts();
-  
+
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -35,7 +46,7 @@ const InventoryManagement = () => {
       try {
         const [categoriesData, dietaryData] = await Promise.all([
           inventoryService.getCategories(),
-          inventoryService.getDietaryCategories()
+          inventoryService.getDietaryCategories(),
         ]);
         setCategories(categoriesData);
         setDietaryCategories(dietaryData);
@@ -47,7 +58,7 @@ const InventoryManagement = () => {
     fetchMetadata();
   }, []);
 
-  const handleSearch = (e) => {
+  const handleSearch = e => {
     updateFilters({ search: e.target.value });
   };
 
@@ -55,12 +66,12 @@ const InventoryManagement = () => {
     updateFilters({ [key]: value });
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = item => {
     setEditingItem(item);
     setShowForm(true);
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = async item => {
     if (window.confirm(`Are you sure you want to delete "${item.item_name}"?`)) {
       try {
         await deleteItem(item._id || item.inventory_id);
@@ -70,7 +81,7 @@ const InventoryManagement = () => {
     }
   };
 
-  const handleFormSubmit = async (formData) => {
+  const handleFormSubmit = async formData => {
     try {
       if (editingItem) {
         await updateItem(editingItem._id || editingItem.inventory_id, formData);
@@ -86,7 +97,7 @@ const InventoryManagement = () => {
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    
+
     if (window.confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) {
       try {
         await Promise.all(selectedItems.map(id => deleteItem(id)));
@@ -100,14 +111,16 @@ const InventoryManagement = () => {
   const exportData = () => {
     const csvContent = [
       ['Name', 'Category', 'Quantity', 'Location', 'Expiration', 'Dietary Category'].join(','),
-      ...inventory.map(item => [
-        item.item_name,
-        item.category,
-        item.quantity,
-        item.storage_location || '',
-        item.expiration_date || '',
-        item.dietary_category || ''
-      ].join(','))
+      ...inventory.map(item =>
+        [
+          item.item_name,
+          item.category,
+          item.quantity,
+          item.storage_location || '',
+          item.expiration_date || '',
+          item.dietary_category || '',
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -124,7 +137,7 @@ const InventoryManagement = () => {
       <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
         <h3 className="font-bold">Error Loading Inventory</h3>
         <p>{error}</p>
-        <button 
+        <button
           onClick={refetch}
           className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
         >
@@ -169,7 +182,10 @@ const InventoryManagement = () => {
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search items..."
@@ -179,7 +195,7 @@ const InventoryManagement = () => {
               />
             </div>
           </div>
-          
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -204,9 +220,7 @@ const InventoryManagement = () => {
       {selectedItems.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-center">
-            <span className="text-blue-800">
-              {selectedItems.length} item(s) selected
-            </span>
+            <span className="text-blue-800">{selectedItems.length} item(s) selected</span>
             <button
               onClick={handleBulkDelete}
               className="flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
@@ -229,10 +243,7 @@ const InventoryManagement = () => {
       />
 
       {/* Pagination */}
-      <PaginationComponent
-        pagination={pagination}
-        onPageChange={changePage}
-      />
+      <PaginationComponent pagination={pagination} onPageChange={changePage} />
 
       {/* Form Modal */}
       {showForm && (
@@ -267,9 +278,7 @@ const AlertsSection = ({ alerts }) => (
               {item.item_name}: {item.quantity} left
             </li>
           ))}
-          {alerts.lowStock.length > 3 && (
-            <li>...and {alerts.lowStock.length - 3} more</li>
-          )}
+          {alerts.lowStock.length > 3 && <li>...and {alerts.lowStock.length - 3} more</li>}
         </ul>
       </div>
     )}
@@ -287,9 +296,7 @@ const AlertsSection = ({ alerts }) => (
               {item.item_name}: {new Date(item.expiration_date).toLocaleDateString()}
             </li>
           ))}
-          {alerts.expiring.length > 3 && (
-            <li>...and {alerts.expiring.length - 3} more</li>
-          )}
+          {alerts.expiring.length > 3 && <li>...and {alerts.expiring.length - 3} more</li>}
         </ul>
       </div>
     )}
@@ -302,29 +309,33 @@ const FiltersSection = ({ filters, categories, dietaryCategories, onFilterChange
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <select
         value={filters.category}
-        onChange={(e) => onFilterChange('category', e.target.value)}
+        onChange={e => onFilterChange('category', e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2"
       >
         <option value="">All Categories</option>
         {categories.map(cat => (
-          <option key={cat} value={cat}>{cat}</option>
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
         ))}
       </select>
 
       <select
         value={filters.dietary_category}
-        onChange={(e) => onFilterChange('dietary_category', e.target.value)}
+        onChange={e => onFilterChange('dietary_category', e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2"
       >
         <option value="">All Dietary Categories</option>
         {dietaryCategories.map(diet => (
-          <option key={diet} value={diet}>{diet}</option>
+          <option key={diet} value={diet}>
+            {diet}
+          </option>
         ))}
       </select>
 
       <select
         value={filters.sort}
-        onChange={(e) => onFilterChange('sort', e.target.value)}
+        onChange={e => onFilterChange('sort', e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2"
       >
         <option value="-date_added">Newest First</option>
@@ -340,7 +351,7 @@ const FiltersSection = ({ filters, categories, dietaryCategories, onFilterChange
           <input
             type="checkbox"
             checked={filters.low_stock}
-            onChange={(e) => onFilterChange('low_stock', e.target.checked)}
+            onChange={e => onFilterChange('low_stock', e.target.checked)}
             className="mr-2"
           />
           Low Stock Only
@@ -351,15 +362,15 @@ const FiltersSection = ({ filters, categories, dietaryCategories, onFilterChange
 );
 
 // Inventory Table Component
-const InventoryTable = ({ 
-  inventory, 
-  loading, 
-  selectedItems, 
-  onSelectionChange, 
-  onEdit, 
-  onDelete 
+const InventoryTable = ({
+  inventory,
+  loading,
+  selectedItems,
+  onSelectionChange,
+  onEdit,
+  onDelete,
 }) => {
-  const handleSelectAll = (e) => {
+  const handleSelectAll = e => {
     if (e.target.checked) {
       onSelectionChange(inventory.map(item => item._id || item.inventory_id));
     } else {
@@ -367,11 +378,9 @@ const InventoryTable = ({
     }
   };
 
-  const handleSelectItem = (itemId) => {
-    onSelectionChange(prev => 
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+  const handleSelectItem = itemId => {
+    onSelectionChange(prev =>
+      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
     );
   };
 
@@ -432,13 +441,15 @@ const InventoryTable = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {inventory.map((item) => {
+            {inventory.map(item => {
               const itemId = item._id || item.inventory_id;
               const isSelected = selectedItems.includes(itemId);
-              const isLowStock = item.low_stock || (item.quantity <= (item.minimum_stock_level || 10));
-              const isExpiring = item.expiration_date && 
+              const isLowStock =
+                item.low_stock || item.quantity <= (item.minimum_stock_level || 10);
+              const isExpiring =
+                item.expiration_date &&
                 new Date(item.expiration_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-              
+
               return (
                 <tr key={itemId} className={isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -452,13 +463,9 @@ const InventoryTable = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {item.item_name}
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{item.item_name}</div>
                         {item.dietary_category && (
-                          <div className="text-sm text-gray-500">
-                            {item.dietary_category}
-                          </div>
+                          <div className="text-sm text-gray-500">{item.dietary_category}</div>
                         )}
                       </div>
                     </div>
@@ -533,11 +540,17 @@ const InventoryTable = ({
 
 // Pagination Component
 const PaginationComponent = ({ pagination, onPageChange }) => {
-  if (!pagination || pagination.totalPages <= 1) return null;
+  // Add safety checks for undefined values
+  if (!pagination || !pagination.totalPages || pagination.totalPages <= 1) return null;
 
   const pages = [];
   const maxVisiblePages = 5;
-  const { currentPage, totalPages } = pagination;
+
+  // Ensure values are numbers and provide defaults
+  const currentPage = parseInt(pagination.currentPage) || 1;
+  const totalPages = parseInt(pagination.totalPages) || 1;
+  const itemsPerPage = parseInt(pagination.itemsPerPage) || 20;
+  const totalItems = parseInt(pagination.totalItems) || 0;
 
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -571,15 +584,9 @@ const PaginationComponent = ({ pagination, onPageChange }) => {
       <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
-            Showing{' '}
-            <span className="font-medium">{(currentPage - 1) * pagination.itemsPerPage + 1}</span>{' '}
-            to{' '}
-            <span className="font-medium">
-              {Math.min(currentPage * pagination.itemsPerPage, pagination.totalItems)}
-            </span>{' '}
-            of{' '}
-            <span className="font-medium">{pagination.totalItems}</span>{' '}
-            results
+            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+            <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span>{' '}
+            of <span className="font-medium">{totalItems}</span> results
           </p>
         </div>
         <div>
@@ -630,13 +637,13 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
     dietary_category: item?.dietary_category || '',
     barcode: item?.barcode || '',
     minimum_stock_level: item?.minimum_stock_level || 10,
-    description: item?.description || ''
+    description: item?.description || '',
   });
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -646,19 +653,21 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
 
   const validate = () => {
     const newErrors = {};
-    
+
     if (!formData.item_name.trim()) newErrors.item_name = 'Item name is required';
     if (!formData.category.trim()) newErrors.category = 'Category is required';
-    if (!formData.quantity || formData.quantity < 0) newErrors.quantity = 'Valid quantity is required';
-    if (formData.minimum_stock_level < 0) newErrors.minimum_stock_level = 'Minimum stock level must be 0 or greater';
-    
+    if (!formData.quantity || formData.quantity < 0)
+      newErrors.quantity = 'Valid quantity is required';
+    if (formData.minimum_stock_level < 0)
+      newErrors.minimum_stock_level = 'Minimum stock level must be 0 or greater';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     setLoading(true);
@@ -666,7 +675,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
       await onSave({
         ...formData,
         quantity: parseInt(formData.quantity),
-        minimum_stock_level: parseInt(formData.minimum_stock_level)
+        minimum_stock_level: parseInt(formData.minimum_stock_level),
       });
     } catch (error) {
       console.error('Error saving item:', error);
@@ -682,10 +691,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
           <h3 className="text-lg font-medium">
             {item ? 'Edit Inventory Item' : 'Add New Inventory Item'}
           </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
           </button>
         </div>
@@ -693,9 +699,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Item Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
               <input
                 type="text"
                 name="item_name"
@@ -706,15 +710,11 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
                 }`}
                 placeholder="Enter item name"
               />
-              {errors.item_name && (
-                <p className="text-red-500 text-sm mt-1">{errors.item_name}</p>
-              )}
+              {errors.item_name && <p className="text-red-500 text-sm mt-1">{errors.item_name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -725,18 +725,16 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
               >
                 <option value="">Select category</option>
                 {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
-              {errors.category && (
-                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-              )}
+              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
               <input
                 type="number"
                 name="quantity"
@@ -748,9 +746,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
                 }`}
                 placeholder="Enter quantity"
               />
-              {errors.quantity && (
-                <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>
-              )}
+              {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
             </div>
 
             <div>
@@ -812,15 +808,15 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
               >
                 <option value="">Select dietary category</option>
                 {dietaryCategories.map(diet => (
-                  <option key={diet} value={diet}>{diet}</option>
+                  <option key={diet} value={diet}>
+                    {diet}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Barcode
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
               <input
                 type="text"
                 name="barcode"
@@ -833,9 +829,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               name="description"
               value={formData.description}
@@ -859,7 +853,7 @@ const InventoryForm = ({ item, categories, dietaryCategories, onClose, onSave })
               disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Saving...' : (item ? 'Update Item' : 'Add Item')}
+              {loading ? 'Saving...' : item ? 'Update Item' : 'Add Item'}
             </button>
           </div>
         </form>

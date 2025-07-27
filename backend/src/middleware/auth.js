@@ -1,3 +1,4 @@
+// backend/src/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const { AppError } = require('../utils/errors');
 
