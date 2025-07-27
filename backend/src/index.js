@@ -61,7 +61,10 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3002',
       'https://localhost:3000',
+      'https://localhost:3001',
+      'https://localhost:3002',
       process.env.FRONTEND_URL,
     ].filter(Boolean);
 
@@ -71,12 +74,20 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, be more permissive
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 CORS: Allowing origin ${origin} in development mode`);
+        callback(null, true);
+      } else {
+        console.log(`❌ CORS: Blocking origin ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 app.use(cors(corsOptions));

@@ -1,5 +1,5 @@
 // frontend/src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
 import DonatePage from './pages/DonatePage';
@@ -7,12 +7,29 @@ import FoodbankPage from './pages/FoodBankManagerPage';
 import InventoryPage from './pages/InventoryManagement';
 import DashboardPage from './pages/Dashboard';
 import VolunteerPage from './pages/VolunteerPage';
+import ContactPage from './pages/ContactPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 import Footer from './components/layout/Footer';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
-  const navigate = page => {
+  // Handle URL parameters for deep linking
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    const path = window.location.pathname;
+
+    if (path === '/verify-email' || path.includes('verify-email')) {
+      setCurrentPage('verify-email');
+    } else if (pageParam === 'verify') {
+      setCurrentPage('verify-email');
+    } else if (pageParam) {
+      setCurrentPage(pageParam);
+    }
+  }, []);
+
+  const navigate = (page) => {
     setCurrentPage(page);
   };
 
@@ -32,6 +49,10 @@ const App = () => {
         return <DashboardPage onNavigate={navigate} />;
       case 'volunteer':
         return <VolunteerPage onNavigate={navigate} />;
+      case 'contact':
+        return <ContactPage onNavigate={navigate} />;
+      case 'verify-email':
+        return <EmailVerificationPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }

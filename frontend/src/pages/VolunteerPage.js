@@ -22,10 +22,64 @@ const VolunteerPage = ({ onNavigate }) => {
   const [foodbankId, setFoodbankId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Mock authentication and foodbank context - replace with actual auth
+  // Navigation handler for Header component
+  const handleHeaderNavigation = (page) => {
+    if (page === 'volunteer') {
+      // Show the volunteer landing page instead of staying on current view
+      setCurrentView('landing');
+      return;
+    }
+    
+    // Use the onNavigate prop for all other navigation
+    if (onNavigate) {
+      onNavigate(page);
+    } else {
+      // Fallback to window location if onNavigate is not available
+      switch(page) {
+        case 'home':
+          window.location.href = '/';
+          break;
+        case 'dashboard':
+          window.location.href = '/dashboard';
+          break;
+        case 'signup':
+          window.location.href = '/signup';
+          break;
+        case 'contact':
+          window.location.href = '/contact';
+          break;
+        case 'donate':
+          window.location.href = '/donate';
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
+  // Authentication and initialization check
   useEffect(() => {
-    // TODO: Replace with actual authentication check
+    const token = localStorage.getItem('token');
+    
+    // If no authentication token, clear volunteer data and reset state
+    if (!token) {
+      localStorage.removeItem('volunteerRegistered');
+      localStorage.removeItem('volunteerName');
+      localStorage.removeItem('volunteerId');
+      setIsRegistered(false);
+      setUserName('');
+      setUserShifts([]);
+      setCurrentView('landing');
+      setIsAuthenticated(false);
+      return;
+    }
+    
+    // Set authentication state
+    setIsAuthenticated(true);
+    
+    // If authenticated, check if user is already registered volunteer
     const savedRegistration = localStorage.getItem('volunteerRegistered');
     const savedName = localStorage.getItem('volunteerName');
     const savedVolunteerId = localStorage.getItem('volunteerId');
@@ -48,6 +102,26 @@ const VolunteerPage = ({ onNavigate }) => {
     
     // Load available shifts regardless of registration status
     loadAvailableShifts();
+  }, []);
+
+  // Listen for storage changes (logout from other tabs/pages)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' && !e.newValue) {
+        // Token was removed (logout occurred)
+        localStorage.removeItem('volunteerRegistered');
+        localStorage.removeItem('volunteerName');
+        localStorage.removeItem('volunteerId');
+        setIsRegistered(false);
+        setUserName('');
+        setUserShifts([]);
+        setCurrentView('landing');
+        setIsAuthenticated(false);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadAvailableShifts = async () => {
@@ -101,17 +175,6 @@ const VolunteerPage = ({ onNavigate }) => {
     } catch (error) {
       // Silently fail and use empty array - user hasn't signed up for shifts yet
       setUserShifts([]);
-    }
-  };
-
-  // Navigation handler for Header component - use the onNavigate prop from App.js
-  const handleHeaderNavigation = (page) => {
-    if (page === 'volunteer') {
-      // Stay on volunteer page, go to landing
-      setCurrentView('landing');
-    } else if (onNavigate) {
-      // Navigate to other pages using the prop from App.js
-      onNavigate(page);
     }
   };
 
@@ -220,9 +283,21 @@ const VolunteerPage = ({ onNavigate }) => {
   };
 
   const handleNavigation = (view) => {
-    if (view === 'register' && isRegistered) {
-      setCurrentView('schedule');
-      return;
+    if (view === 'register') {
+      // Check if user is signed in before allowing access to volunteer form
+      if (!isAuthenticated) {
+        // User is not signed in, redirect to sign up page
+        if (onNavigate) {
+          onNavigate('signup');
+        }
+        return;
+      }
+      
+      // If user is already registered, go to schedule instead
+      if (isRegistered) {
+        setCurrentView('schedule');
+        return;
+      }
     }
     setCurrentView(view);
   };
@@ -260,7 +335,7 @@ const VolunteerPage = ({ onNavigate }) => {
                   className="cta-button primary"
                   onClick={() => handleNavigation('register')}
                 >
-                  {isRegistered ? 'View Schedule' : 'Register'}
+                  {isRegistered ? 'View Schedule' : (isAuthenticated ? 'Register' : 'Sign In to Register')}
                 </button>
                 
                 {isRegistered && (

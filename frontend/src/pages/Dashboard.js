@@ -62,7 +62,13 @@ const DashboardPage = ({ onNavigate }) => {
     } catch (e) {
       console.warn('Logout error:', e);
     }
+    // Clear authentication token
     localStorage.removeItem('token');
+    
+    // Clear volunteer data to ensure volunteer page resets properly
+    localStorage.removeItem('volunteerRegistered');
+    localStorage.removeItem('volunteerName');
+    
     onNavigate('home');
   };
 
@@ -94,56 +100,139 @@ const DashboardPage = ({ onNavigate }) => {
 
   if (loading) {
     return (
-      <div className="text-center mt-10 text-gray-500">
-        <svg
-          className="animate-spin h-8 w-8 mx-auto mb-4 text-orange-400"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-          ></path>
-        </svg>
-        Loading dashboard...
+      <div className="min-h-screen bg-gray-100">
+        <Header currentPage="dashboard" onNavigate={onNavigate} />
+        <div className="text-center mt-10 text-gray-500">
+          <svg
+            className="animate-spin h-8 w-8 mx-auto mb-4 text-orange-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+          Loading dashboard...
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center mt-10 text-red-600">
-        <p>{error}</p>
-        <button
-          onClick={handleLogout}
-          className="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded"
-        >
-          Go to Home
-        </button>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
+        <Header currentPage="dashboard" onNavigate={onNavigate} />
+        <div className="flex items-center justify-center px-4 pt-16">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              {/* Beautiful icon */}
+              <div className="w-20 h-20 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              
+              {/* Heading */}
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                Please Log In
+              </h2>
+              
+              {/* Friendly message */}
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                To access your dashboard and start making a difference in your community, please sign in to your account.
+              </p>
+              
+              {/* Action buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => onNavigate('signup')}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
+                  Sign In / Sign Up
+                </button>
+                
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium transition-all duration-200"
+                >
+                  Go to Home
+                </button>
+              </div>
+              
+              {/* Additional help text */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-sm text-gray-500">
+                  New to ByteBasket? Join our community to help nourish families in need.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="text-center mt-10 text-red-600">
-        User not found. Please log in again.
-        <button
-          onClick={handleLogout}
-          className="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded"
-        >
-          Go to Home
-        </button>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
+        <Header currentPage="dashboard" onNavigate={onNavigate} />
+        <div className="flex items-center justify-center px-4 pt-16">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              {/* Beautiful icon */}
+              <div className="w-20 h-20 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              
+              {/* Heading */}
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                Please Log In
+              </h2>
+              
+              {/* Friendly message */}
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                We couldn't find your account details. Please sign in again to access your dashboard and continue helping your community.
+              </p>
+              
+              {/* Action buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => onNavigate('signup')}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
+                  Sign In / Sign Up
+                </button>
+                
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium transition-all duration-200"
+                >
+                  Go to Home
+                </button>
+              </div>
+              
+              {/* Additional help text */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-sm text-gray-500">
+                  Join thousands of people making a difference in their communities through ByteBasket.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -22,6 +22,11 @@ export const verifyEmail = async token => {
   return res.data;
 };
 
+export const resendVerificationEmail = async (email) => {
+  const res = await axios.post(`${API}/resend-verification`, { email });
+  return res.data;
+};
+
 export const getCurrentUser = async () => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No token found in localStorage');
