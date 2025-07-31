@@ -1,0 +1,36 @@
+{
+  "appName": "Bytebasket",
+  "taglineLine1": "Nutriendo comunidades,",
+  "taglineLine2": "¡Un byte a la vez!",
+  "donate": "Donar",
+  "waysToGive": "Formas de donar",
+  "inventoryTitle": "Inventario",
+  "inventoryDesc": "Monitorea y contribuye fácilmente a nuestro inventario en línea, asegurando transparencia y conveniencia para acceder y donar artículos.",
+  "giveTitle": "Donar",
+  "giveDesc": "Contribuye a nuestra misión de aliviar el hambre apoyándonos con donaciones monetarias y de alimentos.",
+  "volunteerTitle": "Voluntariado",
+  "volunteerDesc": "Únete a la lucha contra el hambre siendo voluntario en nuestro banco de alimentos y marcando una diferencia significativa en la vida de quienes lo necesitan.",
+  "navDashboard": "Panel de control",
+  "navVolunteer": "Voluntario",
+  "navSignUp": "Regístrate",
+  "navContact": "Contáctanos",
+  "footer": {
+    "description": "¡Nutriendo comunidades, un byte a la vez! Conectando a los donantes de alimentos con quienes lo necesitan mediante la tecnología y el espíritu comunitario.",
+    "getInvolved": "Involúcrate",
+    "quickLinks": "Enlaces rápidos",
+    "dashboard": "Panel",
+    "volunteer": "Voluntariado",
+    "inventory": "Inventario",
+    "donate": "Donar alimentos",
+    "findFood": "Encontrar comida",
+    "support": "Soporte",
+    "contact": "Contáctanos",
+    "help": "Centro de ayuda",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "about": "Sobre nosotros",
+    "rights": "Todos los derechos reservados."
+  }
+}
+
+

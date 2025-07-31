@@ -1,0 +1,36 @@
+{
+  "appName": "Bytebasket",
+  "taglineLine1": "Nourrir les communautés,",
+  "taglineLine2": "Un octet à la fois !",
+  "donate": "Faire un don",
+  "waysToGive": "Façons de donner",
+  "inventoryTitle": "Inventaire",
+  "inventoryDesc": "Surveillez et contribuez facilement à notre inventaire en ligne, assurant transparence et commodité dans l'accès et le don d'articles.",
+  "giveTitle": "Donner",
+  "giveDesc": "Contribuez à notre mission de lutte contre la faim en nous soutenant par des dons monétaires et alimentaires.",
+  "volunteerTitle": "Bénévolat",
+  "volunteerDesc": "Joignez-vous à nous dans la lutte contre la faim en faisant du bénévolat à notre banque alimentaire et en faisant une différence significative dans la vie de ceux qui en ont besoin.",
+  "navDashboard": "Tableau de bord",
+  "navVolunteer": "Bénévole",
+  "navSignUp": "Inscription",
+  "navContact": "Contactez-nous",
+  "footer": {
+    "description": "Nourrir les communautés, un octet à la fois ! Connecter les donateurs alimentaires à ceux dans le besoin grâce à la technologie et l’esprit communautaire.",
+    "getInvolved": "S'impliquer",
+    "quickLinks": "Liens rapides",
+    "dashboard": "Tableau de bord",
+    "volunteer": "Bénévolat",
+    "inventory": "Inventaire",
+    "donate": "Donner de la nourriture",
+    "findFood": "Trouver de la nourriture",
+    "support": "Support",
+    "contact": "Contactez-nous",
+    "help": "Centre d'aide",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "about": "À propos de nous",
+    "rights": "Tous droits réservés."
+  }
+}
+
+

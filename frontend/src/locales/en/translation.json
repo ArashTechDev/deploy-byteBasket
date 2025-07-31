@@ -1,0 +1,35 @@
+{
+  "appName": "Bytebasket",
+  "tagline": "Nourishing Communities,\nOne Byte at a Time!",
+  "donate": "Donate",
+  "waysToGive": "Ways to give",
+  "inventoryTitle": "Inventory",
+  "inventoryDesc": "Effortlessly monitor and contribute to our inventory online, ensuring transparency and convenience in accessing and donating items.",
+  "giveTitle": "Give",
+  "giveDesc": "Contribute to our mission of alleviating hunger by supporting us through monetary donations and food contributions.",
+  "volunteerTitle": "Volunteer",
+  "volunteerDesc": "Join us in the fight against hunger by volunteering at our food bank and making a meaningful difference in the lives of those in need.",
+  "navDashboard": "Dashboard",
+  "navVolunteer": "Volunteer",
+  "navSignUp": "Sign Up",
+  "navContact": "Contact Us",
+  "footer": {
+    "description": "Nourishing Communities, One Byte at a Time! Connecting food donors with those in need through technology and community spirit.",
+    "getInvolved": "Get Involved",
+    "quickLinks": "Quick Links",
+    "dashboard": "Dashboard",
+    "volunteer": "Volunteer",
+    "inventory": "Inventory",
+    "donate": "Donate Food",
+    "findFood": "Find Food",
+    "support": "Support",
+    "contact": "Contact Us",
+    "help": "Help Center",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "about": "About Us",
+    "rights": "All rights reserved."
+  }
+}
+
+

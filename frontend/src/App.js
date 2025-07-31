@@ -9,6 +9,7 @@ import DashboardPage from './pages/Dashboard';
 import VolunteerPage from './pages/VolunteerPage';
 import ContactPage from './pages/ContactPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
+import InventoryBrowsePage from './pages/InventoryBrowsePage';
 import Footer from './components/layout/Footer';
 
 const App = () => {
