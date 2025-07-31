@@ -1,5 +1,6 @@
-// frontend/src/pages/VolunteerPage.js
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import VolunteerForm from '../components/forms/VolunteerForm';
@@ -11,6 +12,8 @@ import { volunteerShiftService } from '../services/volunteerShiftService';
 import './VolunteerPage.css';
 
 const VolunteerPage = ({ onNavigate }) => {
+  const { t } = useTranslation();
+
   const [currentView, setCurrentView] = useState('landing'); // landing, register, schedule, myshifts
   const [isRegistered, setIsRegistered] = useState(false);
   const [userShifts, setUserShifts] = useState([]);
@@ -27,16 +30,13 @@ const VolunteerPage = ({ onNavigate }) => {
   // Navigation handler for Header component
   const handleHeaderNavigation = (page) => {
     if (page === 'volunteer') {
-      // Show the volunteer landing page instead of staying on current view
       setCurrentView('landing');
       return;
     }
     
-    // Use the onNavigate prop for all other navigation
     if (onNavigate) {
       onNavigate(page);
     } else {
-      // Fallback to window location if onNavigate is not available
       switch(page) {
         case 'home':
           window.location.href = '/';
@@ -59,11 +59,8 @@ const VolunteerPage = ({ onNavigate }) => {
     }
   };
 
-  // Authentication and initialization check
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
-    // If no authentication token, clear volunteer data and reset state
     if (!token) {
       localStorage.removeItem('volunteerRegistered');
       localStorage.removeItem('volunteerName');
@@ -75,40 +72,34 @@ const VolunteerPage = ({ onNavigate }) => {
       setIsAuthenticated(false);
       return;
     }
-    
-    // Set authentication state
+
     setIsAuthenticated(true);
-    
-    // If authenticated, check if user is already registered volunteer
+
     const savedRegistration = localStorage.getItem('volunteerRegistered');
     const savedName = localStorage.getItem('volunteerName');
     const savedVolunteerId = localStorage.getItem('volunteerId');
-    const savedUserId = localStorage.getItem('userId'); // From authentication
-    const savedFoodbankId = localStorage.getItem('foodbankId'); // From context
-    
+    const savedUserId = localStorage.getItem('userId');
+    const savedFoodbankId = localStorage.getItem('foodbankId');
+
     if (savedRegistration && savedVolunteerId) {
       setIsRegistered(true);
-      setUserName(savedName || 'Volunteer');
+      setUserName(savedName || t('volunteerPage.defaults.volunteer'));
       setVolunteerId(savedVolunteerId);
-      setUserId(savedUserId || 'mock-user-id'); // TODO: Get from auth
-      setFoodbankId(savedFoodbankId || 'mock-foodbank-id'); // TODO: Get from context
+      setUserId(savedUserId || 'mock-user-id');
+      setFoodbankId(savedFoodbankId || 'mock-foodbank-id');
       setCurrentView('schedule');
       loadUserShifts(savedVolunteerId);
     } else {
-      // Set mock IDs for demo - TODO: Replace with real auth
       setUserId('mock-user-id');
       setFoodbankId('mock-foodbank-id');
     }
-    
-    // Load available shifts regardless of registration status
-    loadAvailableShifts();
-  }, []);
 
-  // Listen for storage changes (logout from other tabs/pages)
+    loadAvailableShifts();
+  }, [t]);
+
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'token' && !e.newValue) {
-        // Token was removed (logout occurred)
         localStorage.removeItem('volunteerRegistered');
         localStorage.removeItem('volunteerName');
         localStorage.removeItem('volunteerId');
@@ -131,35 +122,34 @@ const VolunteerPage = ({ onNavigate }) => {
       const response = await shiftService.getAvailableShifts(mockFoodbankId);
       const transformedShifts = shiftService.transformShiftsForCalendar(response.data);
       setAvailableShifts(transformedShifts);
-    } catch (error) {
-      // Don't show error to user - just use fallback mock data silently
+    } catch {
       setAvailableShifts([
         {
           id: 'mock-1',
           date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
           time: '9:00 AM - 12:00 PM',
-          activity: 'Food sorting',
+          activity: t('volunteerPage.mockShifts.foodSorting'),
           spotsAvailable: 3,
           totalSpots: 5,
-          location: 'Main Warehouse'
+          location: t('volunteerPage.mockShifts.mainWarehouse')
         },
         {
           id: 'mock-2',
-          date: new Date(Date.now() + 172800000).toISOString().split('T')[0], // Day after tomorrow
+          date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
           time: '2:00 PM - 5:00 PM',
-          activity: 'Food distribution',
+          activity: t('volunteerPage.mockShifts.foodDistribution'),
           spotsAvailable: 2,
           totalSpots: 4,
-          location: 'Community Center'
+          location: t('volunteerPage.mockShifts.communityCenter')
         },
         {
           id: 'mock-3',
-          date: new Date(Date.now() + 259200000).toISOString().split('T')[0], // 3 days from now
+          date: new Date(Date.now() + 259200000).toISOString().split('T')[0],
           time: '10:00 AM - 1:00 PM',
-          activity: 'Inventory management',
+          activity: t('volunteerPage.mockShifts.inventoryManagement'),
           spotsAvailable: 4,
           totalSpots: 6,
-          location: 'Main Warehouse'
+          location: t('volunteerPage.mockShifts.mainWarehouse')
         }
       ]);
     } finally {
@@ -172,8 +162,7 @@ const VolunteerPage = ({ onNavigate }) => {
       const response = await volunteerShiftService.getVolunteerShifts(volId);
       const transformedShifts = volunteerShiftService.transformVolunteerShifts(response.data);
       setUserShifts(transformedShifts);
-    } catch (error) {
-      // Silently fail and use empty array - user hasn't signed up for shifts yet
+    } catch {
       setUserShifts([]);
     }
   };
@@ -182,35 +171,29 @@ const VolunteerPage = ({ onNavigate }) => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Transform form data to match backend schema
+
       const volunteerData = volunteerService.transformRegistrationData({
         ...formData,
         user_id: userId,
         foodbank_id: foodbankId
       });
-      
-      // Create volunteer in backend
+
       const response = await volunteerService.createVolunteer(volunteerData);
-      
-      // Save registration info
+
       localStorage.setItem('volunteerRegistered', 'true');
       localStorage.setItem('volunteerName', formData.firstName);
       localStorage.setItem('volunteerId', response.data._id);
-      
+
       setIsRegistered(true);
       setUserName(formData.firstName);
       setVolunteerId(response.data._id);
       setShowRegistrationSuccess(true);
       setCurrentView('schedule');
-      
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        setShowRegistrationSuccess(false);
-      }, 5000);
-      
+
+      setTimeout(() => setShowRegistrationSuccess(false), 5000);
+
     } catch (error) {
-      setError(error.message || 'Failed to register. Please try again.');
+      setError(error.message || t('volunteerPage.errors.registerFail'));
     } finally {
       setLoading(false);
     }
@@ -220,32 +203,28 @@ const VolunteerPage = ({ onNavigate }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       if (!volunteerId) {
-        throw new Error('Volunteer ID not found. Please re-register.');
+        throw new Error(t('volunteerPage.errors.missingVolunteerId'));
       }
-      
-      // Create shift assignment
+
       const assignmentData = volunteerShiftService.createShiftAssignment(
         volunteerId,
         shift.id,
         userId,
         foodbankId
       );
-      
-      // Assign volunteer to shift
-      const response = await volunteerShiftService.assignVolunteerToShift(assignmentData);
-      
-      // Refresh user shifts
+
+      await volunteerShiftService.assignVolunteerToShift(assignmentData);
+
       await loadUserShifts(volunteerId);
-      
-      // Show confirmation and redirect to my shifts
-      alert(`Successfully signed up for ${shift.activity} on ${shift.date}!`);
+
+      alert(t('volunteerPage.alerts.successSignUp', { activity: shift.activity, date: shift.date }));
       setCurrentView('myshifts');
-      
+
     } catch (error) {
-      setError(error.message || 'Failed to sign up for shift. Please try again.');
-      alert(`Error: ${error.message || 'Failed to sign up for shift'}`);
+      setError(error.message || t('volunteerPage.errors.signUpFail'));
+      alert(t('volunteerPage.alerts.errorSignUp', { error: error.message }));
     } finally {
       setLoading(false);
     }
@@ -255,28 +234,25 @@ const VolunteerPage = ({ onNavigate }) => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Find the volunteer shift to cancel
+
       const volunteerShift = userShifts.find(shift => shift.id === shiftId);
       if (!volunteerShift) {
-        throw new Error('Shift not found');
+        throw new Error(t('volunteerPage.errors.shiftNotFound'));
       }
-      
-      // Cancel the shift
+
       await volunteerShiftService.cancelVolunteerShift(
         volunteerShift.id,
-        'Cancelled by volunteer',
+        t('volunteerPage.cancellation.cancelledByVolunteer'),
         userId
       );
-      
-      // Refresh user shifts
+
       await loadUserShifts(volunteerId);
-      
-      alert('Shift cancelled successfully!');
-      
+
+      alert(t('volunteerPage.alerts.shiftCancelled'));
+
     } catch (error) {
-      setError(error.message || 'Failed to cancel shift. Please try again.');
-      alert(`Error: ${error.message || 'Failed to cancel shift'}`);
+      setError(error.message || t('volunteerPage.errors.cancelFail'));
+      alert(t('volunteerPage.alerts.errorCancel', { error: error.message }));
     } finally {
       setLoading(false);
     }
@@ -284,16 +260,12 @@ const VolunteerPage = ({ onNavigate }) => {
 
   const handleNavigation = (view) => {
     if (view === 'register') {
-      // Check if user is signed in before allowing access to volunteer form
       if (!isAuthenticated) {
-        // User is not signed in, redirect to sign up page
         if (onNavigate) {
           onNavigate('signup');
         }
         return;
       }
-      
-      // If user is already registered, go to schedule instead
       if (isRegistered) {
         setCurrentView('schedule');
         return;
@@ -308,61 +280,66 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="landing-section">
             <div className="hero-content">
-              <h1>Explore the rewarding world of volunteering with us and be a part of the solution!</h1>
-              
+              <h1>{t('volunteerPage.landing.heroTitle')}</h1>
+
               <div className="impact-cards">
                 <div className="impact-card">
                   <div className="impact-icon">🎯</div>
-                  <h3>Meaningful Impact</h3>
-                  <p>Contribute to the fight against hunger and help us provide essential nourishment to individuals and families facing food insecurity in our community.</p>
+                  <h3>{t('volunteerPage.landing.impactCards.impact1.title')}</h3>
+                  <p>{t('volunteerPage.landing.impactCards.impact1.description')}</p>
                 </div>
-                
+
                 <div className="impact-card">
                   <div className="impact-icon">🤝</div>
-                  <h3>Stronger Community</h3>
-                  <p>Be a catalyst for positive change by fostering a sense of community and solidarity. Join like-minded individuals who share the common goal of creating a hunger-free future.</p>
+                  <h3>{t('volunteerPage.landing.impactCards.impact2.title')}</h3>
+                  <p>{t('volunteerPage.landing.impactCards.impact2.description')}</p>
                 </div>
-                
+
                 <div className="impact-card">
                   <div className="impact-icon">🔄</div>
-                  <h3>Flexible Opportunities</h3>
-                  <p>We understand that your time is valuable. That's why we offer flexible volunteering options that fit your schedule, whether it's a few hours a week or a one-time event.</p>
+                  <h3>{t('volunteerPage.landing.impactCards.impact3.title')}</h3>
+                  <p>{t('volunteerPage.landing.impactCards.impact3.description')}</p>
                 </div>
               </div>
-              
+
               <div className="cta-section">
                 <button 
                   className="cta-button primary"
                   onClick={() => handleNavigation('register')}
                 >
-                  {isRegistered ? 'View Schedule' : (isAuthenticated ? 'Register' : 'Sign In to Register')}
+                  {isRegistered
+                    ? t('volunteerPage.landing.buttons.primaryViewSchedule')
+                    : (isAuthenticated
+                      ? t('volunteerPage.landing.buttons.primaryRegister')
+                      : t('volunteerPage.landing.buttons.primarySignInRegister')
+                    )}
                 </button>
-                
+
                 {isRegistered && (
-                  <button 
+                  <button
                     className="cta-button secondary"
                     onClick={() => setCurrentView('myshifts')}
                   >
-                    My Shifts
+                    {t('volunteerPage.landing.buttons.secondaryMyShifts')}
                   </button>
                 )}
               </div>
             </div>
           </div>
         );
-      
+
       case 'register':
         if (isRegistered) {
           return (
             <div className="registration-complete">
               <div className="success-message">
-                <h2>✅ You're already registered!</h2>
-                <p>Welcome to our volunteer community. You can now view available shifts and manage your schedule.</p>
-                <button 
+                <h2>✅ {t('volunteerPage.registration.alreadyRegisteredTitle')}</h2>
+                <p>{t('volunteerPage.registration.alreadyRegisteredDescription')}</p>
+                <button
                   className="cta-button"
                   onClick={() => setCurrentView('schedule')}
                 >
-                  View Available Shifts
+                  {t('volunteerPage.registration.viewAvailableShiftsButton')}
                 </button>
               </div>
             </div>
@@ -371,34 +348,34 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="form-section">
             <div className="form-header">
-              <button 
+              <button
                 className="back-btn"
                 onClick={() => setCurrentView('landing')}
               >
-                ← Back
+                ← {t('volunteerPage.buttons.back')}
               </button>
-              <h2>Join Our Volunteer Community</h2>
-              <p>Fill out the form below to get started with volunteering</p>
+              <h2>{t('volunteerPage.registration.title')}</h2>
+              <p>{t('volunteerPage.registration.subtitle')}</p>
               {error && <div className="error-message">{error}</div>}
             </div>
             <VolunteerForm 
-              onSubmit={handleRegistrationSubmit} 
+              onSubmit={handleRegistrationSubmit}
               loading={loading}
             />
           </div>
         );
-      
+
       case 'schedule':
         if (!isRegistered) {
           return (
             <div className="registration-required">
-              <h2>Registration Required</h2>
-              <p>Please register as a volunteer first to view and sign up for shifts.</p>
-              <button 
+              <h2>{t('volunteerPage.registrationRequired.title')}</h2>
+              <p>{t('volunteerPage.registrationRequired.description')}</p>
+              <button
                 className="cta-button"
                 onClick={() => setCurrentView('register')}
               >
-                Register Now
+                {t('volunteerPage.registrationRequired.registerNow')}
               </button>
             </div>
           );
@@ -406,26 +383,26 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="schedule-section">
             <div className="schedule-header">
-              <button 
+              <button
                 className="back-btn"
                 onClick={() => setCurrentView('landing')}
               >
-                ← Back to Home
+                ← {t('volunteerPage.buttons.backToHome')}
               </button>
               <div className="header-content">
-                <h2>Available Volunteer Shifts</h2>
-                <p>Welcome back, {userName}! Select a date to view and sign up for shifts.</p>
+                <h2>{t('volunteerPage.schedule.availableShiftsTitle')}</h2>
+                <p>{t('volunteerPage.schedule.welcomeBack', { userName })}</p>
                 {error && <div className="error-message">{error}</div>}
               </div>
-              <button 
+              <button
                 className="my-shifts-btn"
                 onClick={() => setCurrentView('myshifts')}
               >
-                My Shifts ({userShifts.length})
+                {t('volunteerPage.schedule.myShifts')} ({userShifts.length})
               </button>
             </div>
-            {loading && <div className="loading-message">Loading shifts...</div>}
-            <ShiftCalendar 
+            {loading && <div className="loading-message">{t('volunteerPage.loading.loadingShifts')}</div>}
+            <ShiftCalendar
               shifts={availableShifts}
               onShiftSelect={handleShiftSelect}
               selectedShifts={userShifts}
@@ -434,18 +411,18 @@ const VolunteerPage = ({ onNavigate }) => {
             />
           </div>
         );
-      
+
       case 'myshifts':
         if (!isRegistered) {
           return (
             <div className="registration-required">
-              <h2>Registration Required</h2>
-              <p>Please register as a volunteer first to view your shifts.</p>
-              <button 
+              <h2>{t('volunteerPage.registrationRequired.title')}</h2>
+              <p>{t('volunteerPage.registrationRequired.description')}</p>
+              <button
                 className="cta-button"
                 onClick={() => setCurrentView('register')}
               >
-                Register Now
+                {t('volunteerPage.registrationRequired.registerNow')}
               </button>
             </div>
           );
@@ -453,31 +430,31 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="myshifts-section">
             <div className="myshifts-header">
-              <button 
+              <button
                 className="back-btn"
                 onClick={() => setCurrentView('schedule')}
               >
-                ← Back to Schedule
+                ← {t('volunteerPage.buttons.backToSchedule')}
               </button>
               <div className="header-actions">
-                <button 
+                <button
                   className="schedule-btn"
                   onClick={() => setCurrentView('schedule')}
                 >
-                  + Schedule More Shifts
+                  + {t('volunteerPage.myShifts.scheduleMoreShifts')}
                 </button>
               </div>
             </div>
             {error && <div className="error-message">{error}</div>}
-            {loading && <div className="loading-message">Loading your shifts...</div>}
-            <MyShiftsPanel 
+            {loading && <div className="loading-message">{t('volunteerPage.loading.loadingUserShifts')}</div>}
+            <MyShiftsPanel
               userShifts={userShifts}
               onCancelShift={handleCancelShift}
               loading={loading}
             />
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -485,17 +462,17 @@ const VolunteerPage = ({ onNavigate }) => {
 
   return (
     <div className="volunteer-page">
-      <Header 
+      <Header
         currentPage="volunteer"
         onNavigate={handleHeaderNavigation}
       />
-      
+
       {showRegistrationSuccess && (
         <div className="success-banner">
           <div className="success-content">
             <span className="success-icon">🎉</span>
-            <span>Welcome to our volunteer community, {userName}! You can now sign up for shifts.</span>
-            <button 
+            <span>{t('volunteerPage.successBanner.welcomeMessage', { userName })}</span>
+            <button
               className="close-banner"
               onClick={() => setShowRegistrationSuccess(false)}
             >
@@ -504,11 +481,11 @@ const VolunteerPage = ({ onNavigate }) => {
           </div>
         </div>
       )}
-      
+
       <div className="volunteer-container">
         {renderContent()}
       </div>
-      
+
       <Footer />
     </div>
   );

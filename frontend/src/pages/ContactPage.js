@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '../components/layout/Header';
 
 const ContactPage = ({ onNavigate }) => {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,7 +22,6 @@ const ContactPage = ({ onNavigate }) => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -31,15 +33,14 @@ const ContactPage = ({ onNavigate }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
-    if (!formData.message.trim()) newErrors.message = 'Message is required';
+    if (!formData.name.trim()) newErrors.name = t('contact.errors.nameRequired');               // "Name is required"
+    if (!formData.email.trim()) newErrors.email = t('contact.errors.emailRequired');             // "Email is required"
+    if (!formData.subject.trim()) newErrors.subject = t('contact.errors.subjectRequired');       // "Subject is required"
+    if (!formData.message.trim()) newErrors.message = t('contact.errors.messageRequired');       // "Message is required"
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('contact.errors.emailInvalid');                                        // "Please enter a valid email address"
     }
 
     setErrors(newErrors);
@@ -51,17 +52,13 @@ const ContactPage = ({ onNavigate }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    
-    // Simulate API call
+
     setTimeout(() => {
       setIsSubmitting(false);
       setShowSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-      
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 5000);
+
+      setTimeout(() => setShowSuccess(false), 5000);
     }, 1000);
   };
 
@@ -70,27 +67,26 @@ const ContactPage = ({ onNavigate }) => {
       <Header currentPage="contact" onNavigate={onNavigate} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-800 mb-6">
-            Get in Touch
-          </h1>
+          <h1 className="text-5xl font-bold text-gray-800 mb-6">{t('contact.hero.title')}</h1> {/* "Get in Touch" */}
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            We'd love to hear from you! Whether you have questions about volunteering, 
-            need assistance with donations, or want to learn more about our mission, 
-            we're here to help.
+            {t('contact.hero.description')}
+            {/* "We'd love to hear from you! Whether you have questions about volunteering, need assistance with donations, or want to learn more about our mission, we're here to help." */}
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
+
           {/* Contact Information */}
           <div className="space-y-8">
+
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-8">
-                Let's Connect
-              </h2>
-              
+              <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('contact.connect.title')}</h2> {/* "Let's Connect" */}
+
               <div className="space-y-6">
+
                 {/* Address */}
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -100,11 +96,12 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Visit Us</h3>
-                    <p className="text-gray-600">
-                      123 Community Street<br />
-                      Food Bank District<br />
-                      City, Province A1B 2C3
+                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.address.title')}</h3> {/* "Visit Us" */}
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {t('contact.address.line1')}{'\n'}
+                      {t('contact.address.line2')}{'\n'}
+                      {t('contact.address.line3')}
+                      {/* "123 Community Street\nFood Bank District\nCity, Province A1B 2C3" */}
                     </p>
                   </div>
                 </div>
@@ -117,10 +114,11 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Call Us</h3>
-                    <p className="text-gray-600">
-                      Main Office: (555) 123-4567<br />
-                      Emergency Line: (555) 987-6543
+                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.phone.title')}</h3> {/* "Call Us" */}
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {t('contact.phone.main')}<br />
+                      {t('contact.phone.emergency')}
+                      {/* "Main Office: (555) 123-4567\nEmergency Line: (555) 987-6543" */}
                     </p>
                   </div>
                 </div>
@@ -133,10 +131,11 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Email Us</h3>
-                    <p className="text-gray-600">
-                      General Inquiries: info@bytebasket.org<br />
-                      Volunteer Support: volunteers@bytebasket.org
+                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.email.title')}</h3> {/* "Email Us" */}
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {t('contact.email.general')}<br />
+                      {t('contact.email.volunteer')}
+                      {/* "General Inquiries: info@bytebasket.org\nVolunteer Support: volunteers@bytebasket.org" */}
                     </p>
                   </div>
                 </div>
@@ -149,11 +148,16 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Office Hours</h3>
-                    <p className="text-gray-600">
-                      Monday - Friday: 9:00 AM - 6:00 PM<br />
-                      Saturday: 10:00 AM - 4:00 PM<br />
-                      Sunday: Closed
+                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.hours.title')}</h3> {/* "Office Hours" */}
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {t('contact.hours.weekdays')}<br />
+                      {t('contact.hours.saturday')}<br />
+                      {t('contact.hours.sunday')}
+                      {/* 
+                        Monday - Friday: 9:00 AM - 6:00 PM
+                        Saturday: 10:00 AM - 4:00 PM
+                        Sunday: Closed
+                      */}
                     </p>
                   </div>
                 </div>
@@ -162,27 +166,26 @@ const ContactPage = ({ onNavigate }) => {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Quick Actions
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">{t('contact.quickActions.title')}</h3> {/* "Quick Actions" */}
+
               <div className="space-y-4">
                 <button
                   onClick={() => onNavigate('volunteer')}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  🤝 Become a Volunteer
+                  🤝 {t('contact.quickActions.volunteer')}
                 </button>
                 <button
                   onClick={() => onNavigate('donate')}
                   className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  💝 Make a Donation
+                  💝 {t('contact.quickActions.donate')}
                 </button>
                 <button
                   onClick={() => onNavigate('dashboard')}
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  📊 View Dashboard
+                  📊 {t('contact.quickActions.dashboard')}
                 </button>
               </div>
             </div>
@@ -190,15 +193,13 @@ const ContactPage = ({ onNavigate }) => {
 
           {/* Contact Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">
-              Send us a Message
-            </h2>
-            
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('contact.form.title')}</h2> {/* "Send us a Message" */}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
+                    {t('contact.form.nameLabel')} *
                   </label>
                   <input
                     type="text"
@@ -209,14 +210,14 @@ const ContactPage = ({ onNavigate }) => {
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
                       errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your full name"
+                    placeholder={t('contact.form.namePlaceholder')}
                   />
                   {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
+                    {t('contact.form.emailLabel')} *
                   </label>
                   <input
                     type="email"
@@ -227,7 +228,7 @@ const ContactPage = ({ onNavigate }) => {
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
                       errors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your email address"
+                    placeholder={t('contact.form.emailPlaceholder')}
                   />
                   {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
@@ -235,7 +236,7 @@ const ContactPage = ({ onNavigate }) => {
 
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject *
+                  {t('contact.form.subjectLabel')} *
                 </label>
                 <select
                   id="subject"
@@ -246,21 +247,21 @@ const ContactPage = ({ onNavigate }) => {
                     errors.subject ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
-                  <option value="">Select a subject</option>
-                  <option value="volunteer">Volunteer Opportunities</option>
-                  <option value="donation">Donation Information</option>
-                  <option value="partnership">Partnership Inquiry</option>
-                  <option value="support">Technical Support</option>
-                  <option value="feedback">Feedback & Suggestions</option>
-                  <option value="media">Media & Press</option>
-                  <option value="other">Other</option>
+                  <option value="">{t('contact.form.subjectPlaceholder')}</option>
+                  <option value="volunteer">{t('contact.form.subjectOptions.volunteer')}</option>
+                  <option value="donation">{t('contact.form.subjectOptions.donation')}</option>
+                  <option value="partnership">{t('contact.form.subjectOptions.partnership')}</option>
+                  <option value="support">{t('contact.form.subjectOptions.support')}</option>
+                  <option value="feedback">{t('contact.form.subjectOptions.feedback')}</option>
+                  <option value="media">{t('contact.form.subjectOptions.media')}</option>
+                  <option value="other">{t('contact.form.subjectOptions.other')}</option>
                 </select>
                 {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  Message *
+                  {t('contact.form.messageLabel')} *
                 </label>
                 <textarea
                   id="message"
@@ -271,19 +272,18 @@ const ContactPage = ({ onNavigate }) => {
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none ${
                     errors.message ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Tell us how we can help you..."
+                  placeholder={t('contact.form.messagePlaceholder')}
                 />
                 {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
               </div>
 
-              {/* Success Message */}
               {showSuccess && (
                 <div className="bg-white border border-green-200 text-green-800 p-3 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Message sent successfully!</span>
+                    <span>{t('contact.form.successMessage')}</span> {/* "Message sent successfully!" */}
                   </div>
                 </div>
               )}
@@ -303,10 +303,10 @@ const ContactPage = ({ onNavigate }) => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
-                    <span>Sending...</span>
+                    <span>{t('contact.form.sending')}</span> {/* "Sending..." */}
                   </div>
                 ) : (
-                  'Send Message'
+                  t('contact.form.sendButton') /* "Send Message" */
                 )}
               </button>
             </form>
@@ -316,53 +316,34 @@ const ContactPage = ({ onNavigate }) => {
         {/* FAQ Section */}
         <div className="mt-20">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xl text-gray-600">
-              Quick answers to common questions
-            </p>
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">{t('contact.faq.title')}</h2> {/* "Frequently Asked Questions" */}
+            <p className="text-xl text-gray-600">{t('contact.faq.subtitle')}</p> {/* "Quick answers to common questions" */}
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
+
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                How can I become a volunteer?
-              </h3>
-              <p className="text-gray-600">
-                Simply click on the "Volunteer" link in our navigation menu and fill out our registration form. 
-                We'll review your application and get back to you within 48 hours.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q1.question')}</h3> {/* "How can I become a volunteer?" */}
+              <p className="text-gray-600">{t('contact.faq.q1.answer')}</p>
+              {/* "Simply click on the 'Volunteer' link in our navigation menu and fill out our registration form. We'll review your application and get back to you within 48 hours." */}
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                What types of donations do you accept?
-              </h3>
-              <p className="text-gray-600">
-                We accept both monetary donations and food items. Non-perishable foods, fresh produce, 
-                and packaged goods are always needed. Check our donation page for specific requirements.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q2.question')}</h3> {/* "What types of donations do you accept?" */}
+              <p className="text-gray-600">{t('contact.faq.q2.answer')}</p>
+              {/* "We accept both monetary donations and food items. Non-perishable foods, fresh produce, and packaged goods are always needed. Check our donation page for specific requirements." */}
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                Are there volunteer opportunities for groups?
-              </h3>
-              <p className="text-gray-600">
-                Absolutely! We welcome corporate groups, school classes, and community organizations. 
-                Contact us to arrange group volunteer sessions and team-building opportunities.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q3.question')}</h3> {/* "Are there volunteer opportunities for groups?" */}
+              <p className="text-gray-600">{t('contact.faq.q3.answer')}</p>
+              {/* "Absolutely! We welcome corporate groups, school classes, and community organizations. Contact us to arrange group volunteer sessions and team-building opportunities." */}
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                How do you ensure food safety?
-              </h3>
-              <p className="text-gray-600">
-                Food safety is our top priority. All volunteers receive training on proper food handling, 
-                and we follow strict guidelines for food storage, preparation, and distribution.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q4.question')}</h3> {/* "How do you ensure food safety?" */}
+              <p className="text-gray-600">{t('contact.faq.q4.answer')}</p>
+              {/* "Food safety is our top priority. All volunteers receive training on proper food handling, and we follow strict guidelines for food storage, preparation, and distribution." */}
             </div>
           </div>
         </div>

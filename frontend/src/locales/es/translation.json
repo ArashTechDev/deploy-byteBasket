@@ -1,7 +1,6 @@
 {
   "appName": "Bytebasket",
-  "taglineLine1": "Nutriendo comunidades,",
-  "taglineLine2": "¡Un byte a la vez!",
+  "tagline": "Nutriendo Comunidades,\n¡Un Byte a la vez!",
   "donate": "Donar",
   "waysToGive": "Formas de donar",
   "inventoryTitle": "Inventario",
@@ -10,27 +9,275 @@
   "giveDesc": "Contribuye a nuestra misión de aliviar el hambre apoyándonos con donaciones monetarias y de alimentos.",
   "volunteerTitle": "Voluntariado",
   "volunteerDesc": "Únete a la lucha contra el hambre siendo voluntario en nuestro banco de alimentos y marcando una diferencia significativa en la vida de quienes lo necesitan.",
-  "navDashboard": "Panel de control",
-  "navVolunteer": "Voluntario",
-  "navSignUp": "Regístrate",
+  "navDashboard": "Tablero",
+  "navVolunteer": "Voluntariado",
+  "navSignUp": "Registrarse",
   "navContact": "Contáctanos",
+    "signUp": {
+    "pageTitle": "Regístrate o Inicia sesión",
+    "emailVerificationMessage": "Por favor revisa tu correo electrónico y verifica tu cuenta antes de iniciar sesión."
+  },
+    "dashboard": {
+    "loading": "Cargando el panel de control...",
+    "loginPrompt": "Por favor, inicie sesión",
+    "loginPromptMessage": "Para acceder a su panel de control y comenzar a hacer una diferencia en su comunidad, inicie sesión en su cuenta.",
+    "signInSignUp": "Iniciar sesión / Registrarse",
+    "goHome": "Ir a inicio",
+    "newUserMessage": "¿Nuevo en ByteBasket? Únase a nuestra comunidad para ayudar a alimentar a familias necesitadas.",
+    "accountNotFoundMessage": "No pudimos encontrar los detalles de su cuenta. Por favor, inicie sesión nuevamente para acceder a su panel de control y continuar ayudando a su comunidad.",
+    "communityMessage": "Únase a miles de personas que marcan la diferencia en sus comunidades a través de ByteBasket.",
+    "welcome": "Bienvenido",
+    "role": "Rol",
+    "logout": "Cerrar sesión",
+    "goTo": "Ir a",
+    "errors": {
+      "noToken": "No se encontró token. Por favor, inicie sesión.",
+      "fetchFailed": "No se pudo obtener los datos del usuario. Por favor, inicie sesión nuevamente."
+    },
+    "sections": {
+      "inventory": {
+        "title": "Inventario",
+        "description": "Administre los artículos del inventario, rastree donaciones y uso."
+      },
+      "foodbank": {
+        "title": "Ubicaciones de bancos de alimentos",
+        "description": "Agregue, actualice o elimine ubicaciones de bancos de alimentos."
+      },
+      "donate": {
+        "title": "Hacer una donación",
+        "description": "Done rápidamente alimentos, dinero o recursos."
+      },
+      "tasks": {
+        "title": "Tareas asignadas",
+        "description": "Ver y administrar las tareas de voluntariado asignadas."
+      }
+    }
+  },  "signInForm": {
+    "emailLabel": "Correo electrónico / Usuario",
+    "emailPlaceholder": "Correo electrónico",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "orSignUp": "o ¡Regístrate!",
+    "submit": "Enviar",
+    "loginFailed": "Error al iniciar sesión"
+  },  "signUpForm": {
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "fillAllFields": "Por favor complete todos los campos requeridos",
+    "registrationSuccess": "¡Registro exitoso! Por favor, revise su correo para verificar su cuenta.",
+    "registrationFailed": "El registro falló. Por favor, inténtelo de nuevo.",
+    "verificationEmailSent": "Correo de verificación enviado con éxito. Por favor, revise su bandeja de entrada.",
+    "verificationEmailFailed": "Error al reenviar el correo de verificación. Por favor, inténtelo de nuevo.",
+    "checkYourEmail": "¡Revisa tu correo!",
+    "verificationSentTo": "Hemos enviado un correo de verificación a",
+    "pleaseCheckInbox": "Por favor, revise su bandeja de entrada y haga clic en el enlace de verificación para completar su registro.",
+    "didntReceiveEmail": "¿No recibió el correo? Revise su carpeta de spam o espere unos minutos.",
+    "sending": "Enviando...",
+    "resendVerification": "Reenviar correo de verificación",
+    "backToSignIn": "Volver a Iniciar sesión",
+    "roleLabel": "Rol",
+    "chooseRole": "Elegir rol",
+    "roles": {
+      "donor": "Donante",
+      "volunteer": "Voluntario",
+      "recipient": "Beneficiario"
+    },
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Tu nombre completo",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "Correo electrónico",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Confirmar contraseña",
+    "orSignIn": "o ¡Iniciar sesión!",
+    "creatingAccount": "Creando cuenta...",
+    "submit": "Enviar"
+  },
   "footer": {
-    "description": "¡Nutriendo comunidades, un byte a la vez! Conectando a los donantes de alimentos con quienes lo necesitan mediante la tecnología y el espíritu comunitario.",
+    "description": "Nutriendo Comunidades, un Byte a la vez! Conectando donantes de alimentos con quienes los necesitan a través de la tecnología y el espíritu comunitario.",
     "getInvolved": "Involúcrate",
     "quickLinks": "Enlaces rápidos",
-    "dashboard": "Panel",
+    "dashboard": "Tablero",
     "volunteer": "Voluntariado",
     "inventory": "Inventario",
-    "donate": "Donar alimentos",
-    "findFood": "Encontrar comida",
+    "donate": "Donar Comida",
+    "findFood": "Encontrar Comida",
     "support": "Soporte",
     "contact": "Contáctanos",
     "help": "Centro de ayuda",
     "privacy": "Política de privacidad",
     "terms": "Términos de servicio",
-    "about": "Sobre nosotros",
+    "about": "Acerca de",
     "rights": "Todos los derechos reservados."
+  },
+  "contact": {
+    "hero": {
+      "title": "Ponte en contacto",
+      "description": "¡Nos encantaría saber de ti! Ya sea que tengas preguntas sobre voluntariado, necesites ayuda con donaciones o quieras saber más sobre nuestra misión, estamos aquí para ayudarte."
+    },
+    "connect": {
+      "title": "Conectémonos"
+    },
+    "address": {
+      "title": "Visítanos",
+      "line1": "123 Calle Comunidad",
+      "line2": "Distrito del Banco de Alimentos",
+      "line3": "Ciudad, Provincia A1B 2C3"
+    },
+    "phone": {
+      "title": "Llámanos",
+      "main": "Oficina Principal: (555) 123-4567",
+      "emergency": "Línea de Emergencia: (555) 987-6543"
+    },
+    "email": {
+      "title": "Envíanos un correo",
+      "general": "Consultas generales: info@bytebasket.org",
+      "volunteer": "Soporte para voluntarios: volunteers@bytebasket.org"
+    },
+    "hours": {
+      "title": "Horario de oficina",
+      "weekdays": "Lunes - Viernes: 9:00 AM - 6:00 PM",
+      "saturday": "Sábado: 10:00 AM - 4:00 PM",
+      "sunday": "Domingo: Cerrado"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "volunteer": "Hazte voluntario",
+      "donate": "Haz una donación",
+      "dashboard": "Ver tablero"
+    },
+    "form": {
+      "title": "Envíanos un mensaje",
+      "nameLabel": "Nombre completo",
+      "namePlaceholder": "Ingresa tu nombre completo",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo electrónico",
+      "subjectLabel": "Asunto",
+      "subjectPlaceholder": "Selecciona un asunto",
+      "subjectOptions": {
+        "volunteer": "Oportunidades de voluntariado",
+        "donation": "Información sobre donaciones",
+        "partnership": "Consulta de asociación",
+        "support": "Soporte técnico",
+        "feedback": "Comentarios y sugerencias",
+        "media": "Medios y prensa",
+        "other": "Otro"
+      },
+      "messageLabel": "Mensaje",
+      "messagePlaceholder": "Cuéntanos cómo podemos ayudarte...",
+      "sending": "Enviando...",
+      "sendButton": "Enviar mensaje",
+      "successMessage": "¡Mensaje enviado con éxito!"
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio",
+      "emailRequired": "El correo electrónico es obligatorio",
+      "subjectRequired": "El asunto es obligatorio",
+      "messageRequired": "El mensaje es obligatorio",
+      "emailInvalid": "Por favor ingresa un correo electrónico válido"
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas rápidas a preguntas comunes",
+      "q1": {
+        "question": "¿Cómo puedo ser voluntario?",
+        "answer": "Simplemente haz clic en el enlace \"Voluntariado\" en nuestro menú de navegación y completa nuestro formulario de registro. Revisaremos tu solicitud y te responderemos en 48 horas."
+      },
+      "q2": {
+        "question": "¿Qué tipos de donaciones aceptan?",
+        "answer": "Aceptamos donaciones monetarias y de alimentos. Siempre necesitamos alimentos no perecederos, productos frescos y envasados. Consulta nuestra página de donaciones para requisitos específicos."
+      },
+      "q3": {
+        "question": "¿Hay oportunidades de voluntariado para grupos?",
+        "answer": "¡Claro! Damos la bienvenida a grupos corporativos, clases escolares y organizaciones comunitarias. Contáctanos para organizar sesiones de voluntariado grupales y actividades de construcción de equipos."
+      },
+      "q4": {
+        "question": "¿Cómo garantizan la seguridad alimentaria?",
+        "answer": "La seguridad alimentaria es nuestra máxima prioridad. Todos los voluntarios reciben capacitación sobre el manejo adecuado de alimentos y seguimos estrictas pautas para el almacenamiento, preparación y distribución."
+      }
+    }
+  },
+  "volunteerPage": {
+    "landing": {
+      "heroTitle": "¡Explora el gratificante mundo del voluntariado con nosotros y sé parte de la solución!",
+      "impactCards": {
+        "impact1": {
+          "title": "Impacto Significativo",
+          "description": "Contribuye a la lucha contra el hambre y ayúdanos a proveer alimentación esencial a personas y familias que enfrentan inseguridad alimentaria en nuestra comunidad."
+        },
+        "impact2": {
+          "title": "Comunidad Más Fuerte",
+          "description": "Sé un catalizador de cambio positivo fomentando un sentido de comunidad y solidaridad. Únete a personas con ideas afines que comparten la meta común de crear un futuro sin hambre."
+        },
+        "impact3": {
+          "title": "Oportunidades Flexibles",
+          "description": "Entendemos que tu tiempo es valioso. Por eso ofrecemos opciones de voluntariado flexibles que se adaptan a tu horario, ya sea unas horas a la semana o un evento único."
+        }
+      },
+      "buttons": {
+        "primaryRegister": "Registrarse",
+        "primaryViewSchedule": "Ver calendario",
+        "primarySignInRegister": "Iniciar sesión para registrarse",
+        "secondaryMyShifts": "Mis turnos"
+      }
+    },
+    "registration": {
+      "title": "Únete a nuestra comunidad de voluntarios",
+      "subtitle": "Completa el formulario a continuación para comenzar a ser voluntario",
+      "alreadyRegisteredTitle": "¡Ya estás registrado!",
+      "alreadyRegisteredDescription": "Bienvenido a nuestra comunidad de voluntarios. Ahora puedes ver los turnos disponibles y administrar tu calendario.",
+      "viewAvailableShiftsButton": "Ver turnos disponibles"
+    },
+    "registrationRequired": {
+      "title": "Registro requerido",
+      "description": "Por favor regístrate como voluntario antes de poder ver y registrarte en los turnos.",
+      "registerNow": "Regístrate ahora"
+    },
+    "schedule": {
+      "availableShiftsTitle": "Turnos de voluntariado disponibles",
+      "welcomeBack": "Bienvenido de nuevo, {{userName}}! Selecciona una fecha para ver y registrarte en los turnos.",
+      "myShifts": "Mis turnos"
+    },
+    "myShifts": {
+      "scheduleMoreShifts": "Programar más turnos"
+    },
+    "buttons": {
+      "back": "Atrás",
+      "backToHome": "Volver al inicio",
+      "backToSchedule": "Volver al calendario"
+    },
+    "loading": {
+      "loadingShifts": "Cargando turnos...",
+      "loadingUserShifts": "Cargando tus turnos..."
+    },
+    "errors": {
+      "registerFail": "Error al registrarse. Por favor, intenta de nuevo.",
+      "missingVolunteerId": "ID de voluntario no encontrado. Por favor regístrate de nuevo.",
+      "signUpFail": "Error al inscribirse en el turno. Por favor, intenta de nuevo.",
+      "shiftNotFound": "Turno no encontrado.",
+      "cancelFail": "Error al cancelar el turno. Por favor, intenta de nuevo."
+    },
+    "alerts": {
+      "successSignUp": "¡Registrado exitosamente para {{activity}} el {{date}}!",
+      "errorSignUp": "Error: {{error}}",
+      "shiftCancelled": "¡Turno cancelado con éxito!",
+      "errorCancel": "Error: {{error}}"
+    },
+    "cancellation": {
+      "cancelledByVolunteer": "Cancelado por voluntario"
+    },
+    "successBanner": {
+      "welcomeMessage": "Bienvenido a nuestra comunidad de voluntarios, {{userName}}! Ahora puedes registrarte en los turnos."
+    },
+    "defaults": {
+      "volunteer": "Voluntario"
+    },
+    "mockShifts": {
+      "foodSorting": "Clasificación de alimentos",
+      "foodDistribution": "Distribución de alimentos",
+      "inventoryManagement": "Gestión de inventario",
+      "mainWarehouse": "Almacén principal",
+      "communityCenter": "Centro comunitario"
+    }
   }
 }
-
-

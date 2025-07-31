@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { registerUser, resendVerificationEmail } from '../../services/authService';
+import { useTranslation } from 'react-i18next';
 
 const SignUpForm = ({ onToggleForm, onNavigate }) => {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     role: '',
     name: '',
@@ -27,13 +30,13 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
     setRegistrationState(prev => ({ ...prev, isLoading: true }));
 
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      alert(t('signUpForm.passwordMismatch'));
       setRegistrationState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
     if (!formData.role || !formData.name || !formData.email || !formData.password) {
-      alert('Please fill all required fields');
+      alert(t('signUpForm.fillAllFields'));
       setRegistrationState(prev => ({ ...prev, isLoading: false }));
       return;
     }
@@ -56,10 +59,8 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
           showResendButton: false
         });
         
-        // Show success message
-        alert(response.message || 'Registration successful! Please check your email to verify your account.');
+        alert(response.message || t('signUpForm.registrationSuccess'));
         
-        // Clear form
         setFormData({
           role: '',
           name: '',
@@ -68,7 +69,6 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
           confirmPassword: ''
         });
         
-        // Show resend button after 30 seconds
         setTimeout(() => {
           setRegistrationState(prev => ({ ...prev, showResendButton: true }));
         }, 30000);
@@ -85,7 +85,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       } else if (error.response?.data?.message) {
         alert(error.response.data.message);
       } else {
-        alert('Registration failed. Please try again.');
+        alert(t('signUpForm.registrationFailed'));
       }
     }
   };
@@ -97,14 +97,13 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       const response = await resendVerificationEmail(registrationState.userEmail);
       
       if (response.success) {
-        alert('Verification email sent successfully! Please check your inbox.');
+        alert(t('signUpForm.verificationEmailSent'));
         setRegistrationState(prev => ({ 
           ...prev, 
           isLoading: false,
           showResendButton: false 
         }));
         
-        // Show resend button again after 30 seconds
         setTimeout(() => {
           setRegistrationState(prev => ({ ...prev, showResendButton: true }));
         }, 30000);
@@ -112,11 +111,10 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
     } catch (error) {
       console.error('Resend verification error:', error);
       setRegistrationState(prev => ({ ...prev, isLoading: false }));
-      alert('Failed to resend verification email. Please try again.');
+      alert(t('signUpForm.verificationEmailFailed'));
     }
   };
 
-  // If user has registered, show verification message
   if (registrationState.isRegistered) {
     return (
       <div className="text-center space-y-6">
@@ -124,17 +122,15 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
           <div className="flex items-center justify-center mb-2">
             <span className="text-2xl">📧</span>
           </div>
-          <h3 className="font-semibold text-lg mb-2">Check Your Email!</h3>
+          <h3 className="font-semibold text-lg mb-2">{t('signUpForm.checkYourEmail')}</h3>
           <p className="text-sm">
-            We've sent a verification email to <strong>{registrationState.userEmail}</strong>. 
-            Please check your inbox and click the verification link to complete your registration.
+            {t('signUpForm.verificationSentTo')} <strong>{registrationState.userEmail}</strong>.{' '}
+            {t('signUpForm.pleaseCheckInbox')}
           </p>
         </div>
         
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Didn't receive the email? Check your spam folder or wait a few minutes.
-          </p>
+          <p className="text-sm text-gray-600">{t('signUpForm.didntReceiveEmail')}</p>
           
           {registrationState.showResendButton && (
             <button
@@ -142,7 +138,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
               disabled={registrationState.isLoading}
               className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 px-4 rounded-md font-medium transition-colors"
             >
-              {registrationState.isLoading ? 'Sending...' : 'Resend Verification Email'}
+              {registrationState.isLoading ? t('signUpForm.sending') : t('signUpForm.resendVerification')}
             </button>
           )}
           
@@ -150,7 +146,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
             onClick={onToggleForm}
             className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition-colors"
           >
-            Back to Sign In
+            {t('signUpForm.backToSignIn')}
           </button>
         </div>
       </div>
@@ -160,7 +156,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-white text-sm font-medium mb-2">Role</label>
+        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.roleLabel')}</label>
         <select
           name="role"
           value={formData.role}
@@ -168,60 +164,60 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-500"
           required
         >
-          <option value="">Choose Role</option>
-          <option value="donor">Donor</option>
-          <option value="volunteer">Volunteer</option>
-          <option value="recipient">Recipient</option>
+          <option value="">{t('signUpForm.chooseRole')}</option>
+          <option value="donor">{t('signUpForm.roles.donor')}</option>
+          <option value="volunteer">{t('signUpForm.roles.volunteer')}</option>
+          <option value="recipient">{t('signUpForm.roles.recipient')}</option>
         </select>
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">Name</label>
+        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.nameLabel')}</label>
         <input
           type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder="Your full name"
+          placeholder={t('signUpForm.namePlaceholder')}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md placeholder-gray-400"
           required
         />
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">Email address</label>
+        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.emailLabel')}</label>
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="Email"
+          placeholder={t('signUpForm.emailPlaceholder')}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md placeholder-gray-400"
           required
         />
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">Password</label>
+        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.passwordLabel')}</label>
         <input
           type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
-          placeholder="Password"
+          placeholder={t('signUpForm.passwordPlaceholder')}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md placeholder-gray-400"
           required
         />
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">Confirm Password</label>
+        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.confirmPasswordLabel')}</label>
         <input
           type="password"
           name="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
-          placeholder="Confirm Password"
+          placeholder={t('signUpForm.confirmPasswordPlaceholder')}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md placeholder-gray-400"
           required
         />
@@ -233,7 +229,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
           onClick={onToggleForm}
           className="text-orange-400 text-sm hover:text-orange-300"
         >
-          or Sign in!
+          {t('signUpForm.orSignIn')}
         </button>
       </div>
 
@@ -242,7 +238,7 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
         disabled={registrationState.isLoading}
         className="w-full bg-orange-400 hover:bg-orange-500 disabled:bg-gray-400 text-white py-3 rounded-md font-medium transition-colors"
       >
-        {registrationState.isLoading ? 'Creating Account...' : 'Submit'}
+        {registrationState.isLoading ? t('signUpForm.creatingAccount') : t('signUpForm.submit')}
       </button>
     </form>
   );
