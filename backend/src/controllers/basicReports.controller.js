@@ -1,9 +1,9 @@
 /* eslint-disable indent */
 // backend/src/controllers/reports.controller.js
-const Inventory = require('../db/models/Inventory.model');
+const Inventory = require('../db/models/Inventory');
 const FoodRequest = require('../db/models/FoodRequest.model');
-const Donation = require('../db/models/Donation.model');
-const User = require('../models/db/User.model');
+const Donation = require('../db/models/Donation');
+const User = require('../db/models/User.model');
 const mongoose = require('mongoose');
 
 class ReportsController {

@@ -1,6 +1,6 @@
 // backend/src/controllers/wishlist.controller.js
-const Wishlist = require('../db/models/Wishlist.model');
-const Cart = require('../db/models/Cart.model');
+const Wishlist = require('../db/models/Wishlist');
+const Cart = require('../db/models/Cart');
 const { validationResult } = require('express-validator');
 
 class WishlistController {
