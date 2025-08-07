@@ -1,146 +1,60 @@
-// frontend/src/services/inventoryService.js
-class InventoryService {
-  constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-    this.inventoryEndpoint = `${this.baseURL}/inventory`;
-  }
+import axios from 'axios';
 
-  // Get auth token from localStorage or context
-  getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  async handleResponse(response) {
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-
-      // Handle token expiration
-      if (response.status === 401 && errorData.message === 'Token has expired') {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-        return;
-      }
-
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  }
-
-  async getAll(filters = {}) {
+const inventoryService = {
+  // Get inventory with filtering
+  getInventory: async (filters = {}) => {
     const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== '' && value !== false && value !== null && value !== undefined) {
-        params.append(key, value);
-      }
-    });
 
-    const response = await fetch(`${this.inventoryEndpoint}?${params}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
+    if (filters.search) params.append('search', filters.search);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.dietary_category) params.append('dietary_category', filters.dietary_category);
+    if (filters.foodbank_id) params.append('foodbank_id', filters.foodbank_id);
+    if (filters.sort) params.append('sort', filters.sort);
+    if (filters.low_stock) params.append('low_stock', filters.low_stock);
 
-    const data = await this.handleResponse(response);
+    const response = await axios.get(`${API_BASE_URL}/inventory?${params}`);
+    return response.data;
+  },
+
+  // Get single inventory item
+  getInventoryItem: async id => {
+    const response = await axios.get(`${API_BASE_URL}/inventory/${id}`);
+    return response.data;
+  },
+
+  // Create inventory item (admin/staff only)
+  createInventoryItem: async itemData => {
+    const response = await axios.post(`${API_BASE_URL}/inventory`, itemData);
+    return response.data;
+  },
+
+  // Update inventory item (admin/staff only)
+  updateInventoryItem: async (id, itemData) => {
+    const response = await axios.put(`${API_BASE_URL}/inventory/${id}`, itemData);
+    return response.data;
+  },
+
+  // Delete inventory item (admin/staff only)
+  deleteInventoryItem: async id => {
+    const response = await axios.delete(`${API_BASE_URL}/inventory/${id}`);
+    return response.data;
+  },
+
+  // Get available categories
+  getCategories: async () => {
+    const response = await axios.get(`${API_BASE_URL}/inventory/meta/categories`);
+    return response.data;
+  },
+
+  // Get dietary categories
+  getDietaryCategories: async () => {
     return {
-      items: data.data || [],
-      pagination: data.pagination || {},
+      success: true,
+      data: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
     };
-  }
+  },
+};
 
-  async getById(id) {
-    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data;
-  }
-
-  async create(itemData) {
-    const response = await fetch(this.inventoryEndpoint, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(itemData),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data;
-  }
-
-  async update(id, itemData) {
-    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(itemData),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data;
-  }
-
-  async delete(id) {
-    const response = await fetch(`${this.inventoryEndpoint}/${id}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
-  }
-
-  async getLowStockAlerts() {
-    const response = await fetch(`${this.inventoryEndpoint}/alerts/low-stock`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data || [];
-  }
-
-  async getExpiringAlerts(days = 7) {
-    const response = await fetch(`${this.inventoryEndpoint}/alerts/expiring?days=${days}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data || [];
-  }
-
-  async getCategories() {
-    const response = await fetch(`${this.inventoryEndpoint}/meta/categories`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data || [];
-  }
-
-  async getDietaryCategories() {
-    const response = await fetch(`${this.inventoryEndpoint}/meta/dietary-categories`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data || [];
-  }
-
-  async getStats() {
-    const response = await fetch(`${this.inventoryEndpoint}/stats`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    const data = await this.handleResponse(response);
-    return data.data || {};
-  }
-}
-
-// eslint-disable-next-line import/no-anonymous-default-export
-export default new InventoryService();
+export default inventoryService;

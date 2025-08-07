@@ -1,5 +1,5 @@
 // frontend/src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
 import DonatePage from './pages/DonatePage';
@@ -7,13 +7,40 @@ import FoodbankPage from './pages/FoodBankManagerPage';
 import InventoryPage from './pages/InventoryManagement';
 import DashboardPage from './pages/Dashboard';
 import VolunteerPage from './pages/VolunteerPage';
+import ContactPage from './pages/ContactPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
+import BrowseInventoryPage from './pages/BrowseInventoryPage';
+import ReportsDashboard from './pages/ReportsDashboard';
+import RequestSubmissionPage from './pages/RequestSubmissionPage';
 import Footer from './components/layout/Footer';
+
+// NEW IMPORTS
+import { CartProvider } from './contexts/CartContext';
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
+  // Handle URL parameters for deep linking
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    const path = window.location.pathname;
+
+    if (path === '/verify-email' || path.includes('verify-email')) {
+      setCurrentPage('verify-email');
+    } else if (pageParam === 'verify') {
+      setCurrentPage('verify-email');
+    } else if (pageParam) {
+      setCurrentPage(pageParam);
+    }
+  }, []);
+
   const navigate = page => {
     setCurrentPage(page);
+    // Update URL without page refresh
+    const url = new URL(window.location);
+    url.searchParams.set('page', page);
+    window.history.pushState({}, '', url);
   };
 
   const renderPage = () => {
@@ -32,16 +59,28 @@ const App = () => {
         return <DashboardPage onNavigate={navigate} />;
       case 'volunteer':
         return <VolunteerPage onNavigate={navigate} />;
+      case 'contact':
+        return <ContactPage onNavigate={navigate} />;
+      case 'verify-email':
+        return <EmailVerificationPage onNavigate={navigate} />;
+      case 'browse-inventory':
+        return <BrowseInventoryPage onNavigate={navigate} />;
+      case 'reports':
+        return <ReportsDashboard onNavigate={navigate} />;
+      case 'request-submission':
+        return <RequestSubmissionPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
   };
 
   return (
-    <div className="App min-h-screen flex flex-col">
-      <div className="flex-grow">{renderPage()}</div>
-      <Footer />
-    </div>
+    <CartProvider>
+      <div className="App min-h-screen flex flex-col">
+        <div className="flex-grow">{renderPage()}</div>
+        <Footer />
+      </div>
+    </CartProvider>
   );
 };
 

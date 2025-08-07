@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // frontend/src/pages/BrowseInventoryPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../components/layout/Header';
 import CartIcon from '../components/cart/CartIcon';
 import CartSidebar from '../components/cart/CartSidebar';
@@ -21,11 +21,7 @@ const BrowseInventoryPage = ({ onNavigate }) => {
 
   const { addToCart, error, clearError } = useCart();
 
-  useEffect(() => {
-    loadInventory();
-  }, [filters]);
-
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     try {
       setLoading(true);
       const response = await inventoryService.getInventory({
@@ -41,7 +37,11 @@ const BrowseInventoryPage = ({ onNavigate }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.search, filters.category, filters.dietary_category]);
+
+  useEffect(() => {
+    loadInventory();
+  }, [loadInventory]);
 
   const handleAddToCart = async item => {
     const result = await addToCart(item._id, 1);
