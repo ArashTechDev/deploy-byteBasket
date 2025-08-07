@@ -121,6 +121,17 @@ const setupDemo = async () => {
         isActive: true,
         isVerified: true, // ✅ ENSURES NO EMAIL VERIFICATION NEEDED
       },
+      {
+        name: 'Demo Recipient', // ✅ Uses 'name' field (not full_name)
+        email: 'recipient@demo.com',
+        password: 'demo123', // Will be hashed by pre-save middleware
+        role: 'recipient',
+        phone: '+1416555123',
+        // foodbank_id not required for recipient role
+        dietary_restrictions: ['Vegetarian', 'Gluten-Free'], // ✅ Common dietary restrictions
+        isActive: true,
+        isVerified: true, // ✅ ENSURES NO EMAIL VERIFICATION NEEDED
+      },
     ]);
 
     console.log(`✅ Created ${users.length} demo users`);
@@ -128,7 +139,12 @@ const setupDemo = async () => {
     // Verify that users were created with isVerified: true
     console.log('\n🔍 Verifying demo user verification status...');
     for (const user of users) {
-      console.log(`   ${user.email} - Verified: ${user.isVerified}`);
+      console.log(`   ${user.email} - Verified: ${user.isVerified} - Role: ${user.role}`);
+      if (user.role === 'recipient') {
+        console.log(
+          `   ${user.email} - Dietary Restrictions: ${user.dietary_restrictions.join(', ')}`
+        );
+      }
     }
 
     // Update food banks with manager IDs
@@ -136,7 +152,7 @@ const setupDemo = async () => {
     await FoodBank.findByIdAndUpdate(foodBanks[0]._id, { manager_id: users[0]._id });
     await FoodBank.findByIdAndUpdate(foodBanks[1]._id, { manager_id: users[1]._id });
 
-    // Create sample inventory items
+    // Create sample inventory items (including items that match recipient dietary restrictions)
     console.log('\n📦 Creating sample inventory items...');
     const inventoryItems = [
       {
@@ -148,45 +164,71 @@ const setupDemo = async () => {
         unit: 'cans',
         expiration_date: new Date('2025-12-31'),
         storage_location: 'Aisle 1, Shelf A',
-        dietary_category: 'Vegan',
+        dietary_category: 'Vegan', // ✅ Matches recipient preferences (Vegetarian includes Vegan)
         barcode: 'DEMO001',
         created_by: users[0]._id,
       },
       {
         foodbank_id: foodBanks[0]._id,
-        item_name: 'Milk (2%)',
-        category: 'Dairy',
-        quantity: 12,
+        item_name: 'Gluten-Free Pasta',
+        category: 'Grains',
+        quantity: 15,
         minimum_stock_level: 8,
-        unit: 'cartons',
-        expiration_date: new Date('2025-06-30'),
-        storage_location: 'Refrigerator A',
-        dietary_category: 'Vegetarian',
+        unit: 'boxes',
+        expiration_date: new Date('2026-03-15'),
+        storage_location: 'Aisle 2, Shelf A',
+        dietary_category: 'Gluten-Free', // ✅ Matches recipient dietary restrictions
         barcode: 'DEMO002',
         created_by: users[0]._id,
       },
       {
-        foodbank_id: foodBanks[1]._id,
-        item_name: 'Pasta (Whole Grain)',
-        category: 'Grains',
-        quantity: 30,
-        minimum_stock_level: 10,
-        unit: 'boxes',
-        storage_location: 'Dry Goods',
-        dietary_category: 'Vegan',
+        foodbank_id: foodBanks[0]._id,
+        item_name: 'Organic Vegetable Soup',
+        category: 'Canned Goods',
+        quantity: 8,
+        minimum_stock_level: 6,
+        unit: 'cans',
+        expiration_date: new Date('2025-08-30'),
+        storage_location: 'Aisle 1, Shelf B',
+        dietary_category: 'Vegetarian', // ✅ Matches recipient dietary restrictions
+        barcode: 'DEMO003',
         created_by: users[0]._id,
+      },
+      {
+        foodbank_id: foodBanks[1]._id,
+        item_name: 'Rice (Brown)',
+        category: 'Grains',
+        quantity: 25,
+        minimum_stock_level: 10,
+        unit: 'bags',
+        storage_location: 'Dry Goods',
+        dietary_category: 'Gluten-Free', // ✅ Suitable for recipient
+        created_by: users[1]._id,
       },
       {
         foodbank_id: foodBanks[1]._id,
         item_name: 'Canned Tomatoes',
         category: 'Canned Goods',
-        quantity: 25,
+        quantity: 20,
         minimum_stock_level: 12,
         unit: 'cans',
         expiration_date: new Date('2026-01-15'),
         storage_location: 'Aisle 1, Shelf B',
-        dietary_category: 'Vegan',
-        created_by: users[0]._id,
+        dietary_category: 'Vegan', // ✅ Suitable for vegetarian recipient
+        created_by: users[1]._id,
+      },
+      {
+        foodbank_id: foodBanks[1]._id,
+        item_name: 'Almond Milk',
+        category: 'Dairy Alternatives',
+        quantity: 12,
+        minimum_stock_level: 8,
+        unit: 'cartons',
+        expiration_date: new Date('2025-09-15'),
+        storage_location: 'Refrigerator B',
+        dietary_category: 'Vegan', // ✅ Perfect for vegetarian recipient
+        barcode: 'DEMO004',
+        created_by: users[1]._id,
       },
     ];
 
@@ -196,7 +238,11 @@ const setupDemo = async () => {
     for (let i = 0; i < inventoryItems.length; i++) {
       try {
         await Inventory.create(inventoryItems[i]);
-        console.log(`✅ Created item ${i + 1}: ${inventoryItems[i].item_name}`);
+        console.log(
+          `✅ Created item ${i + 1}: ${inventoryItems[i].item_name} (${
+            inventoryItems[i].dietary_category
+          })`
+        );
         successCount++;
       } catch (error) {
         console.log(`⚠️ Skipped item ${i + 1} (${inventoryItems[i].item_name}): ${error.message}`);
@@ -216,11 +262,27 @@ const setupDemo = async () => {
     console.log('Admin: admin@demo.com / demo123');
     console.log('Staff: staff@demo.com / demo123');
     console.log('Donor: donor@demo.com / demo123');
+    console.log('🆕 Recipient: recipient@demo.com / demo123');
     console.log('\n🏢 Food Banks Created:');
     console.log('- Downtown Food Bank (Toronto)');
     console.log('- Community Care Center (Toronto)');
-    console.log('\n📦 Sample Inventory Items: Including low stock and expiring items');
+    console.log(
+      '\n📦 Sample Inventory Items: Including items suitable for recipient dietary restrictions'
+    );
+    console.log('🥗 Dietary-Friendly Items Created:');
+    console.log(
+      '   - Vegetarian: Organic Vegetable Soup, Canned Beans, Canned Tomatoes, Almond Milk'
+    );
+    console.log('   - Gluten-Free: Gluten-Free Pasta, Brown Rice');
+    console.log('   - Vegan Options: Canned Beans, Canned Tomatoes, Almond Milk');
+    console.log('\n👤 Recipient User Profile:');
+    console.log('   - Name: Demo Recipient');
+    console.log('   - Email: recipient@demo.com');
+    console.log('   - Phone: +1416555123');
+    console.log('   - Dietary Restrictions: Vegetarian, Gluten-Free');
+    console.log('   - Status: Active & Pre-verified');
     console.log('\n✅ All demo accounts are pre-verified and ready to use!');
+    console.log('🎯 Recipient can now request food items that match their dietary restrictions');
   } catch (error) {
     console.error('❌ Demo setup failed:', error);
     console.error('Error details:', error.message);
