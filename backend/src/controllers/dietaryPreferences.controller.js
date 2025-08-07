@@ -75,7 +75,7 @@ exports.updateUserPreferences = async (req, res) => {
     }
 
     // Update user's dietary preferences timestamp
-    const User = require('../db/models/User.model');
+    const User = require('../db/models/User');
     await User.findByIdAndUpdate(userId, {
       'dietaryPreferences.lastUpdated': new Date(),
     });

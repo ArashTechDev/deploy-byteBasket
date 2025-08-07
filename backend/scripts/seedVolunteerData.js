@@ -4,17 +4,17 @@ const mongoose = require('mongoose');
 const Volunteer = require('../src/db/models/Volunteer');
 const Shift = require('../src/db/models/Shift');
 const VolunteerShift = require('../src/db/models/VolunteerShift');
-const User = require('../src/db/models/User.model');
+const User = require('../src/db/models/User');
 const FoodBank = require('../src/db/models/FoodBank');
 
 const seedVolunteerData = async () => {
   try {
     console.log('🌱 Starting volunteer data seeding...');
-    
+
     // Connect to MongoDB
     const mongoUri = process.env.MONGO_URI;
     await mongoose.connect(mongoUri, {
-      dbName: process.env.MONGO_DB_NAME || 'ByteBasket'
+      dbName: process.env.MONGO_DB_NAME || 'ByteBasket',
     });
     console.log('✅ Connected to MongoDB');
 
@@ -31,42 +31,44 @@ const seedVolunteerData = async () => {
         name: 'Alice Johnson',
         email: 'alice.volunteer@example.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       },
       {
         name: 'Bob Smith',
         email: 'bob.volunteer@example.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       },
       {
         name: 'Carol Davis',
         email: 'carol.volunteer@example.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       },
       {
         name: 'David Wilson',
         email: 'david.volunteer@example.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       },
       {
         name: 'Eva Brown',
         email: 'eva.volunteer@example.com',
         password: 'password123',
-        role: 'volunteer'
-      }
+        role: 'volunteer',
+      },
     ];
 
     // Create admin user for shifts
-    const adminUser = await User.findOne({ role: 'admin' }) || await User.create({
-      name: 'Admin User',
-      email: 'admin@example.com',
-      password: 'password123',
-      role: 'admin',
-      foodbank_id: foodbank._id
-    });
+    const adminUser =
+      (await User.findOne({ role: 'admin' })) ||
+      (await User.create({
+        name: 'Admin User',
+        email: 'admin@example.com',
+        password: 'password123',
+        role: 'admin',
+        foodbank_id: foodbank._id,
+      }));
 
     // Create test volunteer users
     const createdUsers = [];
@@ -85,33 +87,33 @@ const seedVolunteerData = async () => {
     // Create volunteers
     const volunteers = [];
     for (const user of createdUsers) {
-      const existingVolunteer = await Volunteer.findOne({ 
-        user_id: user._id, 
-        foodbank_id: foodbank._id 
+      const existingVolunteer = await Volunteer.findOne({
+        user_id: user._id,
+        foodbank_id: foodbank._id,
       });
-      
+
       if (!existingVolunteer) {
         const volunteer = await Volunteer.create({
           user_id: user._id,
           foodbank_id: foodbank._id,
           skills: [
             { skill_name: 'Food Sorting', proficiency: 'intermediate' },
-            { skill_name: 'Customer Service', proficiency: 'beginner' }
+            { skill_name: 'Customer Service', proficiency: 'beginner' },
           ],
           availability: {
             days_of_week: ['monday', 'wednesday', 'friday'],
             preferred_shifts: ['morning', 'afternoon'],
-            max_hours_per_week: 20
+            max_hours_per_week: 20,
           },
           emergency_contact: {
             name: 'Emergency Contact',
             phone: '555-0123',
-            relationship: 'Friend'
+            relationship: 'Friend',
           },
           background_check: {
             completed: true,
             completion_date: new Date(),
-            expires_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            expires_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           },
           training_status: {
             orientation_completed: true,
@@ -120,11 +122,11 @@ const seedVolunteerData = async () => {
               {
                 name: 'Food Safety',
                 date_obtained: new Date(),
-                expires_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-              }
-            ]
+                expires_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              },
+            ],
           },
-          created_by: adminUser._id
+          created_by: adminUser._id,
         });
         volunteers.push(volunteer);
       } else {
@@ -146,7 +148,7 @@ const seedVolunteerData = async () => {
         capacity: 4,
         activity_category: 'food_sorting',
         location: 'Main Warehouse',
-        status: 'published'
+        status: 'published',
       },
       {
         title: 'Afternoon Food Distribution',
@@ -157,7 +159,7 @@ const seedVolunteerData = async () => {
         capacity: 3,
         activity_category: 'food_distribution',
         location: 'Distribution Center',
-        status: 'published'
+        status: 'published',
       },
       {
         title: 'Inventory Management',
@@ -168,7 +170,7 @@ const seedVolunteerData = async () => {
         capacity: 2,
         activity_category: 'inventory',
         location: 'Office',
-        status: 'published'
+        status: 'published',
       },
       {
         title: 'Delivery Service',
@@ -179,8 +181,8 @@ const seedVolunteerData = async () => {
         capacity: 2,
         activity_category: 'delivery',
         location: 'Various Locations',
-        status: 'published'
-      }
+        status: 'published',
+      },
     ];
 
     for (const shiftInfo of shiftData) {
@@ -188,7 +190,7 @@ const seedVolunteerData = async () => {
         ...shiftInfo,
         foodbank_id: foodbank._id,
         coordinator_id: adminUser._id,
-        created_by: adminUser._id
+        created_by: adminUser._id,
       });
       shifts.push(shift);
     }
@@ -197,7 +199,7 @@ const seedVolunteerData = async () => {
 
     // Create volunteer shift assignments
     const volunteerShifts = [];
-    
+
     // Assign first 2 volunteers to first shift
     for (let i = 0; i < 2; i++) {
       const volunteerShift = await VolunteerShift.create({
@@ -207,10 +209,10 @@ const seedVolunteerData = async () => {
         foodbank_id: foodbank._id,
         work_date: shifts[0].shift_date,
         status: 'confirmed',
-        created_by: adminUser._id
+        created_by: adminUser._id,
       });
       volunteerShifts.push(volunteerShift);
-      
+
       // Update shift volunteer count
       await shifts[0].addVolunteer();
     }
@@ -224,10 +226,10 @@ const seedVolunteerData = async () => {
         foodbank_id: foodbank._id,
         work_date: shifts[1].shift_date,
         status: 'assigned',
-        created_by: adminUser._id
+        created_by: adminUser._id,
       });
       volunteerShifts.push(volunteerShift);
-      
+
       // Update shift volunteer count
       await shifts[1].addVolunteer();
     }
@@ -246,7 +248,7 @@ const seedVolunteerData = async () => {
       status: 'completed',
       foodbank_id: foodbank._id,
       coordinator_id: adminUser._id,
-      created_by: adminUser._id
+      created_by: adminUser._id,
     });
 
     // Create completed volunteer shifts
@@ -264,12 +266,12 @@ const seedVolunteerData = async () => {
         performance_rating: 4 + Math.floor(Math.random() * 2), // 4 or 5
         feedback: {
           coordinator_feedback: 'Great work today! Very helpful and efficient.',
-          volunteer_feedback: 'Enjoyed helping the community.'
+          volunteer_feedback: 'Enjoyed helping the community.',
         },
         verified: true,
         verified_by: adminUser._id,
         verified_date: new Date(),
-        created_by: adminUser._id
+        created_by: adminUser._id,
       });
     }
 

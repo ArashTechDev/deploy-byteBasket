@@ -1,6 +1,6 @@
 // backend/tests/models/User.test.js
 const mongoose = require('mongoose');
-const User = require('../../src/db/models/users/User');
+const User = require('../../src/db/models/User');
 
 describe('User Model', () => {
   beforeAll(async () => {

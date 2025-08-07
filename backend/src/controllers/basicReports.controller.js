@@ -3,7 +3,7 @@
 const Inventory = require('../db/models/Inventory');
 const FoodRequest = require('../db/models/FoodRequest.model');
 const Donation = require('../db/models/Donation');
-const User = require('../db/models/User.model');
+const User = require('../db/models/User');
 const mongoose = require('mongoose');
 
 class ReportsController {

@@ -1,6 +1,6 @@
 // backend/src/models/index.js
 
-const User = require('../db/models/User.model');
+const User = require('../db/models/User');
 const FoodBank = require('../db/models/FoodBank');
 const StorageLocation = require('../db/models/StorageLocation');
 const Inventory = require('../db/models/Inventory');

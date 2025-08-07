@@ -4,7 +4,7 @@ require('dotenv').config(); // Load environment variables from .env file
 const mongoose = require('mongoose');
 
 // IMPORTANT: Use the same User model as the auth system
-const User = require('../src/db/models/users/User'); // ✅ CORRECT PATH FOR AUTH SYSTEM
+const User = require('../src/db/models/User');
 const FoodBank = require('../src/db/models/FoodBank');
 const Inventory = require('../src/db/models/Inventory');
 
@@ -221,7 +221,6 @@ const setupDemo = async () => {
     console.log('- Community Care Center (Toronto)');
     console.log('\n📦 Sample Inventory Items: Including low stock and expiring items');
     console.log('\n✅ All demo accounts are pre-verified and ready to use!');
-    console.log('\n🔧 Note: Using correct User model (users/User.js) that matches auth system');
   } catch (error) {
     console.error('❌ Demo setup failed:', error);
     console.error('Error details:', error.message);
@@ -238,7 +237,7 @@ const setupDemo = async () => {
     if (error.message.includes('validation failed')) {
       console.error('\n📋 Schema Validation Error:');
       console.error('   The User model requires specific fields.');
-      console.error('   Current script uses the users/User.js model which requires:');
+      console.error('   Current script uses the User.js model which requires:');
       console.error('   - name (not full_name)');
       console.error('   - email');
       console.error('   - password');

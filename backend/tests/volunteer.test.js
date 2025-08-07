@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Volunteer = require('../src/db/models/Volunteer');
 const Shift = require('../src/db/models/Shift');
 const VolunteerShift = require('../src/db/models/VolunteerShift');
-const User = require('../src/db/models/User.model');
+const User = require('../src/db/models/User');
 const FoodBank = require('../src/db/models/FoodBank');
 const jwt = require('jsonwebtoken');
 
@@ -23,14 +23,17 @@ describe('Volunteer Management System', () => {
 
   beforeAll(async () => {
     // Wait for mongoose to be ready
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://techwitharash:byteBasket@cluster0.eabzdc3.mongodb.net/ByteBasket');
-    
+    await mongoose.connect(
+      process.env.MONGO_URI ||
+        'mongodb+srv://techwitharash:byteBasket@cluster0.eabzdc3.mongodb.net/ByteBasket'
+    );
+
     // Create test food bank
     testFoodBank = await FoodBank.create({
       name: 'Test Food Bank',
       address: '123 Test Street',
       city: 'Test City',
-      contactEmail: 'test@foodbank.com'
+      contactEmail: 'test@foodbank.com',
     });
 
     // Create test user
@@ -39,15 +42,15 @@ describe('Volunteer Management System', () => {
       email: 'admin@test.com',
       password: 'password123',
       role: 'admin',
-      foodbank_id: testFoodBank._id
+      foodbank_id: testFoodBank._id,
     });
 
     // Generate auth token
     authToken = jwt.sign(
-      { 
-        id: testUser._id, 
-        email: testUser.email, 
-        role: testUser.role 
+      {
+        id: testUser._id,
+        email: testUser.email,
+        role: testUser.role,
       },
       process.env.JWT_SECRET || 'test_secret',
       { expiresIn: '24h' }
@@ -75,25 +78,23 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       const volunteerData = {
         user_id: volunteerUser._id,
         foodbank_id: testFoodBank._id,
-        skills: [
-          { skill_name: 'Food Sorting', proficiency: 'intermediate' }
-        ],
+        skills: [{ skill_name: 'Food Sorting', proficiency: 'intermediate' }],
         availability: {
           days_of_week: ['monday', 'wednesday'],
           preferred_shifts: ['morning'],
-          max_hours_per_week: 20
+          max_hours_per_week: 20,
         },
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
-        }
+          relationship: 'Friend',
+        },
       };
 
       const response = await request(app)
@@ -114,8 +115,8 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
-        }
+          relationship: 'Friend',
+        },
       };
 
       await request(app)
@@ -133,7 +134,7 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       testVolunteer = await Volunteer.create({
@@ -142,9 +143,9 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
+          relationship: 'Friend',
         },
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       const response = await request(app)
@@ -182,7 +183,7 @@ describe('Volunteer Management System', () => {
         capacity: 5,
         activity_category: 'food_sorting',
         location: 'Test Location',
-        coordinator_id: testUser._id
+        coordinator_id: testUser._id,
       };
 
       const response = await request(app)
@@ -200,7 +201,7 @@ describe('Volunteer Management System', () => {
     it('should validate required fields', async () => {
       const shiftData = {
         foodbank_id: testFoodBank._id,
-        title: 'Test Shift'
+        title: 'Test Shift',
         // Missing required fields
       };
 
@@ -219,7 +220,7 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       testVolunteer = await Volunteer.create({
@@ -228,9 +229,9 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
+          relationship: 'Friend',
         },
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       // Create test shift
@@ -246,14 +247,14 @@ describe('Volunteer Management System', () => {
         location: 'Test Location',
         coordinator_id: testUser._id,
         status: 'published',
-        created_by: testUser._id
+        created_by: testUser._id,
       });
     });
 
     it('should assign volunteer to shift', async () => {
       const assignmentData = {
         shift_id: testShift._id,
-        volunteer_id: testVolunteer._id
+        volunteer_id: testVolunteer._id,
       };
 
       const response = await request(app)
@@ -271,7 +272,7 @@ describe('Volunteer Management System', () => {
     it('should not assign volunteer to same shift twice', async () => {
       const assignmentData = {
         shift_id: testShift._id,
-        volunteer_id: testVolunteer._id
+        volunteer_id: testVolunteer._id,
       };
 
       // First assignment should succeed
@@ -299,7 +300,7 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       testVolunteer = await Volunteer.create({
@@ -308,9 +309,9 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
+          relationship: 'Friend',
         },
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       // Create test shift
@@ -326,7 +327,7 @@ describe('Volunteer Management System', () => {
         location: 'Test Location',
         coordinator_id: testUser._id,
         status: 'published',
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       // Create volunteer shift assignment
@@ -337,13 +338,13 @@ describe('Volunteer Management System', () => {
         foodbank_id: testFoodBank._id,
         work_date: testShift.shift_date,
         status: 'confirmed',
-        created_by: testUser._id
+        created_by: testUser._id,
       });
     });
 
     it('should check in volunteer', async () => {
       const checkInData = {
-        check_in_time: '09:05'
+        check_in_time: '09:05',
       };
 
       const response = await request(app)
@@ -363,7 +364,7 @@ describe('Volunteer Management System', () => {
       await volunteerShift.save();
 
       const checkInData = {
-        check_in_time: '09:05'
+        check_in_time: '09:05',
       };
 
       await request(app)
@@ -381,7 +382,7 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       testVolunteer = await Volunteer.create({
@@ -390,9 +391,9 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
+          relationship: 'Friend',
         },
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       // Create completed volunteer shift
@@ -406,7 +407,7 @@ describe('Volunteer Management System', () => {
         hours_worked: 4,
         performance_rating: 5,
         verified: true,
-        created_by: testUser._id
+        created_by: testUser._id,
       });
     });
 
@@ -426,9 +427,9 @@ describe('Volunteer Management System', () => {
     it('should support grouping by volunteer', async () => {
       const response = await request(app)
         .get('/api/reports/hours')
-        .query({ 
+        .query({
           foodbank_id: testFoodBank._id,
-          group_by: 'volunteer'
+          group_by: 'volunteer',
         })
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
@@ -446,7 +447,7 @@ describe('Volunteer Management System', () => {
         name: 'Test Volunteer',
         email: 'volunteer@test.com',
         password: 'password123',
-        role: 'volunteer'
+        role: 'volunteer',
       });
 
       testVolunteer = await Volunteer.create({
@@ -455,9 +456,9 @@ describe('Volunteer Management System', () => {
         emergency_contact: {
           name: 'Emergency Contact',
           phone: '555-0123',
-          relationship: 'Friend'
+          relationship: 'Friend',
         },
-        created_by: testUser._id
+        created_by: testUser._id,
       });
 
       // Create completed volunteer shift
@@ -471,7 +472,7 @@ describe('Volunteer Management System', () => {
         hours_worked: 4,
         performance_rating: 5,
         verified: true,
-        created_by: testUser._id
+        created_by: testUser._id,
       });
     });
 
@@ -491,18 +492,11 @@ describe('Volunteer Management System', () => {
 
   describe('Authentication', () => {
     it('should require authentication for all endpoints', async () => {
-      await request(app)
-        .get(`/api/volunteers/foodbank/${testFoodBank._id}`)
-        .expect(401);
+      await request(app).get(`/api/volunteers/foodbank/${testFoodBank._id}`).expect(401);
 
-      await request(app)
-        .post('/api/volunteers')
-        .send({})
-        .expect(401);
+      await request(app).post('/api/volunteers').send({}).expect(401);
 
-      await request(app)
-        .get('/api/reports/hours')
-        .expect(401);
+      await request(app).get('/api/reports/hours').expect(401);
     });
 
     it('should reject invalid tokens', async () => {
