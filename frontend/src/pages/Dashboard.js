@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from '../components/layout/Header';

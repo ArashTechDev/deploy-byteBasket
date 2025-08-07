@@ -10,22 +10,22 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const [registrationState, setRegistrationState] = useState({
     isRegistered: false,
     isLoading: false,
     userEmail: '',
-    showResendButton: false
+    showResendButton: false,
   });
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setRegistrationState(prev => ({ ...prev, isLoading: true }));
 
@@ -50,25 +50,25 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       };
 
       const response = await registerUser(payload);
-      
+
       if (response.success) {
         setRegistrationState({
           isRegistered: true,
           isLoading: false,
           userEmail: formData.email,
-          showResendButton: false
+          showResendButton: false,
         });
-        
+
         alert(response.message || t('signUpForm.registrationSuccess'));
-        
+
         setFormData({
           role: '',
           name: '',
           email: '',
           password: '',
-          confirmPassword: ''
+          confirmPassword: '',
         });
-        
+
         setTimeout(() => {
           setRegistrationState(prev => ({ ...prev, showResendButton: true }));
         }, 30000);
@@ -92,18 +92,18 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
 
   const handleResendVerification = async () => {
     setRegistrationState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const response = await resendVerificationEmail(registrationState.userEmail);
-      
+
       if (response.success) {
         alert(t('signUpForm.verificationEmailSent'));
-        setRegistrationState(prev => ({ 
-          ...prev, 
+        setRegistrationState(prev => ({
+          ...prev,
           isLoading: false,
-          showResendButton: false 
+          showResendButton: false,
         }));
-        
+
         setTimeout(() => {
           setRegistrationState(prev => ({ ...prev, showResendButton: true }));
         }, 30000);
@@ -128,20 +128,22 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
             {t('signUpForm.pleaseCheckInbox')}
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <p className="text-sm text-gray-600">{t('signUpForm.didntReceiveEmail')}</p>
-          
+
           {registrationState.showResendButton && (
             <button
               onClick={handleResendVerification}
               disabled={registrationState.isLoading}
               className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 px-4 rounded-md font-medium transition-colors"
             >
-              {registrationState.isLoading ? t('signUpForm.sending') : t('signUpForm.resendVerification')}
+              {registrationState.isLoading
+                ? t('signUpForm.sending')
+                : t('signUpForm.resendVerification')}
             </button>
           )}
-          
+
           <button
             onClick={onToggleForm}
             className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition-colors"
@@ -156,7 +158,9 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.roleLabel')}</label>
+        <label className="block text-white text-sm font-medium mb-2">
+          {t('signUpForm.roleLabel')}
+        </label>
         <select
           name="role"
           value={formData.role}
@@ -172,7 +176,9 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.nameLabel')}</label>
+        <label className="block text-white text-sm font-medium mb-2">
+          {t('signUpForm.nameLabel')}
+        </label>
         <input
           type="text"
           name="name"
@@ -185,7 +191,9 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.emailLabel')}</label>
+        <label className="block text-white text-sm font-medium mb-2">
+          {t('signUpForm.emailLabel')}
+        </label>
         <input
           type="email"
           name="email"
@@ -198,7 +206,9 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.passwordLabel')}</label>
+        <label className="block text-white text-sm font-medium mb-2">
+          {t('signUpForm.passwordLabel')}
+        </label>
         <input
           type="password"
           name="password"
@@ -211,7 +221,9 @@ const SignUpForm = ({ onToggleForm, onNavigate }) => {
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-2">{t('signUpForm.confirmPasswordLabel')}</label>
+        <label className="block text-white text-sm font-medium mb-2">
+          {t('signUpForm.confirmPasswordLabel')}
+        </label>
         <input
           type="password"
           name="confirmPassword"
