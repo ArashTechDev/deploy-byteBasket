@@ -3,10 +3,16 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-// Add request interceptor to include auth token
+// Add request interceptor to include auth token - FIXED TOKEN KEY
 axios.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    // Try multiple token keys for compatibility
+    const token =
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('token') ||
+      sessionStorage.getItem('authToken') ||
+      sessionStorage.getItem('token');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -18,7 +24,7 @@ axios.interceptors.request.use(
 );
 
 const inventoryService = {
-  // Get all inventory items (main method used by hooks)
+  // Get all inventory items (main method used by hooks) - FIXED RESPONSE HANDLING
   getAll: async (filters = {}) => {
     const params = new URLSearchParams();
 
@@ -34,62 +40,59 @@ const inventoryService = {
 
     try {
       const response = await axios.get(`${API_BASE_URL}/inventory?${params}`);
-      return response.data;
+
+      // Handle different response structures from backend
+      const responseData = response.data;
+
+      if (responseData.success) {
+        // Backend returns { success: true, data: [...], pagination: {...} }
+        return {
+          items: responseData.data || [],
+          pagination: responseData.pagination || {},
+        };
+      } else {
+        // Fallback for direct array response
+        return {
+          items: Array.isArray(responseData) ? responseData : [],
+          pagination: {},
+        };
+      }
     } catch (error) {
       console.error('Error fetching inventory:', error);
+
+      // Log more details for debugging
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+
       throw new Error(error.response?.data?.message || 'Failed to fetch inventory');
     }
   },
 
-  // Get inventory with filtering (legacy method for compatibility)
-  getInventory: async (filters = {}) => {
-    return await inventoryService.getAll(filters);
-  },
-
-  // Get single inventory item
-  getInventoryItem: async id => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/inventory/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching inventory item:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch inventory item');
-    }
-  },
-
-  // Create inventory item (admin/staff only)
+  // Create new inventory item
   create: async itemData => {
     try {
       const response = await axios.post(`${API_BASE_URL}/inventory`, itemData);
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error('Error creating inventory item:', error);
       throw new Error(error.response?.data?.message || 'Failed to create inventory item');
     }
   },
 
-  // Legacy method for compatibility
-  createInventoryItem: async itemData => {
-    return await inventoryService.create(itemData);
-  },
-
-  // Update inventory item (admin/staff only)
+  // Update inventory item
   update: async (id, itemData) => {
     try {
       const response = await axios.put(`${API_BASE_URL}/inventory/${id}`, itemData);
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error('Error updating inventory item:', error);
       throw new Error(error.response?.data?.message || 'Failed to update inventory item');
     }
   },
 
-  // Legacy method for compatibility
-  updateInventoryItem: async (id, itemData) => {
-    return await inventoryService.update(id, itemData);
-  },
-
-  // Delete inventory item (admin/staff only)
+  // Delete inventory item
   delete: async id => {
     try {
       const response = await axios.delete(`${API_BASE_URL}/inventory/${id}`);
@@ -100,9 +103,15 @@ const inventoryService = {
     }
   },
 
-  // Legacy method for compatibility
-  deleteInventoryItem: async id => {
-    return await inventoryService.delete(id);
+  // Get single inventory item
+  getInventoryItem: async id => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/inventory/${id}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error fetching inventory item:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch inventory item');
+    }
   },
 
   // Get low stock alerts
@@ -145,7 +154,6 @@ const inventoryService = {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching categories:', error);
-      // Return empty array as fallback
       return [];
     }
   },
@@ -157,11 +165,7 @@ const inventoryService = {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching dietary categories:', error);
-      // Return default dietary categories as fallback
-      return {
-        success: true,
-        data: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
-      };
+      return ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'];
     }
   },
 };

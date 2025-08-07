@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+// frontend/src/pages/Dashboard.js - FIXED VERSION
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from '../components/layout/Header';
@@ -26,6 +27,38 @@ const sectionData = t => ({
         </svg>
       ),
     },
+    {
+      id: 'reports',
+      title: t('dashboard.sections.reports.title') || 'Reports',
+      description: t('dashboard.sections.reports.description') || 'View analytics and reports',
+      icon: (
+        <svg className="w-10 h-10 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+        </svg>
+      ),
+    },
+  ],
+  staff: [
+    {
+      id: 'inventory',
+      title: t('dashboard.sections.inventory.title'),
+      description: t('dashboard.sections.inventory.description'),
+      icon: (
+        <svg className="w-10 h-10 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h12v2H3v-2zm0 4h12v2H3v-2zm0 4h18v2H3v-2z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'volunteer',
+      title: t('dashboard.sections.volunteer.title') || 'Volunteer Management',
+      description: t('dashboard.sections.volunteer.description') || 'Manage volunteers and shifts',
+      icon: (
+        <svg className="w-10 h-10 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M16 8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4zM12 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM22 18v2H2v-2c0-2.21 3.13-4 8-4s8 1.79 8 4zM8 16c-2.67 0-6 1.34-6 2v1h12v-1c0-.66-3.33-2-6-2z" />
+        </svg>
+      ),
+    },
   ],
   donor: [
     {
@@ -38,6 +71,16 @@ const sectionData = t => ({
         </svg>
       ),
     },
+    {
+      id: 'browse',
+      title: t('dashboard.sections.browse.title') || 'Browse Inventory',
+      description: t('dashboard.sections.browse.description') || 'View available items',
+      icon: (
+        <svg className="w-10 h-10 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        </svg>
+      ),
+    },
   ],
   volunteer: [
     {
@@ -47,6 +90,29 @@ const sectionData = t => ({
       icon: (
         <svg className="w-10 h-10 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
           <path d="M9 11H7v2h2v-2zm0-4H7v2h2V7zm0 8H7v2h2v-2zm10-8h-8v2h8V7zm0 4h-8v2h8v-2zm0 4h-8v2h8v-2zM3 5v14h18V5H3zm16 12H5V7h14v10z" />
+        </svg>
+      ),
+    },
+  ],
+  recipient: [
+    {
+      id: 'browse',
+      title: t('dashboard.sections.browse.title') || 'Browse Available Items',
+      description:
+        t('dashboard.sections.browse.description') || 'View and request available food items',
+      icon: (
+        <svg className="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'request',
+      title: t('dashboard.sections.request.title') || 'Submit Request',
+      description: t('dashboard.sections.request.description') || 'Request food items',
+      icon: (
+        <svg className="w-10 h-10 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 7h-3V6c0-1.1-.9-2-2-2H10c-1.1 0-2 .9-2 2v1H5c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 6h4v1h-4V6z" />
         </svg>
       ),
     },
@@ -66,6 +132,7 @@ const DashboardPage = ({ onNavigate }) => {
       console.warn('Logout error:', e);
     }
     localStorage.removeItem('token');
+    localStorage.removeItem('authToken'); // Clear both token keys
     localStorage.removeItem('volunteerRegistered');
     localStorage.removeItem('volunteerName');
     onNavigate('home');
@@ -74,10 +141,12 @@ const DashboardPage = ({ onNavigate }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
         if (!token) {
           console.log('No authentication token found');
-          setError(t('dashboard.errors.noToken'));
+          setError(
+            t('dashboard.errors.noToken') || 'No authentication token found. Please log in.'
+          );
           setUser(null);
           setLoading(false);
           return;
@@ -92,10 +161,14 @@ const DashboardPage = ({ onNavigate }) => {
           setError(null);
         } else {
           console.log('Failed to fetch user - invalid response:', response);
-          setError(t('dashboard.errors.fetchFailed'));
+          setError(
+            t('dashboard.errors.fetchFailed') ||
+              'Failed to fetch user data. Please try logging in again.'
+          );
           setUser(null);
           // Clear invalid token
           localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
         }
       } catch (error) {
         console.error('Failed to fetch user:', error);
@@ -105,9 +178,10 @@ const DashboardPage = ({ onNavigate }) => {
           console.log('Authentication failed - invalid or expired token');
           setError(
             t('dashboard.errors.authenticationFailed') ||
-              'Authentication failed. Please log in again.'
+              'Your session has expired. Please log in again.'
           );
           localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
         } else if (error.response?.status === 500) {
           console.log('Server error during authentication');
           setError(t('dashboard.errors.serverError') || 'Server error. Please try again later.');
@@ -133,17 +207,39 @@ const DashboardPage = ({ onNavigate }) => {
     fetchUser();
   }, [t]);
 
-  // Auto-redirect to login after 3 seconds if there's an authentication error
+  // FIXED: Auto-redirect to SIGNIN (not signup) after authentication error
   useEffect(() => {
     if (error && !loading && !user) {
+      // Show error for 3 seconds, then redirect to signin
       const timer = setTimeout(() => {
-        console.log('Auto-redirecting to login due to authentication error');
-        onNavigate('signup');
+        console.log('Auto-redirecting to signin due to authentication error');
+        onNavigate('signin'); // CHANGED FROM 'signup' TO 'signin'
       }, 3000);
 
       return () => clearTimeout(timer);
     }
   }, [error, loading, user, onNavigate]);
+
+  const handleSectionClick = sectionId => {
+    console.log(`Navigating to: ${sectionId}`);
+    onNavigate(sectionId);
+  };
+
+  const getUserSections = () => {
+    if (!user || !user.role) return [];
+    return sectionData(t)[user.role] || [];
+  };
+
+  const getRoleDisplayName = role => {
+    const roleNames = {
+      admin: t('dashboard.roles.admin') || 'Administrator',
+      staff: t('dashboard.roles.staff') || 'Staff Member',
+      donor: t('dashboard.roles.donor') || 'Donor',
+      volunteer: t('dashboard.roles.volunteer') || 'Volunteer',
+      recipient: t('dashboard.roles.recipient') || 'Recipient',
+    };
+    return roleNames[role] || role;
+  };
 
   if (loading) {
     return (
@@ -170,7 +266,7 @@ const DashboardPage = ({ onNavigate }) => {
               d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
             ></path>
           </svg>
-          <p className="text-lg">{t('dashboard.loading')}</p>
+          <p className="text-lg">{t('dashboard.loading') || 'Loading dashboard...'}</p>
         </div>
       </div>
     );
@@ -193,82 +289,32 @@ const DashboardPage = ({ onNavigate }) => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-3">Authentication Error</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">{error}</p>
-              <p className="text-sm text-gray-500 mb-8">
-                You will be redirected to the login page in a few seconds...
-              </p>
-              <div className="space-y-3">
-                <button
-                  onClick={() => onNavigate('signup')}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                >
-                  Go to Login
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium transition-all duration-200"
-                >
-                  {t('dashboard.goHome')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
-        <Header currentPage="dashboard" onNavigate={onNavigate} />
-        <div className="flex items-center justify-center px-4 pt-16">
-          <div className="max-w-md w-full">
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-10 h-10 text-orange-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                {t('dashboard.loginPrompt')}
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {t('dashboard.sessionExpired') || 'Session Expired'}
               </h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                {t('dashboard.accountNotFoundMessage')}
-              </p>
+              <p className="text-gray-600 mb-6">{error}</p>
               <div className="space-y-3">
                 <button
-                  onClick={() => onNavigate('signup')}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                  onClick={() => onNavigate('signin')}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
                 >
-                  {t('dashboard.signInSignUp')}
+                  {t('dashboard.signInAgain') || 'Sign In Again'}
                 </button>
                 <button
-                  onClick={handleLogout}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-medium transition-all duration-200"
+                  onClick={() => onNavigate('home')}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg transition duration-200"
                 >
-                  {t('dashboard.goHome')}
+                  {t('dashboard.goHome') || 'Go to Home'}
                 </button>
               </div>
-              <div className="mt-6">
-                <p className="text-sm text-gray-500">{t('dashboard.newUserMessage')}</p>
-              </div>
+              <p className="text-xs text-gray-500 mt-4">
+                {t('dashboard.redirecting') || 'Redirecting to sign in in a few seconds...'}
+              </p>
             </div>
           </div>
         </div>
@@ -276,28 +322,45 @@ const DashboardPage = ({ onNavigate }) => {
     );
   }
 
-  const userSections = sectionData(t)[user.role] || [];
+  const userSections = getUserSections();
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <Header currentPage="dashboard" onNavigate={onNavigate} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {t('dashboard.welcome', { name: user.name })}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="mb-4 md:mb-0">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                {t('dashboard.welcome')} {user?.name || 'User'}!
               </h1>
-              <p className="text-gray-600">{t(`dashboard.roleDescription.${user.role}`)}</p>
-              {user.email && <p className="text-sm text-gray-500 mt-1">{user.email}</p>}
+              <p className="text-lg text-gray-600">
+                {t('Greetings')}{' '}
+                <span className="font-semibold text-orange-600">
+                  {getRoleDisplayName(user?.role)}
+                </span>
+              </p>
+              {user?.foodbank_id && (
+                <p className="text-sm text-gray-500 mt-1">
+                  📍 {user.foodbank_id.name} • {user.foodbank_id.location}
+                </p>
+              )}
             </div>
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center space-x-2"
             >
-              {t('dashboard.logout')}
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>{t('dashboard.logout')}</span>
             </button>
           </div>
         </div>
@@ -307,41 +370,64 @@ const DashboardPage = ({ onNavigate }) => {
           {userSections.map(section => (
             <div
               key={section.id}
-              onClick={() => onNavigate(section.id)}
-              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 hover:border-gray-200"
+              onClick={() => handleSectionClick(section.id)}
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 p-6"
             >
-              <div className="flex items-center mb-4">
-                {section.icon}
-                <h3 className="text-xl font-semibold text-gray-900 ml-3">{section.title}</h3>
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">{section.icon}</div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{section.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{section.description}</p>
+                </div>
               </div>
-              <p className="text-gray-600 leading-relaxed">{section.description}</p>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <span className="text-orange-500 font-medium text-sm flex items-center">
+                  {t('dashboard.clickToAccess')}
+                  <svg
+                    className="w-4 h-4 ml-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </span>
+              </div>
             </div>
           ))}
         </div>
 
-        {userSections.length === 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
+        {/* Quick Stats (optional - can be expanded based on role) */}
+        {user?.role === 'admin' || user?.role === 'staff' ? (
+          <div className="mt-8 bg-white rounded-2xl shadow-xl p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              {t('dashboard.quickStats') || 'Quick Stats'}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-blue-600">-</div>
+                <div className="text-sm text-gray-600">Total Items</div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-red-600">-</div>
+                <div className="text-sm text-gray-600">Low Stock</div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-yellow-600">-</div>
+                <div className="text-sm text-gray-600">Expiring Soon</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-green-600">-</div>
+                <div className="text-sm text-gray-600">Recent Donations</div>
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No sections available</h3>
-            <p className="text-gray-500">
-              There are no dashboard sections configured for your role ({user.role}).
-            </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
