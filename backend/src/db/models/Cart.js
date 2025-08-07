@@ -1,4 +1,3 @@
-// backend/src/db/models/Cart.model.js
 const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema({
@@ -63,8 +62,10 @@ cartSchema.pre('save', function (next) {
   next();
 });
 
-const Cart = mongoose.model('Cart', cartSchema);
-module.exports = {
-  Cart,
-  cartItemSchema,
-};
+// Add indexes
+cartSchema.index({ user_id: 1 });
+
+// Check if model already exists before creating it
+const Cart = mongoose.models.Cart || mongoose.model('Cart', cartSchema);
+
+module.exports = Cart;

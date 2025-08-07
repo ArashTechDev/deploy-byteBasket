@@ -1,0 +1,284 @@
+{
+  "appName": "Bytebasket",
+  "tagline": "Nourishing Communities,\nOne Byte at a Time!",
+  "donate": "Donate",
+  "waysToGive": "Ways to give",
+  "inventoryTitle": "Inventory",
+  "inventoryDesc": "Effortlessly monitor and contribute to our inventory online, ensuring transparency and convenience in accessing and donating items.",
+  "giveTitle": "Give",
+  "giveDesc": "Contribute to our mission of alleviating hunger by supporting us through monetary donations and food contributions.",
+  "volunteerTitle": "Volunteer",
+  "volunteerDesc": "Join us in the fight against hunger by volunteering at our food bank and making a meaningful difference in the lives of those in need.",
+  "navDashboard": "Dashboard",
+  "navVolunteer": "Volunteer",
+  "navSignUp": "Sign Up",
+  "navContact": "Contact Us",
+   "signUp": {
+    "pageTitle": "Sign up or Sign in",
+    "emailVerificationMessage": "Please check your email and verify your account before signing in."
+  },
+  "dashboard": {
+    "loading": "Loading dashboard...",
+    "loginPrompt": "Please Log In",
+    "loginPromptMessage": "To access your dashboard and start making a difference in your community, please sign in to your account.",
+    "signInSignUp": "Sign In / Sign Up",
+    "goHome": "Go to Home",
+    "newUserMessage": "New to ByteBasket? Join our community to help nourish families in need.",
+    "accountNotFoundMessage": "We couldn't find your account details. Please sign in again to access your dashboard and continue helping your community.",
+    "communityMessage": "Join thousands of people making a difference in their communities through ByteBasket.",
+    "welcome": "Welcome",
+    "role": "Role",
+    "logout": "Logout",
+    "goTo": "Go to",
+    "errors": {
+      "noToken": "No token found. Please log in.",
+      "fetchFailed": "Failed to fetch user data. Please log in again."
+    },
+    "sections": {
+      "inventory": {
+        "title": "Inventory",
+        "description": "Manage inventory items, track donations and usage."
+      },
+      "foodbank": {
+        "title": "Food Bank Locations",
+        "description": "Add, update, or remove food bank locations."
+      },
+      "donate": {
+        "title": "Make a Donation",
+        "description": "Quickly donate food, money, or resources."
+      },
+      "tasks": {
+        "title": "Assigned Tasks",
+        "description": "View and manage your assigned volunteering tasks."
+      }
+    }
+  },
+    "signInForm": {
+    "emailLabel": "Email address / Username",
+    "emailPlaceholder": "Email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Password",
+    "orSignUp": "or Sign up!",
+    "submit": "Submit",
+    "loginFailed": "Login failed"
+  },  "signUpForm": {
+    "passwordMismatch": "Passwords do not match",
+    "fillAllFields": "Please fill all required fields",
+    "registrationSuccess": "Registration successful! Please check your email to verify your account.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "verificationEmailSent": "Verification email sent successfully! Please check your inbox.",
+    "verificationEmailFailed": "Failed to resend verification email. Please try again.",
+    "checkYourEmail": "Check Your Email!",
+    "verificationSentTo": "We've sent a verification email to",
+    "pleaseCheckInbox": "Please check your inbox and click the verification link to complete your registration.",
+    "didntReceiveEmail": "Didn't receive the email? Check your spam folder or wait a few minutes.",
+    "sending": "Sending...",
+    "resendVerification": "Resend Verification Email",
+    "backToSignIn": "Back to Sign In",
+    "roleLabel": "Role",
+    "chooseRole": "Choose Role",
+    "roles": {
+      "donor": "Donor",
+      "volunteer": "Volunteer",
+      "recipient": "Recipient"
+    },
+    "nameLabel": "Name",
+    "namePlaceholder": "Your full name",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "Email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm Password",
+    "orSignIn": "or Sign in!",
+    "creatingAccount": "Creating Account...",
+    "submit": "Submit"
+  },
+  "footer": {
+    "description": "Nourishing Communities, One Byte at a Time! Connecting food donors with those in need through technology and community spirit.",
+    "getInvolved": "Get Involved",
+    "quickLinks": "Quick Links",
+    "dashboard": "Dashboard",
+    "volunteer": "Volunteer",
+    "inventory": "Inventory",
+    "donate": "Donate Food",
+    "findFood": "Find Food",
+    "support": "Support",
+    "contact": "Contact Us",
+    "help": "Help Center",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "about": "About Us",
+    "rights": "All rights reserved."
+  },
+  "contact": {
+    "hero": {
+      "title": "Get in Touch",
+      "description": "We'd love to hear from you! Whether you have questions about volunteering, need assistance with donations, or want to learn more about our mission, we're here to help."
+    },
+    "connect": {
+      "title": "Let's Connect"
+    },
+    "address": {
+      "title": "Visit Us",
+      "line1": "123 Community Street",
+      "line2": "Food Bank District",
+      "line3": "City, Province A1B 2C3"
+    },
+    "phone": {
+      "title": "Call Us",
+      "main": "Main Office: (555) 123-4567",
+      "emergency": "Emergency Line: (555) 987-6543"
+    },
+    "email": {
+      "title": "Email Us",
+      "general": "General Inquiries: info@bytebasket.org",
+      "volunteer": "Volunteer Support: volunteers@bytebasket.org"
+    },
+    "hours": {
+      "title": "Office Hours",
+      "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM",
+      "saturday": "Saturday: 10:00 AM - 4:00 PM",
+      "sunday": "Sunday: Closed"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "volunteer": "Become a Volunteer",
+      "donate": "Make a Donation",
+      "dashboard": "View Dashboard"
+    },
+    "form": {
+      "title": "Send us a Message",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Select a subject",
+      "subjectOptions": {
+        "volunteer": "Volunteer Opportunities",
+        "donation": "Donation Information",
+        "partnership": "Partnership Inquiry",
+        "support": "Technical Support",
+        "feedback": "Feedback & Suggestions",
+        "media": "Media & Press",
+        "other": "Other"
+      },
+      "messageLabel": "Message",
+      "messagePlaceholder": "Tell us how we can help you...",
+      "sending": "Sending...",
+      "sendButton": "Send Message",
+      "successMessage": "Message sent successfully!"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "emailInvalid": "Please enter a valid email address"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers to common questions",
+      "q1": {
+        "question": "How can I become a volunteer?",
+        "answer": "Simply click on the \"Volunteer\" link in our navigation menu and fill out our registration form. We'll review your application and get back to you within 48 hours."
+      },
+      "q2": {
+        "question": "What types of donations do you accept?",
+        "answer": "We accept both monetary donations and food items. Non-perishable foods, fresh produce, and packaged goods are always needed. Check our donation page for specific requirements."
+      },
+      "q3": {
+        "question": "Are there volunteer opportunities for groups?",
+        "answer": "Absolutely! We welcome corporate groups, school classes, and community organizations. Contact us to arrange group volunteer sessions and team-building opportunities."
+      },
+      "q4": {
+        "question": "How do you ensure food safety?",
+        "answer": "Food safety is our top priority. All volunteers receive training on proper food handling, and we follow strict guidelines for food storage, preparation, and distribution."
+      }
+    }
+  },
+  "volunteerPage": {
+    "landing": {
+      "heroTitle": "Explore the rewarding world of volunteering with us and be a part of the solution!",
+      "impactCards": {
+        "impact1": {
+          "title": "Meaningful Impact",
+          "description": "Contribute to the fight against hunger and help us provide essential nourishment to individuals and families facing food insecurity in our community."
+        },
+        "impact2": {
+          "title": "Stronger Community",
+          "description": "Be a catalyst for positive change by fostering a sense of community and solidarity. Join like-minded individuals who share the common goal of creating a hunger-free future."
+        },
+        "impact3": {
+          "title": "Flexible Opportunities",
+          "description": "We understand that your time is valuable. That's why we offer flexible volunteering options that fit your schedule, whether it's a few hours a week or a one-time event."
+        }
+      },
+      "buttons": {
+        "primaryRegister": "Register",
+        "primaryViewSchedule": "View Schedule",
+        "primarySignInRegister": "Sign In to Register",
+        "secondaryMyShifts": "My Shifts"
+      }
+    },
+    "registration": {
+      "title": "Join Our Volunteer Community",
+      "subtitle": "Fill out the form below to get started with volunteering",
+      "alreadyRegisteredTitle": "You're already registered!",
+      "alreadyRegisteredDescription": "Welcome to our volunteer community. You can now view available shifts and manage your schedule.",
+      "viewAvailableShiftsButton": "View Available Shifts"
+    },
+    "registrationRequired": {
+      "title": "Registration Required",
+      "description": "Please register as a volunteer first to view and sign up for shifts.",
+      "registerNow": "Register Now"
+    },
+    "schedule": {
+      "availableShiftsTitle": "Available Volunteer Shifts",
+      "welcomeBack": "Welcome back, {{userName}}! Select a date to view and sign up for shifts.",
+      "myShifts": "My Shifts"
+    },
+    "myShifts": {
+      "scheduleMoreShifts": "Schedule More Shifts"
+    },
+    "buttons": {
+      "back": "Back",
+      "backToHome": "Back to Home",
+      "backToSchedule": "Back to Schedule"
+    },
+    "loading": {
+      "loadingShifts": "Loading shifts...",
+      "loadingUserShifts": "Loading your shifts..."
+    },
+    "errors": {
+      "registerFail": "Failed to register. Please try again.",
+      "missingVolunteerId": "Volunteer ID not found. Please re-register.",
+      "signUpFail": "Failed to sign up for shift. Please try again.",
+      "shiftNotFound": "Shift not found.",
+      "cancelFail": "Failed to cancel shift. Please try again."
+    },
+    "alerts": {
+      "successSignUp": "Successfully signed up for {{activity}} on {{date}}!",
+      "errorSignUp": "Error: {{error}}",
+      "shiftCancelled": "Shift cancelled successfully!",
+      "errorCancel": "Error: {{error}}"
+    },
+    "cancellation": {
+      "cancelledByVolunteer": "Cancelled by volunteer"
+    },
+    "successBanner": {
+      "welcomeMessage": "Welcome to our volunteer community, {{userName}}! You can now sign up for shifts."
+    },
+    "defaults": {
+      "volunteer": "Volunteer"
+    },
+    "mockShifts": {
+      "foodSorting": "Food sorting",
+      "foodDistribution": "Food distribution",
+      "inventoryManagement": "Inventory management",
+      "mainWarehouse": "Main Warehouse",
+      "communityCenter": "Community Center"
+    }
+  }
+}

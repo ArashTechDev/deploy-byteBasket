@@ -12,6 +12,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import BrowseInventoryPage from './pages/BrowseInventoryPage';
 import ReportsDashboard from './pages/ReportsDashboard';
 import RequestSubmissionPage from './pages/RequestSubmissionPage';
+import InventoryBrowsePage from './pages/InventoryBrowsePage';
 import Footer from './components/layout/Footer';
 
 // NEW IMPORTS

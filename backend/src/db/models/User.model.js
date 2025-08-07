@@ -1,116 +1,70 @@
-// backend/src/models/User.model.js
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, 'Please provide your name'],
+      required: true,
+      unique: true,
       trim: true,
-      maxlength: [50, 'Name cannot be more than 50 characters'],
+      minlength: 3,
+      maxlength: 50,
     },
     email: {
       type: String,
-      required: [true, 'Please provide your email'],
+      required: true,
       unique: true,
       lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email'],
+      trim: true,
     },
     password: {
       type: String,
-      required: [true, 'Please provide a password'],
-      minlength: [6, 'Password must be at least 6 characters'],
-      select: false,
+      required: true,
+      minlength: 6,
+    },
+    full_name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
     },
     role: {
       type: String,
-      enum: ['admin', 'staff', 'volunteer', 'donor', 'recipient'],
+      enum: ['admin', 'staff', 'donor', 'recipient', 'volunteer'],
       default: 'recipient',
+    },
+    dietary_restrictions: {
+      type: [String],
+      default: [],
+    },
+    active: {
+      type: Boolean,
+      default: true,
+    },
+    verification_status: {
+      type: String,
+      enum: ['pending', 'verified', 'rejected'],
+      default: 'pending',
     },
     foodbank_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'FoodBank',
-      required: function () {
-        return ['admin', 'staff'].includes(this.role);
-      },
     },
-    // NEW: Dietary preferences tracking
-    dietaryPreferences: {
-      defaultSeverity: {
-        type: String,
-        enum: ['mild', 'strict'],
-        default: 'mild',
-      },
-      lastUpdated: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
-    lastLogin: Date,
   },
   {
     timestamps: true,
   }
 );
 
-// Create indexes for performance
-userSchema.index({ email: 1 }, { unique: true });
+// Add indexes for better performance
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
 userSchema.index({ role: 1 });
-userSchema.index({ foodbank_id: 1 });
 
-// Virtual for ID
-userSchema.virtual('id').get(function () {
-  return this._id.toHexString();
-});
+// Check if model already exists before creating it
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-// NEW: Virtual to populate user's dietary restrictions
-userSchema.virtual('dietaryRestrictions', {
-  ref: 'UserDietaryPreference',
-  localField: '_id',
-  foreignField: 'userId',
-  match: { isActive: true },
-});
-
-// Ensure virtual fields are serialized and exclude sensitive data
-userSchema.set('toJSON', {
-  virtuals: true,
-  transform: function (doc, ret) {
-    delete ret.password;
-    delete ret.__v;
-    delete ret.verificationToken;
-    delete ret.passwordResetToken;
-    delete ret.passwordResetExpires;
-    return ret;
-  },
-});
-
-userSchema.set('toObject', { virtuals: true });
-
-// Pre-save middleware to hash password
-userSchema.pre('save', async function (next) {
-  // Only run this function if password was actually modified
-  if (!this.isModified('password')) return next();
-
-  // Hash the password with cost of 12
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
-});
-
-// Instance method to check password
-userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

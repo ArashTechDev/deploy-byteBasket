@@ -1,6 +1,33 @@
-// backend/src/db/models/Wishlist.model.js
 const mongoose = require('mongoose');
-const { cartItemSchema } = require('./Cart.model');
+
+const wishlistItemSchema = new mongoose.Schema({
+  inventory_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Inventory',
+    required: true,
+  },
+  item_name: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+  price: {
+    type: Number,
+    default: 0,
+  },
+  dietary_category: {
+    type: String,
+    enum: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
+  },
+  added_at: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const wishlistSchema = new mongoose.Schema(
   {
@@ -13,12 +40,14 @@ const wishlistSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 100,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 500,
     },
-    items: [cartItemSchema],
+    items: [wishlistItemSchema],
     is_default: {
       type: Boolean,
       default: false,
@@ -48,4 +77,11 @@ wishlistSchema.pre('save', function (next) {
   next();
 });
 
-module.exports = mongoose.model('Wishlist', wishlistSchema);
+// Add indexes
+wishlistSchema.index({ user_id: 1 });
+wishlistSchema.index({ name: 1, user_id: 1 });
+
+// Check if model already exists before creating it
+const Wishlist = mongoose.models.Wishlist || mongoose.model('Wishlist', wishlistSchema);
+
+module.exports = Wishlist;

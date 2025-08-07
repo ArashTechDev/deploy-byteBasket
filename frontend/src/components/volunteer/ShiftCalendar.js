@@ -2,77 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import './ShiftCalendar.css';
 
-const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) => {
+const ShiftCalendar = ({ shifts = [], onShiftSelect, selectedShifts = [], userShifts = [], loading = false }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [shifts, setShifts] = useState([]);
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableShifts, setAvailableShifts] = useState([]);
 
-  // Mock data - replace with actual API call
   useEffect(() => {
-    const mockShifts = [
-      {
-        id: 1,
-        date: '2025-02-19',
-        time: '9:00 AM - 12:00 PM',
-        activity: 'Maintain inventory',
-        spotsAvailable: 3,
-        totalSpots: 5
-      },
-      {
-        id: 2,
-        date: '2025-02-19',
-        time: '1:00 PM - 4:00 PM',
-        activity: 'Training session',
-        spotsAvailable: 2,
-        totalSpots: 4
-      },
-      {
-        id: 3,
-        date: '2025-02-20',
-        time: '10:00 AM - 1:00 PM',
-        activity: 'Food distribution',
-        spotsAvailable: 4,
-        totalSpots: 6
-      },
-      {
-        id: 4,
-        date: '2025-02-21',
-        time: '2:00 PM - 5:00 PM',
-        activity: 'Administrative tasks',
-        spotsAvailable: 1,
-        totalSpots: 3
-      },
-      {
-        id: 5,
-        date: '2025-02-22',
-        time: '9:00 AM - 12:00 PM',
-        activity: 'Maintain inventory',
-        spotsAvailable: 5,
-        totalSpots: 5
-      },
-      // Add more dates to current month for testing
-      {
-        id: 6,
-        date: formatDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1),
-        time: '10:00 AM - 2:00 PM',
-        activity: 'Food sorting',
-        spotsAvailable: 2,
-        totalSpots: 4
-      },
-      {
-        id: 7,
-        date: formatDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 3),
-        time: '2:00 PM - 6:00 PM',
-        activity: 'Community outreach',
-        spotsAvailable: 3,
-        totalSpots: 5
-      }
-    ];
-    setShifts(mockShifts);
-    console.log('Mock shifts loaded:', mockShifts); // Debug log
-  }, []);
+    // Use shifts prop instead of mock data
+    if (shifts && shifts.length > 0) {
+      // No need to set state since we're using props directly
+    }
+  }, [shifts]);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -127,8 +68,6 @@ const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) 
     const dateStr = formatDate(currentDate.getFullYear(), currentDate.getMonth(), day);
     const dayShifts = getShiftsForDate(dateStr);
     
-    console.log('Date clicked:', dateStr, 'Shifts found:', dayShifts); // Debug log
-    
     if (dayShifts.length > 0) {
       setSelectedDate(dateStr);
       setAvailableShifts(dayShifts);
@@ -165,6 +104,12 @@ const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) 
 
   return (
     <div className="shift-calendar-container">
+      {loading && (
+        <div className="calendar-loading">
+          <p>Loading available shifts...</p>
+        </div>
+      )}
+      
       <div className="calendar-header">
         <button 
           className="nav-btn"
@@ -184,6 +129,12 @@ const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) 
           &#8250;
         </button>
       </div>
+
+      {shifts.length === 0 && !loading && (
+        <div className="no-shifts-message">
+          <p>No shifts available for this period. Please check back later!</p>
+        </div>
+      )}
 
       <div className="calendar-grid">
         {dayNames.map(day => (
@@ -216,7 +167,7 @@ const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) 
                     <div 
                       key={shift.id}
                       className={`shift-dot ${shift.spotsAvailable === 0 ? 'full' : ''}`}
-                      title={`${shift.activity} - ${shift.time}`}
+                      title={`${shift.activity} - ${shift.time} (${shift.spotsAvailable}/${shift.totalSpots} spots)`}
                     />
                   ))}
                 </div>
@@ -245,9 +196,13 @@ const ShiftCalendar = ({ onShiftSelect, selectedShifts = [], userShifts = [] }) 
                   <div className="shift-info">
                     <h4>{shift.activity}</h4>
                     <p className="shift-time">{shift.time}</p>
+                    <p className="shift-location">📍 {shift.location || 'Location TBD'}</p>
                     <p className="shift-spots">
                       {shift.spotsAvailable} of {shift.totalSpots} spots available
                     </p>
+                    {shift.description && (
+                      <p className="shift-description">{shift.description}</p>
+                    )}
                   </div>
                   <button 
                     className={`select-shift-btn ${shift.spotsAvailable === 0 ? 'disabled' : ''}`}
