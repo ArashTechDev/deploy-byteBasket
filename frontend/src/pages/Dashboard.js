@@ -100,8 +100,9 @@ const DashboardPage = () => {
     const allSections = {
       inventory: {
         id: 'inventory',
-        title: 'Inventory Management',
-        description: 'Manage inventory items, track donations and usage.',
+        title: 'Food Inventory Management', // More descriptive
+        description:
+          'Track and manage all food donations, check stock levels, and monitor expiration dates.',
         icon: (
           <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
             <svg
@@ -119,16 +120,18 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Go to Inventory',
+        buttonText: 'Manage Food Inventory', // More specific
       },
+
       foodbank: {
         id: 'foodbank',
-        title: 'Food Bank Management',
-        description: 'Add, update, or remove food bank locations.',
+        title: 'Food Bank Locations', // Clearer name
+        description:
+          'Manage distribution sites, storage locations, and food bank branch information.',
         icon: (
-          <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-red-600"
+              className="w-6 h-6 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -148,12 +151,14 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Go to Food Bank Locations',
+        buttonText: 'Manage Locations',
       },
+
       reports: {
         id: 'reports',
-        title: 'Reports & Analytics',
-        description: 'View comprehensive reports and analytics.',
+        title: 'Reports & Analytics', // More professional
+        description:
+          'View usage statistics, donation trends, and generate detailed reports for better insights.',
         icon: (
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
             <svg
@@ -173,33 +178,12 @@ const DashboardPage = () => {
         ),
         buttonText: 'View Reports',
       },
-      donate: {
-        id: 'donate',
-        title: 'Make a Donation',
-        description: 'Quickly donate food, money, or resources.',
-        icon: (
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-6 h-6 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </div>
-        ),
-        buttonText: 'Start Donating',
-      },
+
       volunteer: {
         id: 'volunteer',
-        title: 'Volunteer Dashboard',
-        description: 'View and manage your assigned volunteering tasks.',
+        title: 'Volunteer Management', // More descriptive
+        description:
+          'Coordinate volunteers, manage schedules, and track volunteer hours and activities.',
         icon: (
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <svg
@@ -217,12 +201,14 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Go to Volunteer Area',
+        buttonText: 'Manage Volunteers',
       },
+
       shiftManagement: {
         id: 'shift-management',
-        title: 'Shift Management',
-        description: 'Create and manage volunteer shifts and schedules.',
+        title: 'Schedule & Shifts', // More user-friendly
+        description:
+          'Create volunteer shifts, manage schedules, and track coverage for all activities.',
         icon: (
           <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
             <svg
@@ -235,17 +221,44 @@ const DashboardPage = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"
               />
             </svg>
           </div>
         ),
-        buttonText: 'Manage Shifts',
+        buttonText: 'Manage Schedules',
       },
+
+      donate: {
+        id: 'donate',
+        title: 'Make a Donation', // Clear action
+        description:
+          'Donate food items to help families in need. Track your donation history and impact.',
+        icon: (
+          <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-pink-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </div>
+        ),
+        buttonText: 'Start Donating',
+      },
+
       browse: {
         id: 'browse-inventory',
-        title: 'Browse Available Items',
-        description: 'Browse and request available food items.',
+        title: 'Browse Available Food', // Much more user-friendly for recipients
+        description:
+          'See what food items are currently available and add items to your request list.',
         icon: (
           <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
             <svg
@@ -263,11 +276,11 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Browse Items',
+        buttonText: 'Browse Food Items', // More intuitive for recipients
       },
     };
 
-    // Return sections based on user role
+    // Keep your existing role-based logic exactly the same
     switch (userRole) {
       case 'admin':
         return [
