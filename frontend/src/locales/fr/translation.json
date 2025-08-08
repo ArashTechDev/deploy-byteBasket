@@ -294,6 +294,7 @@
     "errors": {
       "registerFail": "Échec de l'inscription. Veuillez réessayer.",
       "missingVolunteerId": "ID bénévole introuvable. Veuillez vous réinscrire.",
+      "missingFoodbankId": "Aucune banque alimentaire sélectionnée. Veuillez en sélectionner une d'abord.",
       "signUpFail": "Échec de l'inscription au créneau. Veuillez réessayer.",
       "shiftNotFound": "Créneau introuvable.",
       "cancelFail": "Échec de l'annulation du créneau. Veuillez réessayer."

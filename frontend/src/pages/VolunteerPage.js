@@ -8,6 +8,7 @@ import MyShiftsPanel from '../components/volunteer/MyShiftsPanel';
 import { volunteerService } from '../services/volunteerService';
 import { shiftService } from '../services/shiftService';
 import { volunteerShiftService } from '../services/volunteerShiftService';
+import { getFoodBanks } from '../services/foodBankService';
 import './VolunteerPage.css';
 
 const VolunteerPage = ({ onNavigate }) => {
@@ -22,6 +23,8 @@ const VolunteerPage = ({ onNavigate }) => {
   const [volunteerId, setVolunteerId] = useState(null);
   const [userId, setUserId] = useState(null);
   const [foodbankId, setFoodbankId] = useState(null);
+  const [foodBanks, setFoodBanks] = useState([]);
+  const [foodBanksLoading, setFoodBanksLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -92,6 +95,28 @@ const VolunteerPage = ({ onNavigate }) => {
       setUserId(savedUserId || null);
       setFoodbankId(savedFoodbankId || null);
     }
+
+    // Load available food banks (for selection)
+    const fetchFoodBanks = async () => {
+      try {
+        setFoodBanksLoading(true);
+        const data = await getFoodBanks();
+        // Normalize to ensure we have _id and name
+        setFoodBanks(Array.isArray(data) ? data : []);
+        // Auto-select if only one food bank and none selected yet
+        if ((!savedFoodbankId || savedFoodbankId === 'null') && Array.isArray(data) && data.length === 1) {
+          const only = data[0];
+          setFoodbankId(only._id);
+          localStorage.setItem('foodbankId', only._id);
+        }
+      } catch (e) {
+        // Silently fail; user can still proceed but will see error on submit if needed
+        console.error('Failed to load food banks', e);
+      } finally {
+        setFoodBanksLoading(false);
+      }
+    };
+    fetchFoodBanks();
 
     loadAvailableShifts();
   }, [t]);
@@ -176,12 +201,12 @@ const VolunteerPage = ({ onNavigate }) => {
 
       const volunteerData = volunteerService.transformRegistrationData({
         ...formData,
-        user_id: userId,
+        user_id: userId, // backend will default to req.user.id if missing
         foodbank_id: foodbankId
       });
 
-      if (!userId || !foodbankId) {
-        throw new Error(t('volunteerPage.errors.missingIds'));
+      if (!foodbankId) {
+        throw new Error(t('volunteerPage.errors.missingFoodbankId'));
       }
 
       const response = await volunteerService.createVolunteer(volunteerData);
@@ -205,6 +230,16 @@ const VolunteerPage = ({ onNavigate }) => {
     }
   };
 
+  const handleFoodbankChange = (e) => {
+    const selectedId = e.target.value || null;
+    setFoodbankId(selectedId);
+    if (selectedId) {
+      localStorage.setItem('foodbankId', selectedId);
+    } else {
+      localStorage.removeItem('foodbankId');
+    }
+  };
+
   const handleShiftSelect = async (shift) => {
     try {
       setLoading(true);
@@ -213,8 +248,8 @@ const VolunteerPage = ({ onNavigate }) => {
       if (!volunteerId) {
         throw new Error(t('volunteerPage.errors.missingVolunteerId'));
       }
-      if (!userId || !foodbankId) {
-        throw new Error(t('volunteerPage.errors.missingIds'));
+      if (!foodbankId) {
+        throw new Error(t('volunteerPage.errors.missingFoodbankId'));
       }
 
       const assignmentData = volunteerShiftService.createShiftAssignment(
@@ -366,6 +401,23 @@ const VolunteerPage = ({ onNavigate }) => {
               <h2>{t('volunteerPage.registration.title')}</h2>
               <p>{t('volunteerPage.registration.subtitle')}</p>
               {error && <div className="error-message">{error}</div>}
+            </div>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label htmlFor="foodbankSelect">Select Food Bank *</label>
+              <select
+                id="foodbankSelect"
+                value={foodbankId || ''}
+                onChange={handleFoodbankChange}
+                disabled={foodBanksLoading}
+                className="foodbank-select"
+              >
+                <option value="">{foodBanksLoading ? 'Loading...' : 'Choose a food bank'}</option>
+                {foodBanks.map((fb) => (
+                  <option key={fb._id} value={fb._id}>
+                    {fb.name || 'Unnamed Food Bank'}
+                  </option>
+                ))}
+              </select>
             </div>
             <VolunteerForm 
               onSubmit={handleRegistrationSubmit}

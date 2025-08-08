@@ -294,6 +294,7 @@
     "errors": {
       "registerFail": "Error al registrarse. Por favor, intenta de nuevo.",
       "missingVolunteerId": "ID de voluntario no encontrado. Por favor regístrate de nuevo.",
+      "missingFoodbankId": "Ningún banco de alimentos seleccionado. Por favor, selecciona uno primero.",
       "signUpFail": "Error al inscribirse en el turno. Por favor, intenta de nuevo.",
       "shiftNotFound": "Turno no encontrado.",
       "cancelFail": "Error al cancelar el turno. Por favor, intenta de nuevo."

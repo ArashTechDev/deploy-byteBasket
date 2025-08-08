@@ -3,17 +3,28 @@ const { randomUUID } = require('crypto');
 const Request = require('../db/models/Request.model');
 const User = require('../db/models/User.model');
 const PDFDocument = require('pdfkit');
-const { sendMail } = require('../services/email');
+const { sendRequestConfirmationEmail } = require('../services/emailService');
 
 let Notification = { create: async () => {} };
 try { Notification = require('../db/models/notifications/Notification.model'); } catch (e) {}
 
 /** helper: get user from auth or dev header */
 const getUserFromRequest = async (req) => {
-  if (req.user && req.user._id) return req.user;
-  const id = req.headers['x-user-id'];
-  if (!id) return null;
-  try { return await User.findById(id); } catch { return null; }
+  try {
+    // Support multiple auth middlewares: req.user may be {_id: ...} or {id: ...}
+    if (req.user) {
+      if (req.user._id) return req.user;
+      if (req.user.id) {
+        const u = await User.findById(req.user.id);
+        if (u) return u;
+      }
+    }
+    const id = req.headers['x-user-id'];
+    if (!id) return null;
+    return await User.findById(id);
+  } catch (_) {
+    return null;
+  }
 };
 
 function buildConfirmationHTML(r) {
@@ -97,12 +108,11 @@ exports.submitRequest = async (req, res) => {
     });
 
     try {
-      if (process.env.ENABLE_EMAIL === 'true' && user.email) {
-        await sendMail({
-          to: user.email,
-          subject: `Your ByteBasket request ${request.requestId}`,
-          html: buildConfirmationHTML(request),
-        });
+      const emailEnabled = String(process.env.ENABLE_EMAIL).toLowerCase() === 'true';
+      if (emailEnabled && user.email) {
+        await sendRequestConfirmationEmail(user, request);
+      } else {
+        console.log('📧 Email skipped: ENABLE_EMAIL not true or missing user email');
       }
     } catch (e) {
       console.warn('email send failed/skipped:', e.message);

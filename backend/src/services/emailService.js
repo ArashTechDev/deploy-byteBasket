@@ -40,7 +40,7 @@ const sendVerificationEmail = async (user, verificationToken) => {
   try {
     const transporter = createTransporter();
     
-    const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3002'}/verify-email?token=${verificationToken}`;
     
     const mailOptions = {
       from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
@@ -263,5 +263,45 @@ module.exports = {
   generateVerificationToken,
   sendVerificationEmail,
   sendWelcomeEmail,
-  sendContactThankYouEmail
+  sendContactThankYouEmail,
+  /**
+   * Send a confirmation email to the user after a request is submitted
+   */
+  sendRequestConfirmationEmail: async (user, request) => {
+    try {
+      if (!user || !user.email) throw new Error('Missing user email');
+
+      const transporter = createTransporter();
+      const subject = `Your ByteBasket request ${request.requestId}`;
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${request.requestId}</title></head>
+        <body style="font-family: Arial, sans-serif; color: #111827;">
+          <div style="max-width:600px;margin:0 auto;padding:20px;">
+            <h2 style="color:#14b8a6;margin-bottom:8px;">Request Confirmation</h2>
+            <p style="margin:4px 0;"><b>Request ID:</b> ${request.requestId}</p>
+            <p style="margin:4px 0;"><b>Pickup:</b> ${new Date(request.pickupDateTime).toLocaleString()}</p>
+            <p style="margin:4px 0;"><b>Status:</b> ${request.status}</p>
+            <div style="margin:12px 0;">
+              <p style="margin:0 0 6px 0;"><b>Items:</b></p>
+              <ul style="margin:0; padding-left:18px;">${request.items.map(i => `<li>${i.name} × ${i.quantity}</li>`).join('')}</ul>
+            </div>
+            ${request.specialInstructions ? `<p style=\"margin-top:12px;\"><b>Notes:</b> ${request.specialInstructions}</p>` : ''}
+          </div>
+        </body></html>`;
+
+      const info = await transporter.sendMail({
+        from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
+        to: user.email,
+        subject,
+        html,
+      });
+      if (process.env.NODE_ENV === 'development') {
+        const preview = nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info);
+        if (preview) console.log('📧 Preview email:', preview);
+      }
+      return info;
+    } catch (error) {
+      console.error('Error sending request confirmation email:', error);
+      throw error;
+    }
+  }
 };

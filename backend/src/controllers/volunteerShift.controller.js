@@ -4,6 +4,8 @@ const Volunteer = require('../db/models/Volunteer');
 const Shift = require('../db/models/Shift');
 const mongoose = require('mongoose');
 
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 /**
  * Get volunteer shifts
  */
@@ -12,7 +14,12 @@ exports.getVolunteerShifts = async (req, res) => {
     const { volunteer_id, start_date, end_date, status, page = 1, limit = 10 } = req.query;
     
     const filter = {};
-    if (volunteer_id) filter.volunteer_id = volunteer_id;
+    if (volunteer_id) {
+      if (!isValidObjectId(volunteer_id)) {
+        return res.status(400).json({ success: false, message: 'Invalid volunteer_id' });
+      }
+      filter.volunteer_id = new mongoose.Types.ObjectId(volunteer_id);
+    }
     if (status) filter.status = status;
     
     // Date range filter
@@ -68,6 +75,9 @@ exports.getVolunteerShifts = async (req, res) => {
 exports.getVolunteerShift = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id)
       .populate({
@@ -106,6 +116,9 @@ exports.checkInVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
     const { check_in_time } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {
@@ -139,6 +152,9 @@ exports.checkOutVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
     const { check_out_time, break_duration, activities_performed } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {
@@ -182,6 +198,9 @@ exports.completeShift = async (req, res) => {
   try {
     const { id } = req.params;
     const { coordinator_feedback, performance_rating, hours_worked } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {
@@ -223,6 +242,9 @@ exports.cancelShift = async (req, res) => {
   try {
     const { id } = req.params;
     const { cancelled_reason } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {
@@ -256,6 +278,9 @@ exports.markNoShow = async (req, res) => {
   try {
     const { id } = req.params;
     const { no_show_reason } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {
@@ -288,6 +313,9 @@ exports.markNoShow = async (req, res) => {
 exports.verifyShift = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer shift id' });
+    }
     
     const volunteerShift = await VolunteerShift.findById(id);
     if (!volunteerShift) {

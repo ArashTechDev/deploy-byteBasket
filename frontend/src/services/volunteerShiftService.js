@@ -4,7 +4,13 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  return localStorage.getItem('authToken') || '';
+  return (
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('token') ||
+    sessionStorage.getItem('authToken') ||
+    sessionStorage.getItem('token') ||
+    ''
+  );
 };
 
 // Helper function for API calls
@@ -38,7 +44,8 @@ const apiCall = async (endpoint, options = {}) => {
 export const volunteerShiftService = {
   // Assign volunteer to a shift
   assignVolunteerToShift: async (assignmentData) => {
-    return apiCall('/volunteer-shifts', {
+    // Backend expects shift_id and volunteer_id at this endpoint
+    return apiCall('/shifts/assign-volunteer', {
       method: 'POST',
       body: JSON.stringify(assignmentData),
     });
@@ -46,15 +53,12 @@ export const volunteerShiftService = {
 
   // Get volunteer shifts by volunteer ID
   getVolunteerShifts: async (volunteerId, startDate = null, endDate = null) => {
-    let endpoint = `/volunteer-shifts/volunteer/${volunteerId}`;
+    const params = new URLSearchParams({ volunteer_id: volunteerId });
     if (startDate && endDate) {
-      const params = new URLSearchParams({
-        start_date: startDate,
-        end_date: endDate,
-      }).toString();
-      endpoint += `?${params}`;
+      params.set('start_date', startDate);
+      params.set('end_date', endDate);
     }
-    return apiCall(endpoint);
+    return apiCall(`/volunteer-shifts?${params.toString()}`);
   },
 
   // Get shifts by shift ID (all volunteers assigned)
@@ -86,7 +90,7 @@ export const volunteerShiftService = {
   // Cancel volunteer shift
   cancelVolunteerShift: async (volunteerShiftId, reason, cancelledBy) => {
     return apiCall(`/volunteer-shifts/${volunteerShiftId}/cancel`, {
-      method: 'PATCH',
+      method: 'POST',
       body: JSON.stringify({
         cancelled_reason: reason,
         cancelled_by: cancelledBy,
@@ -97,7 +101,7 @@ export const volunteerShiftService = {
   // Check in volunteer
   checkInVolunteer: async (volunteerShiftId, checkInTime = null) => {
     return apiCall(`/volunteer-shifts/${volunteerShiftId}/check-in`, {
-      method: 'PATCH',
+      method: 'POST',
       body: JSON.stringify({
         check_in_time: checkInTime || new Date().toTimeString().slice(0, 5),
       }),
@@ -107,7 +111,7 @@ export const volunteerShiftService = {
   // Check out volunteer
   checkOutVolunteer: async (volunteerShiftId, checkOutTime = null) => {
     return apiCall(`/volunteer-shifts/${volunteerShiftId}/check-out`, {
-      method: 'PATCH',
+      method: 'POST',
       body: JSON.stringify({
         check_out_time: checkOutTime || new Date().toTimeString().slice(0, 5),
       }),
@@ -117,7 +121,7 @@ export const volunteerShiftService = {
   // Complete volunteer shift
   completeVolunteerShift: async (volunteerShiftId, feedback = {}) => {
     return apiCall(`/volunteer-shifts/${volunteerShiftId}/complete`, {
-      method: 'PATCH',
+      method: 'POST',
       body: JSON.stringify({
         feedback,
       }),

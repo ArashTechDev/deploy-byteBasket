@@ -13,7 +13,6 @@ const RequestSubmissionPage = () => {
     specialInstructions: '',
     preferredPickupDate: '',
     preferredPickupTime: '',
-    dietaryRestrictions: '',
     allergies: '',
   });
   const [loading, setLoading] = useState(false);
@@ -65,7 +64,6 @@ const RequestSubmissionPage = () => {
           items,
           specialInstructions: formData.specialInstructions,
           pickupDateTime,
-          dietaryRestrictions: [], // TODO: wire up the checkboxes to form state
           allergies: formData.allergies,
         },
         token
@@ -178,29 +176,7 @@ const RequestSubmissionPage = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dietary Restrictions
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    'Vegetarian',
-                    'Vegan',
-                    'Gluten Free',
-                    'Dairy Free',
-                    'Nut Free',
-                    'Low Sodium',
-                  ].map(restriction => (
-                    <label key={restriction} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{restriction}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

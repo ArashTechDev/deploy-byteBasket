@@ -293,6 +293,7 @@
     "errors": {
       "registerFail": "Failed to register. Please try again.",
       "missingVolunteerId": "Volunteer ID not found. Please re-register.",
+      "missingFoodbankId": "No food bank selected. Please select a food bank first.",
       "signUpFail": "Failed to sign up for shift. Please try again.",
       "shiftNotFound": "Shift not found.",
       "cancelFail": "Failed to cancel shift. Please try again."

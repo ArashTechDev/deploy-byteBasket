@@ -245,6 +245,17 @@ const startServer = async () => {
         console.log('   📋 /api/volunteers');
         console.log('   📅 /api/shifts');
         console.log('   🤝 /api/volunteer-shifts');
+
+        // Email configuration status
+        const emailEnabled = String(process.env.ENABLE_EMAIL).toLowerCase() === 'true';
+        if (!emailEnabled) {
+          console.log('\n✉️  Emails are DISABLED (set ENABLE_EMAIL=true to enable)');
+        } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+          console.log('\n✉️  Emails ENABLED via SMTP host:', process.env.SMTP_HOST);
+        } else {
+          console.log('\n✉️  Emails ENABLED (no SMTP configured) → Using Ethereal for dev previews');
+          console.log('    A preview link will be printed after an email is sent.');
+        }
       }
     });
 

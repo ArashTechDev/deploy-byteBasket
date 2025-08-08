@@ -4,7 +4,13 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  return localStorage.getItem('authToken') || '';
+  return (
+    localStorage.getItem('authToken') ||
+    localStorage.getItem('token') ||
+    sessionStorage.getItem('authToken') ||
+    sessionStorage.getItem('token') ||
+    ''
+  );
 };
 
 // Helper function for API calls
