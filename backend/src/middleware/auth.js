@@ -1,35 +1,49 @@
+// backend/src/middleware/auth.js
 const jwt = require('jsonwebtoken');
-const User = require('../db/models/User');
+const { AppError } = require('../utils/errors');
 
-const authMiddleware = async (req, res, next) => {
+// JWT Authentication Middleware
+const authenticate = (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Access denied. No token provided.',
-      });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AppError('Access token required', 401);
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const user = await User.findById(decoded.id);
+    const token = authHeader.split(' ')[1];
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token.',
-      });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = user;
+    req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: 'Invalid token.',
-    });
+    if (error.name === 'JsonWebTokenError') {
+      return next(new AppError('Invalid token', 401));
+    }
+    if (error.name === 'TokenExpiredError') {
+      return next(new AppError('Token expired', 401));
+    }
+    next(error); 
   }
 };
 
-module.exports = authMiddleware;
+// Role-based Authorization Middleware
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(new AppError('Authentication required', 401));
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('Access forbidden: insufficient permissions', 403));
+    }
+
+    next();
+  };
+};
+
+module.exports = {
+  authenticate,
+  authorize
+};
