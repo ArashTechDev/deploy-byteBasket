@@ -187,7 +187,12 @@ const VolunteerPage = ({ onNavigate }) => {
   const loadUserShifts = async (volId) => {
     try {
       const response = await volunteerShiftService.getVolunteerShifts(volId);
-      const transformedShifts = volunteerShiftService.transformVolunteerShifts(response.data);
+      const apiShifts = Array.isArray(response?.data?.volunteer_shifts)
+        ? response.data.volunteer_shifts
+        : Array.isArray(response?.data)
+          ? response.data
+          : [];
+      const transformedShifts = volunteerShiftService.transformVolunteerShifts(apiShifts);
       setUserShifts(transformedShifts);
     } catch {
       setUserShifts([]);
@@ -437,7 +442,7 @@ const VolunteerPage = ({ onNavigate }) => {
                 className="my-shifts-btn"
                 onClick={() => setCurrentView('myshifts')}
               >
-                {t('volunteerPage.schedule.myShifts')} ({userShifts.length})
+                {t('volunteerPage.schedule.myShifts')} ({(userShifts || []).filter(s => !['cancelled','completed'].includes(s.status)).length})
               </button>
             </div>
             {loading && <div className="loading-message">{t('volunteerPage.loading.loadingShifts')}</div>}

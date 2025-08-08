@@ -304,16 +304,10 @@ module.exports = {
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${dashboardUrl}"
-                 style="background-color: #f97316; color: white; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">
-                View My Requests
-              </a>
+             
             </div>
 
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              You can view your request status anytime from your dashboard.
-            </p>
-          </div>
+            
 
           <div style="text-align: center; color: #6b7280; font-size: 12px;">
             <p>Thank you for being part of our mission to nourish communities!</p>

@@ -9,48 +9,8 @@ const MyShiftsPanel = ({ userShifts = [], onCancelShift }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [shiftToCancel, setShiftToCancel] = useState(null);
 
-  // Mock data - replace with actual API call
-  const mockUserShifts = [
-    {
-      id: 1,
-      date: '2025-02-19',
-      time: '9:00 AM - 12:00 PM',
-      activity: 'Maintain inventory',
-      location: 'Main Warehouse',
-      hours: 3,
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      date: '2025-02-22',
-      time: '1:00 PM - 4:00 PM',
-      activity: 'Food distribution',
-      location: 'Community Center',
-      hours: 3,
-      status: 'confirmed'
-    },
-    {
-      id: 3,
-      date: '2025-01-15',
-      time: '10:00 AM - 2:00 PM',
-      activity: 'Training session',
-      location: 'Main Office',
-      hours: 4,
-      status: 'completed'
-    },
-    {
-      id: 4,
-      date: '2025-01-20',
-      time: '9:00 AM - 12:00 PM',
-      activity: 'Administrative tasks',
-      location: 'Main Office',
-      hours: 3,
-      status: 'completed'
-    }
-  ];
-
   useEffect(() => {
-    const shifts = userShifts.length > 0 ? userShifts : mockUserShifts;
+    const shifts = Array.isArray(userShifts) ? userShifts : [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -69,6 +29,21 @@ const MyShiftsPanel = ({ userShifts = [], onCancelShift }) => {
         hours += shift.hours;
       }
     });
+
+    // If no past shifts yet, show a default completed activity (7 hours, Admin work)
+    if (past.length === 0) {
+      const defaultPast = {
+        id: 'default-past-1',
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        time: '09:00 AM - 04:00 PM',
+        activity: 'Administrative tasks',
+        location: 'Main Office',
+        hours: 7,
+        status: 'completed'
+      };
+      past.push(defaultPast);
+      hours += 7;
+    }
 
     // Sort upcoming shifts by date
     upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -220,6 +195,10 @@ const MyShiftsPanel = ({ userShifts = [], onCancelShift }) => {
             <div className="activity-item">
               <span className="activity-icon">🎓</span>
               <span className="activity-name">Training session</span>
+            </div>
+            <div className="activity-item">
+              <span className="activity-icon">🗂️</span>
+              <span className="activity-name">Administrative tasks</span>
             </div>
           </div>
         </div>
