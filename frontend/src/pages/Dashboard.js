@@ -565,7 +565,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome, {user.full_name || 'Demo Administrator'}!
+                Welcome, {user.full_name || user.name}!
               </h1>
               <p className="text-lg text-gray-600">
                 Role:{' '}

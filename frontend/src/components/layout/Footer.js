@@ -22,9 +22,7 @@ const Footer = () => {
               </div>
             </div>
 
-            <p className="text-gray-300 mb-4 max-w-md whitespace-pre-line">
-              {t('tagline')}
-            </p>
+            <p className="text-gray-300 mb-4 max-w-md whitespace-pre-line">{t('tagline')}</p>
 
             <div className="flex space-x-4">
               <button className="bg-orange-400 hover:bg-orange-500 text-white px-6 py-2 rounded-full font-medium transition-colors">
@@ -37,11 +35,34 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
-              <li><a href="/dashboard" className="text-gray-300 hover:text-white transition-colors">{t('navDashboard')}</a></li>
-              <li><a href="/volunteer" className="text-gray-300 hover:text-white transition-colors">{t('navVolunteer')}</a></li>
-              <li><a href="/inventory" className="text-gray-300 hover:text-white transition-colors">{t('inventoryTitle')}</a></li>
-              <li><a href="/donate" className="text-gray-300 hover:text-white transition-colors">{t('donate')}</a></li>
-              <li><a href="/find-food" className="text-gray-300 hover:text-white transition-colors">{t('footer.findFood')}</a></li>
+              <li>
+                <a href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
+                  {t('navDashboard')}
+                </a>
+              </li>
+              <li>
+                <a href="/volunteer" className="text-gray-300 hover:text-white transition-colors">
+                  {t('navVolunteer')}
+                </a>
+              </li>
+              <li>
+                <a href="/inventory" className="text-gray-300 hover:text-white transition-colors">
+                  {t('inventoryTitle')}
+                </a>
+              </li>
+              <li>
+                <a href="/donate" className="text-gray-300 hover:text-white transition-colors">
+                  {t('donate')}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/browse-inventory"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('footer.findFood')}
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -49,11 +70,31 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">{t('footer.support')}</h3>
             <ul className="space-y-2">
-              <li><a href="/contact" className="text-gray-300 hover:text-white transition-colors">{t('navContact')}</a></li>
-              <li><a href="/help" className="text-gray-300 hover:text-white transition-colors">{t('footer.help')}</a></li>
-              <li><a href="/privacy" className="text-gray-300 hover:text-white transition-colors">{t('footer.privacy')}</a></li>
-              <li><a href="/terms" className="text-gray-300 hover:text-white transition-colors">{t('footer.terms')}</a></li>
-              <li><a href="/about" className="text-gray-300 hover:text-white transition-colors">{t('footer.about')}</a></li>
+              <li>
+                <a href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  {t('navContact')}
+                </a>
+              </li>
+              <li>
+                <a href="/help" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.help')}
+                </a>
+              </li>
+              <li>
+                <a href="/privacy" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.privacy')}
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.terms')}
+                </a>
+              </li>
+              <li>
+                <a href="/about" className="text-gray-300 hover:text-white transition-colors">
+                  {t('footer.about')}
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -66,22 +107,38 @@ const Footer = () => {
 
           {/* Social Media Buttons */}
           <div className="flex space-x-6">
-            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+            <button
+              type="button"
+              className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Twitter"
+            >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 4.557c-.883.392-1.832.656-2.828.775..." />
               </svg>
             </button>
-            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
+            <button
+              type="button"
+              className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Facebook"
+            >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M22.46 6c-.77.35-1.6.58-2.46.69..." />
               </svg>
             </button>
-            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Reddit">
+            <button
+              type="button"
+              className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Reddit"
+            >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12.017 0C5.396 0 .029 5.367..." />
               </svg>
             </button>
-            <button type="button" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+            <button
+              type="button"
+              className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Instagram"
+            >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2.163c3.204 0 3.584.012..." />
               </svg>
