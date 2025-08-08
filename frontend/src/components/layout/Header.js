@@ -67,7 +67,7 @@ const LanguageSwitcher = () => {
   );
 };
 
-const Header = () => {
+const Header = ({ children }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -94,7 +94,7 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Navigation + Language Switcher */}
+          {/* Navigation + Actions + Language Switcher */}
           <div className="flex items-center space-x-8">
             <nav className="hidden md:flex items-center space-x-8">
               {navigationItems.map(({ key, label, path }) => (
@@ -109,6 +109,10 @@ const Header = () => {
                 </button>
               ))}
             </nav>
+
+            {children && (
+              <div className="hidden md:flex items-center space-x-4">{children}</div>
+            )}
 
             <LanguageSwitcher />
           </div>

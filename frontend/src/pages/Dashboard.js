@@ -85,14 +85,15 @@ const DashboardPage = () => {
   };
 
   const getRoleDisplayName = role => {
-    const roleNames = {
-      admin: 'Administrator',
-      staff: 'Staff Member',
-      volunteer: 'Volunteer',
-      donor: 'Donor',
-      recipient: 'Recipient',
-    };
-    return roleNames[role] || role;
+    const dashboardRoleKey = `dashboard.roles.${role}`;
+    const fromDashboard = t(dashboardRoleKey);
+    if (fromDashboard !== dashboardRoleKey) return fromDashboard;
+
+    const signUpRoleKey = `signUpForm.roles.${role}`;
+    const fromSignUp = t(signUpRoleKey);
+    if (fromSignUp !== signUpRoleKey) return fromSignUp;
+
+    return role;
   };
 
   // Define sections based on user role
@@ -100,9 +101,8 @@ const DashboardPage = () => {
     const allSections = {
       inventory: {
         id: 'inventory',
-        title: 'Food Inventory Management', // More descriptive
-        description:
-          'Track and manage all food donations, check stock levels, and monitor expiration dates.',
+        title: t('dashboard.sections.inventory.title'),
+        description: t('dashboard.sections.inventory.description'),
         icon: (
           <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
             <svg
@@ -120,14 +120,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Manage Food Inventory', // More specific
+        buttonText: t('dashboard.sections.inventory.cta'),
       },
 
       foodbank: {
         id: 'foodbank',
-        title: 'Food Bank Locations', // Clearer name
-        description:
-          'Manage distribution sites, storage locations, and food bank branch information.',
+        title: t('dashboard.sections.foodbank.title'),
+        description: t('dashboard.sections.foodbank.description'),
         icon: (
           <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <svg
@@ -151,14 +150,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Manage Locations',
+        buttonText: t('dashboard.sections.foodbank.cta'),
       },
 
       reports: {
         id: 'reports',
-        title: 'Reports & Analytics', // More professional
-        description:
-          'View usage statistics, donation trends, and generate detailed reports for better insights.',
+        title: t('dashboard.sections.reports.title'),
+        description: t('dashboard.sections.reports.description'),
         icon: (
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
             <svg
@@ -176,14 +174,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'View Reports',
+        buttonText: t('dashboard.sections.reports.cta'),
       },
 
       volunteer: {
         id: 'volunteer',
-        title: 'Volunteer Management', // More descriptive
-        description:
-          'Coordinate volunteers, manage schedules, and track volunteer hours and activities.',
+        title: t('dashboard.sections.volunteer.title'),
+        description: t('dashboard.sections.volunteer.description'),
         icon: (
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <svg
@@ -201,14 +198,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Manage Volunteers',
+        buttonText: t('dashboard.sections.volunteer.cta'),
       },
 
       shiftManagement: {
         id: 'shift-management',
-        title: 'Schedule & Shifts', // More user-friendly
-        description:
-          'Create volunteer shifts, manage schedules, and track coverage for all activities.',
+        title: t('dashboard.sections.shiftManagement.title'),
+        description: t('dashboard.sections.shiftManagement.description'),
         icon: (
           <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
             <svg
@@ -226,14 +222,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Manage Schedules',
+        buttonText: t('dashboard.sections.shiftManagement.cta'),
       },
 
       donate: {
         id: 'donate',
-        title: 'Make a Donation', // Clear action
-        description:
-          'Donate food items to help families in need. Track your donation history and impact.',
+        title: t('dashboard.sections.donate.title'),
+        description: t('dashboard.sections.donate.description'),
         icon: (
           <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
             <svg
@@ -251,14 +246,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Start Donating',
+        buttonText: t('dashboard.sections.donate.cta'),
       },
 
       browse: {
         id: 'browse-inventory',
-        title: 'Browse Available Food', // Much more user-friendly for recipients
-        description:
-          'See what food items are currently available and add items to your request list.',
+        title: t('dashboard.sections.browse.title'),
+        description: t('dashboard.sections.browse.description'),
         icon: (
           <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
             <svg
@@ -276,7 +270,7 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Browse Food Items', // More intuitive for recipients
+        buttonText: t('dashboard.sections.browse.cta'),
       },
     };
 
@@ -381,10 +375,10 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome, {user.full_name || 'Demo Administrator'}!
+                {t('dashboard.welcome')}, {user.name || t('dashboard.demoAdmin')}!
               </h1>
               <p className="text-lg text-gray-600">
-                Role:{' '}
+                {t('dashboard.role')}: 
                 <span className="font-semibold text-orange-600">
                   {getRoleDisplayName(user.role)}
                 </span>
@@ -407,7 +401,7 @@ const DashboardPage = () => {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              <span>Logout</span>
+              <span>{t('dashboard.logout')}</span>
             </button>
           </div>
         </div>
@@ -438,37 +432,37 @@ const DashboardPage = () => {
         {/* Quick Stats - Only show for admin and staff */}
         {(user?.role === 'admin' || user?.role === 'staff') && (
           <div className="bg-white rounded-2xl shadow-xl p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Stats</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.quickStats.title')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-blue-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-blue-600">
                   {dashboardData?.quickStats?.totalInventoryItems || '0'}
                 </div>
-                <div className="text-sm text-gray-600">Total Items</div>
+                <div className="text-sm text-gray-600">{t('dashboard.quickStats.totalItems')}</div>
               </div>
               <div className="bg-red-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-red-600">
                   {dashboardData?.quickStats?.lowStockCount || '0'}
                 </div>
-                <div className="text-sm text-gray-600">Low Stock</div>
+                <div className="text-sm text-gray-600">{t('dashboard.quickStats.lowStock')}</div>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-yellow-600">
                   {dashboardData?.quickStats?.todayRequests || '0'}
                 </div>
-                <div className="text-sm text-gray-600">Today's Requests</div>
+                <div className="text-sm text-gray-600">{t('dashboard.quickStats.todaysRequests')}</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {dashboardData?.quickStats?.todayDonations || '0'}
                 </div>
-                <div className="text-sm text-gray-600">Today's Donations</div>
+                <div className="text-sm text-gray-600">{t('dashboard.quickStats.todaysDonations')}</div>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-purple-600">
                   {dashboardData?.quickStats?.pendingRequests || '0'}
                 </div>
-                <div className="text-sm text-gray-600">Pending Requests</div>
+                <div className="text-sm text-gray-600">{t('dashboard.quickStats.pendingRequests')}</div>
               </div>
             </div>
           </div>

@@ -4,6 +4,8 @@ const Volunteer = require('../db/models/Volunteer');
 const VolunteerShift = require('../db/models/VolunteerShift');
 const mongoose = require('mongoose');
 
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 /**
  * Get all shifts for a food bank
  */
@@ -19,6 +21,10 @@ exports.getShifts = async (req, res) => {
       limit = 10 
     } = req.query;
     
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
+
     const filter = { foodbank_id };
     if (status) filter.status = status;
     if (activity_category) filter.activity_category = activity_category;
@@ -72,6 +78,9 @@ exports.getShifts = async (req, res) => {
 exports.getShift = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid shift id' });
+    }
     
     const shift = await Shift.findById(id)
       .populate('coordinator_id', 'name email')
@@ -144,6 +153,9 @@ exports.updateShift = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid shift id' });
+    }
     
     // Remove fields that shouldn't be updated directly
     delete updates.shift_id;
@@ -184,6 +196,9 @@ exports.updateShift = async (req, res) => {
 exports.deleteShift = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid shift id' });
+    }
     
     // Check if shift has assigned volunteers
     const assignedVolunteers = await VolunteerShift.countDocuments({ 
@@ -231,6 +246,9 @@ exports.getUpcomingShifts = async (req, res) => {
   try {
     const { foodbank_id } = req.params;
     const { days = 7 } = req.query;
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
     
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + parseInt(days));
@@ -263,6 +281,9 @@ exports.getUpcomingShifts = async (req, res) => {
 exports.getAvailableShifts = async (req, res) => {
   try {
     const { foodbank_id } = req.params;
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
     
     const shifts = await Shift.findAvailableShifts(foodbank_id)
       .populate('coordinator_id', 'name email');
@@ -287,6 +308,9 @@ exports.getAvailableShifts = async (req, res) => {
 exports.assignVolunteer = async (req, res) => {
   try {
     const { shift_id, volunteer_id } = req.body;
+    if (!isValidObjectId(shift_id) || !isValidObjectId(volunteer_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid shift_id or volunteer_id' });
+    }
     
     const shift = await Shift.findById(shift_id);
     if (!shift) {
@@ -360,6 +384,9 @@ exports.assignVolunteer = async (req, res) => {
 exports.removeVolunteer = async (req, res) => {
   try {
     const { shift_id, volunteer_id } = req.body;
+    if (!isValidObjectId(shift_id) || !isValidObjectId(volunteer_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid shift_id or volunteer_id' });
+    }
     
     const volunteerShift = await VolunteerShift.findOne({ volunteer_id, shift_id });
     if (!volunteerShift) {
@@ -393,7 +420,10 @@ exports.getShiftStats = async (req, res) => {
   try {
     const { foodbank_id } = req.params;
     const { start_date, end_date } = req.query;
-    
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
+
     const dateFilter = { foodbank_id: new mongoose.Types.ObjectId(foodbank_id) };
     if (start_date && end_date) {
       dateFilter.shift_date = {

@@ -1,5 +1,5 @@
 // backend/src/controllers/cart.controller.js
-const { Cart } = require('../db/models/Cart');
+const Cart = require('../db/models/Cart');
 const Wishlist = require('../db/models/Wishlist');
 const Inventory = require('../db/models/Inventory');
 const { validationResult } = require('express-validator');
@@ -103,7 +103,7 @@ class CartController {
           inventory_id,
           item_name: inventoryItem.item_name,
           quantity,
-          dietary_category: inventoryItem.dietary_category,
+          dietary_category: inventoryItem.dietary_category || null,
         });
       }
 

@@ -14,11 +14,20 @@ const authRoutes = require('./api/auth.routes');
 const inventoryRoutes = require('./api/routes/inventory');
 const dietaryPreferencesRoutes = require('./routes/dietaryPreferences.routes');
 const dietaryRestrictionsRoutes = require('./routes/dietaryRestrictions.routes');
+const cartRoutes = require('./routes/cart.routes');
+const wishlistRoutes = require('./routes/wishlist.routes');
 
 // Import NEW volunteer routes
 const volunteerRoutes = require('./routes/volunteer.routes');
 const shiftRoutes = require('./routes/shift.routes');
 const volunteerShiftRoutes = require('./routes/volunteerShift.routes');
+
+// Import contact routes
+const contactRoutes = require('./routes/contact.routes');
+
+// Import reports routes
+const reportsRoutes = require('./routes/reports.routes');
+const basicReportsRoutes = require('./routes/basicReports.routes');
 
 // MongoDB connection
 const { connectMongoDB } = require('./config/mongodb');
@@ -144,6 +153,7 @@ app.get('/', (req, res) => {
       volunteers: '/api/volunteers',
       shifts: '/api/shifts',
       volunteerShifts: '/api/volunteer-shifts',
+      contact: '/api/contact',
     },
   });
 });
@@ -155,11 +165,20 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/dietary-preferences', dietaryPreferencesRoutes);
 app.use('/api/dietary-restrictions', dietaryRestrictionsRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlists', wishlistRoutes);
 
 // NEW: Add volunteer routes
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/shifts', shiftRoutes);
 app.use('/api/volunteer-shifts', volunteerShiftRoutes);
+
+// NEW: Add contact routes
+app.use('/api/contact', contactRoutes);
+
+// NEW: Add reports routes
+app.use('/api/reports', reportsRoutes);
+app.use('/api/reports', basicReportsRoutes);
 
 // API Health endpoint - Enhanced version
 app.get('/api/health', async (req, res) => {

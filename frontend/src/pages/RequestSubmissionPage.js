@@ -2,9 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import { useCart } from '../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const RequestSubmissionPage = ({ onNavigate }) => {
+const RequestSubmissionPage = () => {
   const { cart, clearCart } = useCart();
+  const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
   const [formData, setFormData] = useState({
     specialInstructions: '',
     preferredPickupDate: '',
@@ -14,14 +18,15 @@ const RequestSubmissionPage = ({ onNavigate }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    // Redirect if cart is empty
-    if (cart.items.length === 0) {
+    // Redirect if cart is empty (only before a submission happens)
+    if (!submitted && cart.items.length === 0) {
       alert('Your cart is empty. Please add items before submitting a request.');
-      onNavigate('browse-inventory');
+      navigate('/browse-inventory');
     }
-  }, [cart.items.length, onNavigate]);
+  }, [cart.items.length, navigate, submitted]);
 
   const handleInputChange = e => {
     const { name, value } = e.target;
@@ -37,19 +42,46 @@ const RequestSubmissionPage = ({ onNavigate }) => {
     setError('');
 
     try {
-      // Here you would typically make an API call to submit the request
-      // For now, we'll simulate a successful submission
+      // Build payload for backend
+      const pickupDateTime = new Date(
+        `${formData.preferredPickupDate}T${formData.preferredPickupTime}:00`
+      ).toISOString();
+      const items = cart.items.map(item => ({
+        inventoryItemId: item.inventory_id?._id || item.inventory_id,
+        name: item.item_name,
+        quantity: item.quantity,
+      }));
 
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      // Include auth header
+      const token =
+        localStorage.getItem('authToken') ||
+        localStorage.getItem('token') ||
+        sessionStorage.getItem('authToken') ||
+        sessionStorage.getItem('token');
+
+      await axios.post(
+        `${API_BASE_URL}/requests`,
+        {
+          items,
+          specialInstructions: formData.specialInstructions,
+          pickupDateTime,
+          dietaryRestrictions: [], // TODO: wire up the checkboxes to form state
+          allergies: formData.allergies,
+        },
+        token
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : undefined
+      );
 
       // Clear the cart after successful submission
       await clearCart();
+      setSubmitted(true);
 
       // Show success message and redirect
       alert(
         'Your food request has been submitted successfully! You will receive a confirmation email shortly.'
       );
-      onNavigate('dashboard');
+      navigate('/dashboard');
     } catch (error) {
       setError('Failed to submit request. Please try again.');
     } finally {
@@ -69,7 +101,7 @@ const RequestSubmissionPage = ({ onNavigate }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onNavigate={onNavigate} />
+      <Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -201,7 +233,7 @@ const RequestSubmissionPage = ({ onNavigate }) => {
               <div className="flex justify-between">
                 <button
                   type="button"
-                  onClick={() => onNavigate('browse-inventory')}
+                  onClick={() => navigate('/browse-inventory')}
                   className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                 >
                   Back to Browse

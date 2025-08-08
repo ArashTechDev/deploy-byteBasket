@@ -13,11 +13,11 @@
   "navVolunteer": "Voluntariado",
   "navSignUp": "Registrarse",
   "navContact": "Contáctanos",
-    "signUp": {
+  "signUp": {
     "pageTitle": "Regístrate o Inicia sesión",
     "emailVerificationMessage": "Por favor revisa tu correo electrónico y verifica tu cuenta antes de iniciar sesión."
   },
-    "dashboard": {
+  "dashboard": {
     "loading": "Cargando el panel de control...",
     "loginPrompt": "Por favor, inicie sesión",
     "loginPromptMessage": "Para acceder a su panel de control y comenzar a hacer una diferencia en su comunidad, inicie sesión en su cuenta.",
@@ -27,8 +27,24 @@
     "accountNotFoundMessage": "No pudimos encontrar los detalles de su cuenta. Por favor, inicie sesión nuevamente para acceder a su panel de control y continuar ayudando a su comunidad.",
     "communityMessage": "Únase a miles de personas que marcan la diferencia en sus comunidades a través de ByteBasket.",
     "welcome": "Bienvenido",
+    "demoAdmin": "Administrador de demostración",
     "role": "Rol",
     "logout": "Cerrar sesión",
+    "roles": {
+      "admin": "Administrador",
+      "staff": "Miembro del personal",
+      "volunteer": "Voluntario",
+      "donor": "Donante",
+      "recipient": "Beneficiario"
+    },
+    "quickStats": {
+      "title": "Estadísticas rápidas",
+      "totalItems": "Artículos totales",
+      "lowStock": "Bajo stock",
+      "todaysRequests": "Solicitudes de hoy",
+      "todaysDonations": "Donaciones de hoy",
+      "pendingRequests": "Solicitudes pendientes"
+    },
     "goTo": "Ir a",
     "errors": {
       "noToken": "No se encontró token. Por favor, inicie sesión.",
@@ -36,23 +52,47 @@
     },
     "sections": {
       "inventory": {
-        "title": "Inventario",
-        "description": "Administre los artículos del inventario, rastree donaciones y uso."
+        "title": "Gestión de inventario de alimentos",
+        "description": "Rastrea y gestiona todas las donaciones de alimentos, revisa niveles de stock y controla fechas de caducidad.",
+        "cta": "Administrar inventario"
       },
       "foodbank": {
         "title": "Ubicaciones de bancos de alimentos",
-        "description": "Agregue, actualice o elimine ubicaciones de bancos de alimentos."
+        "description": "Gestiona sitios de distribución, ubicaciones de almacenamiento e información de sucursales.",
+        "cta": "Administrar ubicaciones"
+      },
+      "reports": {
+        "title": "Informes y analítica",
+        "description": "Visualiza estadísticas de uso, tendencias de donación y genera informes detallados para mejores insights.",
+        "cta": "Ver informes"
+      },
+      "volunteer": {
+        "title": "Gestión de voluntarios",
+        "description": "Coordina voluntarios, gestiona horarios y registra horas y actividades.",
+        "cta": "Administrar voluntarios"
+      },
+      "shiftManagement": {
+        "title": "Horario y turnos",
+        "description": "Crea turnos de voluntariado, gestiona calendarios y controla la cobertura de actividades.",
+        "cta": "Administrar horarios"
       },
       "donate": {
         "title": "Hacer una donación",
-        "description": "Done rápidamente alimentos, dinero o recursos."
+        "description": "Dona alimentos para ayudar a familias necesitadas. Consulta tu historial e impacto.",
+        "cta": "Comenzar a donar"
+      },
+      "browse": {
+        "title": "Explorar alimentos disponibles",
+        "description": "Mira qué artículos hay disponibles y agrégalos a tu lista de solicitudes.",
+        "cta": "Explorar artículos"
       },
       "tasks": {
         "title": "Tareas asignadas",
         "description": "Ver y administrar las tareas de voluntariado asignadas."
       }
     }
-  },  "signInForm": {
+  },
+  "signInForm": {
     "emailLabel": "Correo electrónico / Usuario",
     "emailPlaceholder": "Correo electrónico",
     "passwordLabel": "Contraseña",
@@ -60,7 +100,8 @@
     "orSignUp": "o ¡Regístrate!",
     "submit": "Enviar",
     "loginFailed": "Error al iniciar sesión"
-  },  "signUpForm": {
+  },
+  "signUpForm": {
     "passwordMismatch": "Las contraseñas no coinciden",
     "fillAllFields": "Por favor complete todos los campos requeridos",
     "registrationSuccess": "¡Registro exitoso! Por favor, revise su correo para verificar su cuenta.",

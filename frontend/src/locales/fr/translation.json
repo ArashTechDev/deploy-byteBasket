@@ -13,7 +13,7 @@
   "navVolunteer": "Bénévolat",
   "navSignUp": "Inscription",
   "navContact": "Contactez-nous",
-    "signUp": {
+  "signUp": {
     "pageTitle": "Inscription ou Connexion",
     "emailVerificationMessage": "Veuillez vérifier votre e-mail et valider votre compte avant de vous connecter."
   },
@@ -27,8 +27,24 @@
     "accountNotFoundMessage": "Nous n'avons pas trouvé les détails de votre compte. Veuillez vous reconnecter pour accéder à votre tableau de bord et continuer à aider votre communauté.",
     "communityMessage": "Rejoignez des milliers de personnes qui font une différence dans leurs communautés grâce à ByteBasket.",
     "welcome": "Bienvenue",
+    "demoAdmin": "Administrateur de démonstration",
     "role": "Rôle",
     "logout": "Se déconnecter",
+    "roles": {
+      "admin": "Administrateur",
+      "staff": "Membre du personnel",
+      "volunteer": "Bénévole",
+      "donor": "Donateur",
+      "recipient": "Bénéficiaire"
+    },
+    "quickStats": {
+      "title": "Statistiques rapides",
+      "totalItems": "Articles au total",
+      "lowStock": "Stock faible",
+      "todaysRequests": "Demandes du jour",
+      "todaysDonations": "Dons du jour",
+      "pendingRequests": "Demandes en attente"
+    },
     "goTo": "Aller à",
     "errors": {
       "noToken": "Aucun token trouvé. Veuillez vous connecter.",
@@ -36,23 +52,47 @@
     },
     "sections": {
       "inventory": {
-        "title": "Inventaire",
-        "description": "Gérez les articles d'inventaire, suivez les dons et leur utilisation."
+        "title": "Gestion de l'inventaire alimentaire",
+        "description": "Suivez et gérez toutes les dons alimentaires, vérifiez les niveaux de stock et surveillez les dates d'expiration.",
+        "cta": "Gérer l'inventaire"
       },
       "foodbank": {
         "title": "Emplacements des banques alimentaires",
-        "description": "Ajoutez, mettez à jour ou supprimez les emplacements des banques alimentaires."
+        "description": "Gérez les sites de distribution, les lieux de stockage et les informations des antennes.",
+        "cta": "Gérer les emplacements"
+      },
+      "reports": {
+        "title": "Rapports et analyses",
+        "description": "Consultez les statistiques d'utilisation, les tendances des dons et générez des rapports détaillés pour de meilleures informations.",
+        "cta": "Voir les rapports"
+      },
+      "volunteer": {
+        "title": "Gestion des bénévoles",
+        "description": "Coordonnez les bénévoles, gérez les plannings et suivez les heures et activités de bénévolat.",
+        "cta": "Gérer les bénévoles"
+      },
+      "shiftManagement": {
+        "title": "Planning et créneaux",
+        "description": "Créez des créneaux de bénévolat, gérez les plannings et suivez la couverture des activités.",
+        "cta": "Gérer les plannings"
       },
       "donate": {
         "title": "Faire un don",
-        "description": "Faites rapidement un don de nourriture, d'argent ou de ressources."
+        "description": "Faites un don de denrées pour aider les familles dans le besoin. Suivez votre historique et votre impact.",
+        "cta": "Commencer à donner"
+      },
+      "browse": {
+        "title": "Parcourir les aliments disponibles",
+        "description": "Voyez quels articles sont disponibles et ajoutez-les à votre liste de demandes.",
+        "cta": "Parcourir les articles"
       },
       "tasks": {
         "title": "Tâches assignées",
         "description": "Voir et gérer vos tâches de bénévolat assignées."
       }
     }
-  },  "signInForm": {
+  },
+  "signInForm": {
     "emailLabel": "Adresse e-mail / Nom d'utilisateur",
     "emailPlaceholder": "E-mail",
     "passwordLabel": "Mot de passe",
@@ -60,7 +100,8 @@
     "orSignUp": "ou S'inscrire !",
     "submit": "Envoyer",
     "loginFailed": "Échec de la connexion"
-  },  "signUpForm": {
+  },
+  "signUpForm": {
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "fillAllFields": "Veuillez remplir tous les champs obligatoires",
     "registrationSuccess": "Inscription réussie ! Veuillez vérifier votre e-mail pour confirmer votre compte.",

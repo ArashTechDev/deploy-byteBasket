@@ -27,8 +27,24 @@
     "accountNotFoundMessage": "We couldn't find your account details. Please sign in again to access your dashboard and continue helping your community.",
     "communityMessage": "Join thousands of people making a difference in their communities through ByteBasket.",
     "welcome": "Welcome",
+    "demoAdmin": "Demo Administrator",
     "role": "Role",
     "logout": "Logout",
+    "roles": {
+      "admin": "Administrator",
+      "staff": "Staff Member",
+      "volunteer": "Volunteer",
+      "donor": "Donor",
+      "recipient": "Recipient"
+    },
+    "quickStats": {
+      "title": "Quick Stats",
+      "totalItems": "Total Items",
+      "lowStock": "Low Stock",
+      "todaysRequests": "Today's Requests",
+      "todaysDonations": "Today's Donations",
+      "pendingRequests": "Pending Requests"
+    },
     "goTo": "Go to",
     "errors": {
       "noToken": "No token found. Please log in.",
@@ -36,16 +52,39 @@
     },
     "sections": {
       "inventory": {
-        "title": "Inventory",
-        "description": "Manage inventory items, track donations and usage."
+        "title": "Food Inventory Management",
+        "description": "Track and manage all food donations, check stock levels, and monitor expiration dates.",
+        "cta": "Manage Food Inventory"
       },
       "foodbank": {
         "title": "Food Bank Locations",
-        "description": "Add, update, or remove food bank locations."
+        "description": "Manage distribution sites, storage locations, and food bank branch information.",
+        "cta": "Manage Locations"
+      },
+      "reports": {
+        "title": "Reports & Analytics",
+        "description": "View usage statistics, donation trends, and generate detailed reports for better insights.",
+        "cta": "View Reports"
+      },
+      "volunteer": {
+        "title": "Volunteer Management",
+        "description": "Coordinate volunteers, manage schedules, and track volunteer hours and activities.",
+        "cta": "Manage Volunteers"
+      },
+      "shiftManagement": {
+        "title": "Schedule & Shifts",
+        "description": "Create volunteer shifts, manage schedules, and track coverage for all activities.",
+        "cta": "Manage Schedules"
       },
       "donate": {
         "title": "Make a Donation",
-        "description": "Quickly donate food, money, or resources."
+        "description": "Donate food items to help families in need. Track your donation history and impact.",
+        "cta": "Start Donating"
+      },
+      "browse": {
+        "title": "Browse Available Food",
+        "description": "See what food items are currently available and add items to your request list.",
+        "cta": "Browse Food Items"
       },
       "tasks": {
         "title": "Assigned Tasks",

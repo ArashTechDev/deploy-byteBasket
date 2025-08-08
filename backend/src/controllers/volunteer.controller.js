@@ -3,6 +3,8 @@ const Volunteer = require('../db/models/Volunteer');
 const User = require('../db/models/User.model');
 const mongoose = require('mongoose');
 
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 /**
  * Get all volunteers for a food bank
  */
@@ -11,6 +13,10 @@ exports.getVolunteers = async (req, res) => {
     const { foodbank_id } = req.params;
     const { status, page = 1, limit = 10, search } = req.query;
     
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
+
     const filter = { foodbank_id };
     if (status) filter.status = status;
     
@@ -76,6 +82,9 @@ exports.getVolunteers = async (req, res) => {
 exports.getVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer id' });
+    }
     
     const volunteer = await Volunteer.findById(id)
       .populate('user_id', 'name email')
@@ -107,8 +116,17 @@ exports.getVolunteer = async (req, res) => {
  */
 exports.createVolunteer = async (req, res) => {
   try {
-    const { user_id, foodbank_id, skills, availability, emergency_contact, notes } = req.body;
+    let { user_id, foodbank_id, skills, availability, emergency_contact, notes } = req.body;
     
+    // Fallback to authenticated user when user_id is not provided
+    if (!user_id && req.user && req.user.id) {
+      user_id = req.user.id;
+    }
+    
+    if (!isValidObjectId(user_id) || !isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid user_id or foodbank_id' });
+    }
+
     // Check if user exists
     const user = await User.findById(user_id);
     if (!user) {
@@ -161,6 +179,9 @@ exports.updateVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer id' });
+    }
     
     // Remove fields that shouldn't be updated directly
     delete updates.user_id;
@@ -203,6 +224,9 @@ exports.updateVolunteer = async (req, res) => {
 exports.deleteVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer id' });
+    }
     
     const volunteer = await Volunteer.findByIdAndDelete(id);
     
@@ -234,6 +258,9 @@ exports.updateVolunteerStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer id' });
+    }
     
     const volunteer = await Volunteer.findByIdAndUpdate(
       id,
@@ -269,6 +296,9 @@ exports.updateVolunteerStatus = async (req, res) => {
 exports.getAvailableVolunteers = async (req, res) => {
   try {
     const { foodbank_id, day_of_week, shift_time } = req.query;
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
     
     const volunteers = await Volunteer.findAvailableForShift(
       foodbank_id,
@@ -296,7 +326,10 @@ exports.getAvailableVolunteers = async (req, res) => {
 exports.getVolunteerStats = async (req, res) => {
   try {
     const { foodbank_id } = req.params;
-    
+    if (!isValidObjectId(foodbank_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid foodbank_id' });
+    }
+
     const stats = await Volunteer.aggregate([
       { $match: { foodbank_id: new mongoose.Types.ObjectId(foodbank_id) } },
       {

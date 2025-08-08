@@ -181,8 +181,87 @@ const sendWelcomeEmail = async (user) => {
   }
 };
 
+// Send thank you email for contact form submissions
+const sendContactThankYouEmail = async (contactData) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
+      to: contactData.email,
+      subject: 'Thank you for reaching out to ByteBasket!',
+      html: `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #14b8a6; margin: 0;">ByteBasket</h1>
+            <p style="color: #6b7280; margin: 5px 0;">Nourishing Communities, One Byte at a Time</p>
+          </div>
+          
+          <div style="background-color: #f9fafb; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+            <h2 style="color: #111827; margin-top: 0;">Thank you for reaching out to us, ${contactData.name}!</h2>
+            <p style="color: #374151; line-height: 1.6;">
+              We have received your message and appreciate you taking the time to contact us. Your inquiry is important to us, and we're committed to getting back to you as soon as possible.
+            </p>
+            
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin-top: 0; margin-bottom: 10px;">Your Message Details:</h3>
+              <p style="color: #92400e; margin: 5px 0;"><strong>Subject:</strong> ${contactData.subject}</p>
+              <p style="color: #92400e; margin: 5px 0;"><strong>Message:</strong></p>
+              <p style="color: #92400e; margin: 5px 0; font-style: italic;">"${contactData.message}"</p>
+            </div>
+            
+            <p style="color: #374151; line-height: 1.6;">
+              Our team will review your message and respond within 24-48 hours during business days. If your inquiry is urgent, please don't hesitate to call us directly at <strong>(555) 123-4567</strong>.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}" 
+                 style="background-color: #f97316; color: white; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">
+                Visit Our Website
+              </a>
+            </div>
+          </div>
+          
+          <div style="background-color: #f0fdfa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #14b8a6;">
+            <h3 style="color: #111827; margin-top: 0;">What happens next?</h3>
+            <ul style="color: #374151; line-height: 1.6;">
+              <li>We'll review your message and route it to the appropriate team member</li>
+              <li>You'll receive a personalized response within 24-48 hours</li>
+              <li>If needed, we may follow up with additional questions or information</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; color: #6b7280; font-size: 12px;">
+            <p>Thank you for being part of our mission to nourish communities!</p>
+            <p>If you have any urgent questions, please call us at (555) 123-4567.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Contact thank you email sent successfully');
+      console.log('Message ID:', info.messageId);
+      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+    }
+    
+    return {
+      success: true,
+      messageId: info.messageId
+    };
+    
+  } catch (error) {
+    console.error('Error sending contact thank you email:', error);
+    throw new Error('Failed to send contact thank you email');
+  }
+};
+
 module.exports = {
   generateVerificationToken,
   sendVerificationEmail,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  sendContactThankYouEmail
 };

@@ -2,8 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const reportsController = require('../controllers/basicReports.controller');
-const authMiddleware = require('../middleware/auth');
-const { requireRole } = require('../middleware/roleAuth');
+const { authMiddleware, requireRole } = require('../middleware/authMiddleware');
 
 // All report routes require authentication
 router.use(authMiddleware);

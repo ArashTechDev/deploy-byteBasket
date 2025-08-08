@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from '../components/layout/Header';
+import contactService from '../services/contactService';
 
 const ContactPage = ({ onNavigate }) => {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ const ContactPage = ({ onNavigate }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,14 +54,25 @@ const ContactPage = ({ onNavigate }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setSubmitError('');
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Send the contact form data to the backend
+      await contactService.submitContact(formData);
+      
+      // Show success message
       setShowSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-
+      
+      // Hide success message after 5 seconds
       setTimeout(() => setShowSuccess(false), 5000);
-    }, 1000);
+      
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setSubmitError(error.message || 'Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -284,6 +297,17 @@ const ContactPage = ({ onNavigate }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                     <span>{t('contact.form.successMessage')}</span> {/* "Message sent successfully!" */}
+                  </div>
+                </div>
+              )}
+
+              {submitError && (
+                <div className="bg-red-100 border border-red-200 text-red-800 p-3 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>{submitError}</span>
                   </div>
                 </div>
               )}

@@ -21,7 +21,12 @@ const wishlistItemSchema = new mongoose.Schema({
   },
   dietary_category: {
     type: String,
-    enum: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
+    enum: [
+      // Preferred values (match Inventory)
+      'Vegan', 'Vegetarian', 'Gluten-Free', 'Kosher', 'Halal',
+      // Backward-compatible legacy values
+      'vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'
+    ],
   },
   added_at: {
     type: Date,

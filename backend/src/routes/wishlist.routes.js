@@ -3,10 +3,10 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const wishlistController = require('../controllers/wishlist.controller');
-const authMiddleware = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 // All wishlist routes require authentication
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Validation rules
 const createWishlistValidation = [

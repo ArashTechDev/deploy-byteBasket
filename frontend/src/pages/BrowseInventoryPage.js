@@ -1,6 +1,7 @@
 // frontend/src/pages/BrowseInventoryPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../components/layout/Header';
+import { useNavigate } from 'react-router-dom';
 import CartIcon from '../components/cart/CartIcon';
 import CartSidebar from '../components/cart/CartSidebar';
 import WishlistModal from '../components/wishlist/WishlistModal';
@@ -18,9 +19,10 @@ function useDebounce(value, delay) {
   return debounced;
 }
 
-const BrowseInventoryPage = ({ onNavigate }) => {
+const BrowseInventoryPage = () => {
   const { t } = useTranslation();
   const { addToCart, error, clearError } = useCart();
+  const navigate = useNavigate();
 
   // State for inventory and UI
   const [inventory, setInventory] = useState([]);
@@ -135,12 +137,12 @@ const BrowseInventoryPage = ({ onNavigate }) => {
 
   const handleCheckout = () => {
     setCartOpen(false);
-    onNavigate('request-submission');
+    navigate('/request-submission');
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onNavigate={onNavigate}>
+      <Header>
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setWishlistOpen(true)}

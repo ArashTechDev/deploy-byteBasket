@@ -4,6 +4,10 @@ const {
   submitRequest, getMyRequests, getRequestById,
   cancelMyRequest, updateStatus, downloadConfirmation, downloadConfirmationPdf,
 } = require('../controllers/request.controller');
+const { authenticate } = require('../middleware/auth');
+
+// All request routes require authentication
+router.use(authenticate);
 
 router.post('/', submitRequest);                // #37
 router.get('/my', getMyRequests);               // #38

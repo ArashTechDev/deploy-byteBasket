@@ -3,10 +3,10 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const cartController = require('../controllers/cart.controller');
-const authMiddleware = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 // All cart routes require authentication
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Validation rules
 const addToCartValidation = [

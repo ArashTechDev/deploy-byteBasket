@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import VolunteerForm from '../components/forms/VolunteerForm';
 import ShiftCalendar from '../components/volunteer/ShiftCalendar';
 import MyShiftsPanel from '../components/volunteer/MyShiftsPanel';
@@ -60,7 +59,7 @@ const VolunteerPage = ({ onNavigate }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     if (!token) {
       localStorage.removeItem('volunteerRegistered');
       localStorage.removeItem('volunteerName');
@@ -85,13 +84,13 @@ const VolunteerPage = ({ onNavigate }) => {
       setIsRegistered(true);
       setUserName(savedName || t('volunteerPage.defaults.volunteer'));
       setVolunteerId(savedVolunteerId);
-      setUserId(savedUserId || 'mock-user-id');
-      setFoodbankId(savedFoodbankId || 'mock-foodbank-id');
+      setUserId(savedUserId || null);
+      setFoodbankId(savedFoodbankId || null);
       setCurrentView('schedule');
       loadUserShifts(savedVolunteerId);
     } else {
-      setUserId('mock-user-id');
-      setFoodbankId('mock-foodbank-id');
+      setUserId(savedUserId || null);
+      setFoodbankId(savedFoodbankId || null);
     }
 
     loadAvailableShifts();
@@ -118,8 +117,11 @@ const VolunteerPage = ({ onNavigate }) => {
   const loadAvailableShifts = async () => {
     try {
       setLoading(true);
-      const mockFoodbankId = localStorage.getItem('foodbankId') || 'mock-foodbank-id';
-      const response = await shiftService.getAvailableShifts(mockFoodbankId);
+      const currentFoodbankId = localStorage.getItem('foodbankId');
+      if (!currentFoodbankId) {
+        throw new Error('No foodbank selected');
+      }
+      const response = await shiftService.getAvailableShifts(currentFoodbankId);
       const transformedShifts = shiftService.transformShiftsForCalendar(response.data);
       setAvailableShifts(transformedShifts);
     } catch {
@@ -178,6 +180,10 @@ const VolunteerPage = ({ onNavigate }) => {
         foodbank_id: foodbankId
       });
 
+      if (!userId || !foodbankId) {
+        throw new Error(t('volunteerPage.errors.missingIds'));
+      }
+
       const response = await volunteerService.createVolunteer(volunteerData);
 
       localStorage.setItem('volunteerRegistered', 'true');
@@ -206,6 +212,9 @@ const VolunteerPage = ({ onNavigate }) => {
 
       if (!volunteerId) {
         throw new Error(t('volunteerPage.errors.missingVolunteerId'));
+      }
+      if (!userId || !foodbankId) {
+        throw new Error(t('volunteerPage.errors.missingIds'));
       }
 
       const assignmentData = volunteerShiftService.createShiftAssignment(
@@ -485,8 +494,6 @@ const VolunteerPage = ({ onNavigate }) => {
       <div className="volunteer-container">
         {renderContent()}
       </div>
-
-      <Footer />
     </div>
   );
 };
