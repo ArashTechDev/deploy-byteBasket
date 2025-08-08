@@ -1,4 +1,4 @@
-// frontend/src/App.js
+// frontend/src/App.js - Updated with cart and wishlist routes
 import React, { useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,10 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import BrowseInventoryPage from './pages/BrowseInventoryPage';
 import ReportsDashboard from './pages/ReportsDashboard';
 import RequestSubmissionPage from './pages/RequestSubmissionPage';
-import ShiftManagementPage from './pages/ShiftManagementPage'; // New page for managing shifts
+import ShiftManagementPage from './pages/ShiftManagementPage';
+// NEW: Cart and Request History pages
+import CartPage from './pages/CartPage';
+import RequestHistoryPage from './pages/RequestHistoryPage';
 import Footer from './components/layout/Footer';
 import Header from './components/layout/Header';
 import SignUpForm from './components/forms/SignUpForm';
@@ -128,11 +131,27 @@ const App = () => {
               <Route path="/volunteer" element={<VolunteerPage />} />
               <Route path="/request-submission" element={<RequestSubmissionPage />} />
 
+              {/* NEW: Cart and Wishlist Routes */}
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/my-cart" element={<Navigate to="/cart" replace />} />
+              <Route path="/request-history" element={<RequestHistoryPage />} />
+              <Route path="/my-requests" element={<Navigate to="/request-history" replace />} />
+
               {/* Admin/Staff Routes */}
               <Route path="/inventory" element={<InventoryPage />} />
               <Route path="/foodbank" element={<FoodbankPage />} />
               <Route path="/reports" element={<ReportsDashboard />} />
               <Route path="/shift-management" element={<ShiftManagementPage />} />
+
+              {/* Legacy Route Redirects */}
+              <Route
+                path="/inventory-browse"
+                element={<Navigate to="/browse-inventory" replace />}
+              />
+              <Route
+                path="/submit-request"
+                element={<Navigate to="/request-submission" replace />}
+              />
 
               {/* Catch all route - redirect to home */}
               <Route path="*" element={<Navigate to="/" replace />} />

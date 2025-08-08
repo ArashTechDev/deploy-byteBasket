@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import { getCurrentUser, logoutUser } from '../services/authService';
 import reportsService from '../services/reportsService';
+import { useCart } from '../contexts/CartContext';
+import WishlistModal from '../components/wishlist/WishlistModal';
 
 const DashboardPage = () => {
   const { t } = useTranslation();
@@ -13,6 +15,10 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState('');
+
+  // Cart and wishlist states
+  const { cart, isUserAuthenticated } = useCart();
+  const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
 
   // Load user data and dashboard stats
   const loadUserData = useCallback(async () => {
@@ -29,7 +35,6 @@ const DashboardPage = () => {
           }
         } catch (dashboardError) {
           console.warn('Could not load dashboard stats:', dashboardError);
-          // Don't set error here as user data loaded successfully
         }
       } else {
         setError('Please log in to access your dashboard');
@@ -56,7 +61,6 @@ const DashboardPage = () => {
   };
 
   const handleSectionClick = sectionId => {
-    // Navigate to the appropriate route based on section ID
     switch (sectionId) {
       case 'inventory':
         navigate('/inventory');
@@ -79,6 +83,15 @@ const DashboardPage = () => {
       case 'shift-management':
         navigate('/shift-management');
         break;
+      case 'my-cart':
+        navigate('/cart'); // Will create this page next
+        break;
+      case 'my-wishlists':
+        setIsWishlistModalOpen(true);
+        break;
+      case 'request-history':
+        navigate('/request-history'); // Will create this page next
+        break;
       default:
         console.log('Unknown section:', sectionId);
     }
@@ -95,12 +108,12 @@ const DashboardPage = () => {
     return roleNames[role] || role;
   };
 
-  // Define sections based on user role
+  // Enhanced sections with cart and wishlist functionality
   const getSectionsForRole = userRole => {
     const allSections = {
       inventory: {
         id: 'inventory',
-        title: 'Food Inventory Management', // More descriptive
+        title: 'Food Inventory Management',
         description:
           'Track and manage all food donations, check stock levels, and monitor expiration dates.',
         icon: (
@@ -120,18 +133,18 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Manage Food Inventory', // More specific
+        buttonText: 'Manage Food Inventory',
       },
 
       foodbank: {
         id: 'foodbank',
-        title: 'Food Bank Locations', // Clearer name
+        title: 'Food Bank Locations',
         description:
           'Manage distribution sites, storage locations, and food bank branch information.',
         icon: (
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-green-600"
+              className="w-6 h-6 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -140,25 +153,19 @@ const DashboardPage = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
               />
             </svg>
           </div>
         ),
-        buttonText: 'Manage Locations',
+        buttonText: 'Manage Food Banks',
       },
 
       reports: {
         id: 'reports',
-        title: 'Reports & Analytics', // More professional
+        title: 'Analytics & Reports',
         description:
-          'View usage statistics, donation trends, and generate detailed reports for better insights.',
+          'View comprehensive reports on donations, distributions, and food bank performance.',
         icon: (
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
             <svg
@@ -181,13 +188,12 @@ const DashboardPage = () => {
 
       volunteer: {
         id: 'volunteer',
-        title: 'Volunteer Management', // More descriptive
-        description:
-          'Coordinate volunteers, manage schedules, and track volunteer hours and activities.',
+        title: 'Volunteer Center',
+        description: 'Manage volunteer activities, shifts, and track volunteer hours.',
         icon: (
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-blue-600"
+              className="w-6 h-6 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -196,7 +202,7 @@ const DashboardPage = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
               />
             </svg>
           </div>
@@ -206,13 +212,12 @@ const DashboardPage = () => {
 
       shiftManagement: {
         id: 'shift-management',
-        title: 'Schedule & Shifts', // More user-friendly
-        description:
-          'Create volunteer shifts, manage schedules, and track coverage for all activities.',
+        title: 'Shift Management',
+        description: 'Create and manage volunteer shifts and schedules.',
         icon: (
-          <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-teal-600"
+              className="w-6 h-6 text-yellow-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -221,19 +226,18 @@ const DashboardPage = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
           </div>
         ),
-        buttonText: 'Manage Schedules',
+        buttonText: 'Manage Shifts',
       },
 
       donate: {
         id: 'donate',
-        title: 'Make a Donation', // Clear action
-        description:
-          'Donate food items to help families in need. Track your donation history and impact.',
+        title: 'Make a Donation',
+        description: 'Contribute food items or monetary donations to support the community.',
         icon: (
           <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
             <svg
@@ -251,14 +255,13 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Start Donating',
+        buttonText: 'Donate Now',
       },
 
       browse: {
         id: 'browse-inventory',
-        title: 'Browse Available Food', // Much more user-friendly for recipients
-        description:
-          'See what food items are currently available and add items to your request list.',
+        title: 'Browse Available Food',
+        description: 'Explore available food items and make requests based on your needs.',
         icon: (
           <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
             <svg
@@ -276,11 +279,91 @@ const DashboardPage = () => {
             </svg>
           </div>
         ),
-        buttonText: 'Browse Food Items', // More intuitive for recipients
+        buttonText: 'Browse Food Items',
+      },
+
+      // NEW SECTIONS FOR CART AND WISHLIST FUNCTIONALITY
+      myCart: {
+        id: 'my-cart',
+        title: 'My Cart',
+        description: `Review your selected items (${
+          cart?.total_items || 0
+        } items) and submit food requests.`,
+        icon: (
+          <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center relative">
+            <svg
+              className="w-6 h-6 text-teal-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5A1 1 0 006.8 19H19M7 13v6a1 1 0 001 1h10a1 1 0 001-1v-6M9 19v2m6-2v2"
+              />
+            </svg>
+            {cart?.total_items > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-[10px]">
+                {cart.total_items}
+              </span>
+            )}
+          </div>
+        ),
+        buttonText: 'View My Cart',
+      },
+
+      myWishlists: {
+        id: 'my-wishlists',
+        title: 'My Wishlists',
+        description: 'Manage your saved food item lists and quickly add them to your cart.',
+        icon: (
+          <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-rose-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </div>
+        ),
+        buttonText: 'Manage Wishlists',
+      },
+
+      requestHistory: {
+        id: 'request-history',
+        title: 'Request History',
+        description: 'View your past food requests and track their status.',
+        icon: (
+          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
+            </svg>
+          </div>
+        ),
+        buttonText: 'View Request History',
       },
     };
 
-    // Keep your existing role-based logic exactly the same
+    // Define role-based access with enhanced sections
     switch (userRole) {
       case 'admin':
         return [
@@ -289,6 +372,9 @@ const DashboardPage = () => {
           allSections.reports,
           allSections.volunteer,
           allSections.shiftManagement,
+          allSections.browse,
+          allSections.myCart,
+          allSections.myWishlists,
         ];
       case 'staff':
         return [
@@ -296,15 +382,33 @@ const DashboardPage = () => {
           allSections.reports,
           allSections.volunteer,
           allSections.shiftManagement,
+          allSections.browse,
+          allSections.myCart,
+          allSections.myWishlists,
         ];
       case 'volunteer':
-        return [allSections.volunteer, allSections.browse];
+        return [
+          allSections.volunteer,
+          allSections.browse,
+          allSections.myCart,
+          allSections.myWishlists,
+        ];
       case 'donor':
-        return [allSections.donate, allSections.browse];
+        return [
+          allSections.donate,
+          allSections.browse,
+          allSections.myCart,
+          allSections.myWishlists,
+        ];
       case 'recipient':
-        return [allSections.browse];
+        return [
+          allSections.browse,
+          allSections.myCart,
+          allSections.myWishlists,
+          allSections.requestHistory,
+        ];
       default:
-        return [allSections.browse];
+        return [allSections.browse, allSections.myCart, allSections.myWishlists];
     }
   };
 
@@ -315,7 +419,7 @@ const DashboardPage = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">{t('dashboard.loading')}</p>
+            <p className="mt-4 text-gray-600">{t('dashboard.loading') || 'Loading...'}</p>
           </div>
         </div>
       </div>
@@ -345,21 +449,25 @@ const DashboardPage = () => {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {t('dashboard.loginPrompt')}
+                {t('dashboard.loginPrompt') || 'Login Required'}
               </h2>
-              <p className="text-gray-600 mb-6">{error || t('dashboard.loginPromptMessage')}</p>
+              <p className="text-gray-600 mb-6">
+                {error ||
+                  t('dashboard.loginPromptMessage') ||
+                  'Please log in to access your dashboard'}
+              </p>
               <div className="space-x-4">
                 <button
                   onClick={() => navigate('/signup')}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
                 >
-                  {t('dashboard.signInSignUp')}
+                  {t('dashboard.signInSignUp') || 'Sign In / Sign Up'}
                 </button>
                 <button
                   onClick={() => navigate('/')}
                   className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
                 >
-                  {t('dashboard.goHome')}
+                  {t('dashboard.goHome') || 'Go Home'}
                 </button>
               </div>
             </div>
@@ -376,10 +484,10 @@ const DashboardPage = () => {
       <Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
+        {/* Welcome Header with Quick Actions */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Welcome, {user.full_name || 'Demo Administrator'}!
               </h1>
@@ -395,27 +503,76 @@ const DashboardPage = () => {
                 </p>
               )}
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              <span>Logout</span>
-            </button>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center space-x-4">
+              {/* Cart Quick Access */}
+              {isUserAuthenticated && (
+                <button
+                  onClick={() => handleSectionClick('my-cart')}
+                  className="relative bg-teal-500 hover:bg-teal-600 text-white p-3 rounded-lg transition duration-200 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5A1 1 0 006.8 19H19M7 13v6a1 1 0 001 1h10a1 1 0 001-1v-6M9 19v2m6-2v2"
+                    />
+                  </svg>
+                  <span>Cart</span>
+                  {cart?.total_items > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cart.total_items}
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {/* Wishlist Quick Access */}
+              {isUserAuthenticated && (
+                <button
+                  onClick={() => setIsWishlistModalOpen(true)}
+                  className="bg-rose-500 hover:bg-rose-600 text-white p-3 rounded-lg transition duration-200 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                  <span>Wishlists</span>
+                </button>
+              )}
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center space-x-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Dashboard Sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {userSections.map(section => (
-            <div key={section.id} className="bg-white rounded-xl shadow-lg p-6">
+            <div
+              key={section.id}
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-200"
+            >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">{section.icon}</div>
                 <div className="flex-1">
@@ -473,7 +630,35 @@ const DashboardPage = () => {
             </div>
           </div>
         )}
+
+        {/* Personal Stats for Recipients/Donors */}
+        {isUserAuthenticated && ['recipient', 'donor'].includes(user?.role) && (
+          <div className="bg-white rounded-2xl shadow-xl p-6 mt-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Activity</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-teal-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-teal-600">{cart?.total_items || '0'}</div>
+                <div className="text-sm text-gray-600">Items in Cart</div>
+              </div>
+              <div className="bg-rose-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-rose-600">
+                  {dashboardData?.userStats?.totalWishlists || '0'}
+                </div>
+                <div className="text-sm text-gray-600">Saved Wishlists</div>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-orange-600">
+                  {dashboardData?.userStats?.totalRequests || '0'}
+                </div>
+                <div className="text-sm text-gray-600">Total Requests</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Wishlist Modal */}
+      <WishlistModal isOpen={isWishlistModalOpen} onClose={() => setIsWishlistModalOpen(false)} />
     </div>
   );
 };
