@@ -6,15 +6,15 @@ const crypto = require('crypto');
 const createTransporter = () => {
   // For development, you can use a service like Ethereal Email for testing
   // In production, use a real email service like SendGrid, Mailgun, etc.
-  
+
   if (process.env.NODE_ENV === 'development') {
     // For development - using Gmail (you'll need to set up app password)
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_APP_PASSWORD // Your Gmail app password
-      }
+        pass: process.env.EMAIL_APP_PASSWORD, // Your Gmail app password
+      },
     });
   } else {
     // For production - use a professional email service
@@ -24,8 +24,8 @@ const createTransporter = () => {
       secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
+        pass: process.env.SMTP_PASS,
+      },
     });
   }
 };
@@ -39,9 +39,11 @@ const generateVerificationToken = () => {
 const sendVerificationEmail = async (user, verificationToken) => {
   try {
     const transporter = createTransporter();
-    
-    const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
-    
+
+    const verificationUrl = `${
+      process.env.CLIENT_URL || 'http://localhost:3000'
+    }/verify-email?token=${verificationToken}`;
+
     const mailOptions = {
       from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
       to: user.email,
@@ -81,22 +83,21 @@ const sendVerificationEmail = async (user, verificationToken) => {
             <p>If you didn't create an account with ByteBasket, please ignore this email.</p>
           </div>
         </div>
-      `
+      `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log('Verification email sent successfully');
       console.log('Message ID:', info.messageId);
       console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
     }
-    
+
     return {
       success: true,
-      messageId: info.messageId
+      messageId: info.messageId,
     };
-    
   } catch (error) {
     console.error('Error sending verification email:', error);
     throw new Error('Failed to send verification email');
@@ -104,10 +105,10 @@ const sendVerificationEmail = async (user, verificationToken) => {
 };
 
 // Send welcome email after verification
-const sendWelcomeEmail = async (user) => {
+const sendWelcomeEmail = async user => {
   try {
     const transporter = createTransporter();
-    
+
     const mailOptions = {
       from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
       to: user.email,
@@ -127,19 +128,25 @@ const sendWelcomeEmail = async (user) => {
             <div style="margin: 25px 0;">
               <h3 style="color: #111827; margin-bottom: 10px;">What's Next?</h3>
               <ul style="color: #374151; line-height: 1.6;">
-                ${user.role === 'volunteer' ? `
+                ${
+                  user.role === 'volunteer'
+                    ? `
                   <li>Browse available volunteer shifts in your area</li>
                   <li>Sign up for shifts that match your availability</li>
                   <li>Connect with other volunteers and make a difference</li>
-                ` : user.role === 'donor' ? `
+                `
+                    : user.role === 'donor'
+                    ? `
                   <li>Start donating food and resources to those in need</li>
                   <li>Track your donations and their impact</li>
                   <li>Connect with local food banks and organizations</li>
-                ` : `
+                `
+                    : `
                   <li>Explore available resources and food banks in your area</li>
                   <li>Access the support and assistance you need</li>
                   <li>Connect with your local community</li>
-                `}
+                `
+                }
               </ul>
             </div>
             
@@ -156,27 +163,26 @@ const sendWelcomeEmail = async (user) => {
             <p>If you have any questions, feel free to contact our support team.</p>
           </div>
         </div>
-      `
+      `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log('Welcome email sent successfully');
       console.log('Message ID:', info.messageId);
     }
-    
+
     return {
       success: true,
-      messageId: info.messageId
+      messageId: info.messageId,
     };
-    
   } catch (error) {
     console.error('Error sending welcome email:', error);
     // Don't throw error here as user verification is complete
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };
@@ -184,5 +190,104 @@ const sendWelcomeEmail = async (user) => {
 module.exports = {
   generateVerificationToken,
   sendVerificationEmail,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  sendContactThankYouEmail,
+  /**
+   * Send a confirmation email to the user after a request is submitted
+   */
+  sendRequestConfirmationEmail: async (user, request) => {
+    try {
+      if (!user || !user.email) throw new Error('Missing user email');
+
+      const transporter = createTransporter();
+      const subject = `Request Confirmation - ${request.requestId}`;
+
+      const dashboardUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard`;
+
+      const html = `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #14b8a6; margin: 0;">ByteBasket</h1>
+            <p style="color: #6b7280; margin: 5px 0;">Nourishing Communities, One Byte at a Time</p>
+          </div>
+
+          <div style="background-color: #f9fafb; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+            <h2 style="color: #111827; margin-top: 0;">Request Confirmation</h2>
+            <p style="color: #374151; line-height: 1.6;">
+              Thank you${
+                user.name ? `, <strong>${user.name}</strong>` : ''
+              }! Your request has been received.
+            </p>
+
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin: 0 0 10px 0;">Details</h3>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Request ID:</strong> ${
+                request.requestId
+              }</p>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Pickup:</strong> ${new Date(
+                request.pickupDateTime
+              ).toLocaleString()}</p>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Status:</strong> ${
+                request.status
+              }</p>
+              <div style="margin-top: 10px;">
+                <p style="color: #92400e; margin: 0 0 6px 0;"><strong>Items:</strong></p>
+                <ul style="color: #92400e; margin: 0; padding-left: 18px;">${(request.items || [])
+                  .map(i => `<li>${i.name} × ${i.quantity}</li>`)
+                  .join('')}</ul>
+              </div>
+              ${
+                request.specialInstructions
+                  ? `<p style=\"color: #92400e; margin-top: 10px;\"><strong>Notes:</strong> ${request.specialInstructions}</p>`
+                  : ''
+              }
+              ${
+                Array.isArray(request.dietaryRestrictions) && request.dietaryRestrictions.length
+                  ? `<p style=\"color: #92400e; margin-top: 6px;\"><strong>Dietary:</strong> ${request.dietaryRestrictions.join(
+                      ', '
+                    )}</p>`
+                  : ''
+              }
+              ${
+                request.allergies
+                  ? `<p style=\"color: #92400e; margin-top: 6px;\"><strong>Allergies:</strong> ${request.allergies}</p>`
+                  : ''
+              }
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+             
+            </div>
+
+            
+
+          <div style="text-align: center; color: #6b7280; font-size: 12px;">
+            <p>Thank you for being part of our mission to nourish communities!</p>
+          </div>
+        </div>
+      `;
+
+      const info = await transporter.sendMail({
+        from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
+        to: user.email,
+        subject,
+        html,
+      });
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Request confirmation email sent successfully');
+        console.log('Message ID:', info.messageId);
+        const preview = nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info);
+        if (preview) console.log('Preview URL:', preview);
+      }
+
+      return {
+        success: true,
+        messageId: info.messageId,
+      };
+    } catch (error) {
+      console.error('Error sending request confirmation email:', error);
+      throw new Error('Failed to send request confirmation email');
+    }
+  },
 };

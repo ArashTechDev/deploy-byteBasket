@@ -81,7 +81,8 @@ const SignUpForm = ({ onToggleForm }) => {
       alert(t('signUpForm.verificationEmailSent'));
     } catch (error) {
       console.error('Resend verification error:', error);
-      alert(t('signUpForm.resendFailed'));
+      // Use existing translation key for resend failure
+      alert(t('signUpForm.verificationEmailFailed'));
     } finally {
       setRegistrationState(prev => ({ ...prev, resendLoading: false }));
     }
@@ -91,10 +92,13 @@ const SignUpForm = ({ onToggleForm }) => {
     return (
       <div className="text-center space-y-4">
         <div className="text-green-400 text-lg font-semibold">
-          {t('signUpForm.registrationSuccessTitle')}
+          {t('signUpForm.checkYourEmail')}
         </div>
-        <p className="text-white text-sm">{registrationState.message}</p>
-        <p className="text-gray-300 text-xs">{t('signUpForm.checkEmailInstructions')}</p>
+        <p className="text-white text-sm">
+          {t('signUpForm.verificationSentTo')} {formData.email}
+        </p>
+        <p className="text-gray-300 text-xs">{t('signUpForm.pleaseCheckInbox')}</p>
+        <p className="text-gray-400 text-xs">{t('signUpForm.didntReceiveEmail')}</p>
 
         <div className="space-y-2">
           {registrationState.showResendButton && (

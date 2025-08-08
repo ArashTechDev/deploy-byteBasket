@@ -152,23 +152,27 @@ export const volunteerShiftService = {
 
   // Helper function to transform volunteer shifts for frontend display
   transformVolunteerShifts: (volunteerShifts) => {
-    return volunteerShifts.map(vs => ({
-      id: vs._id,
-      shiftId: vs.shift_id._id,
-      date: new Date(vs.work_date).toISOString().split('T')[0],
-      time: vs.shift_id ? `${vs.shift_id.start_time} - ${vs.shift_id.end_time}` : 'Time TBD',
-      activity: vs.shift_id ? vs.shift_id.title : 'Activity TBD',
-      location: vs.shift_id ? vs.shift_id.location : 'Location TBD',
-      hours: vs.hours_worked || (vs.shift_id ? vs.shift_id.duration_hours : 0),
-      status: vs.status,
-      checkInTime: vs.check_in_time,
-      checkOutTime: vs.check_out_time,
-      feedback: vs.feedback,
-      isCompleted: vs.status === 'completed',
-      isActive: ['assigned', 'confirmed', 'checked_in'].includes(vs.status),
-      assignmentDate: vs.assignment_date,
-      workDate: vs.work_date
-    }));
+    return (volunteerShifts || []).map(vs => {
+      const shift = vs.shift_id || {};
+      const workDate = vs.work_date || shift.shift_date;
+      return {
+        id: vs._id,
+        shiftId: shift && shift._id ? shift._id : vs.shift_id,
+        date: workDate ? new Date(workDate).toISOString().split('T')[0] : '',
+        time: shift && shift.start_time && shift.end_time ? `${shift.start_time} - ${shift.end_time}` : 'Time TBD',
+        activity: shift && shift.title ? shift.title : 'Activity TBD',
+        location: shift && shift.location ? shift.location : 'Location TBD',
+        hours: typeof vs.hours_worked === 'number' ? vs.hours_worked : (shift && typeof shift.duration_hours === 'number' ? shift.duration_hours : 0),
+        status: vs.status,
+        checkInTime: vs.check_in_time,
+        checkOutTime: vs.check_out_time,
+        feedback: vs.feedback,
+        isCompleted: vs.status === 'completed',
+        isActive: ['assigned', 'confirmed', 'checked_in'].includes(vs.status),
+        assignmentDate: vs.assignment_date,
+        workDate: vs.work_date
+      };
+    });
   },
 
   // Helper function to create shift assignment data

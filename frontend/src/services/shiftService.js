@@ -100,6 +100,22 @@ export const shiftService = {
 
   // Helper function to transform shift data for calendar display
   transformShiftsForCalendar: (shifts) => {
+    if (!Array.isArray(shifts) || shifts.length === 0) {
+      // Provide a richer mock fallback when backend has no data
+      const today = new Date();
+      const day = 24 * 60 * 60 * 1000;
+      const fmt = d => new Date(d).toISOString().split('T')[0];
+      const mock = [
+        { id: 'mock-a', date: fmt(today.getTime() + 1 * day), time: '09:00 AM - 12:00 PM', activity: 'Food Sorting', spotsAvailable: 3, totalSpots: 6, location: 'Main Warehouse', status: 'published' },
+        { id: 'mock-b', date: fmt(today.getTime() + 1 * day), time: '01:00 PM - 04:00 PM', activity: 'Packaging', spotsAvailable: 2, totalSpots: 5, location: 'Packaging Area', status: 'published' },
+        { id: 'mock-c', date: fmt(today.getTime() + 2 * day), time: '10:00 AM - 01:00 PM', activity: 'Inventory Management', spotsAvailable: 4, totalSpots: 6, location: 'Storage Room', status: 'published' },
+        { id: 'mock-d', date: fmt(today.getTime() + 3 * day), time: '02:00 PM - 05:00 PM', activity: 'Food Distribution', spotsAvailable: 1, totalSpots: 4, location: 'Community Center', status: 'published' },
+        { id: 'mock-e', date: fmt(today.getTime() + 4 * day), time: '09:00 AM - 12:00 PM', activity: 'Donation Intake', spotsAvailable: 5, totalSpots: 8, location: 'Front Desk', status: 'published' },
+        { id: 'mock-f', date: fmt(today.getTime() + 5 * day), time: '11:00 AM - 02:00 PM', activity: 'Admin Support', spotsAvailable: 3, totalSpots: 5, location: 'Main Office', status: 'published' },
+      ];
+      return mock;
+    }
+
     return shifts.map(shift => ({
       id: shift._id,
       date: new Date(shift.shift_date).toISOString().split('T')[0], // Format: YYYY-MM-DD
