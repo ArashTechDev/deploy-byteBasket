@@ -3,14 +3,40 @@ import React from 'react';
 
 const StatCard = ({ title, value, icon, change, changeType, color = 'blue' }) => {
   const colorClasses = {
-    blue: 'bg-blue-500 text-blue-600 bg-blue-50',
-    green: 'bg-green-500 text-green-600 bg-green-50',
-    yellow: 'bg-yellow-500 text-yellow-600 bg-yellow-50',
-    red: 'bg-red-500 text-red-600 bg-red-50',
-    purple: 'bg-purple-500 text-purple-600 bg-purple-50',
+    blue: {
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      bgColor: 'bg-blue-500',
+    },
+    green: {
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-600',
+      bgColor: 'bg-green-500',
+    },
+    yellow: {
+      iconBg: 'bg-yellow-50',
+      iconColor: 'text-yellow-600',
+      bgColor: 'bg-yellow-500',
+    },
+    red: {
+      iconBg: 'bg-red-50',
+      iconColor: 'text-red-600',
+      bgColor: 'bg-red-500',
+    },
+    purple: {
+      iconBg: 'bg-purple-50',
+      iconColor: 'text-purple-600',
+      bgColor: 'bg-purple-500',
+    },
+    orange: {
+      iconBg: 'bg-orange-50',
+      iconColor: 'text-orange-600',
+      bgColor: 'bg-orange-500',
+    },
   };
 
-  const [textColor, lightBg] = colorClasses[color].split(' ');
+  // Get the color classes, fallback to blue if color is not found
+  const colorClass = colorClasses[color] || colorClasses.blue;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -29,8 +55,12 @@ const StatCard = ({ title, value, icon, change, changeType, color = 'blue' }) =>
           )}
         </div>
         {icon && (
-          <div className={`p-3 ${lightBg} rounded-lg`}>
-            <div className={`w-6 h-6 ${textColor}`}>{icon}</div>
+          <div className={`p-3 ${colorClass.iconBg} rounded-lg`}>
+            <div
+              className={`w-6 h-6 ${colorClass.iconColor} flex items-center justify-center text-lg`}
+            >
+              {icon}
+            </div>
           </div>
         )}
       </div>
