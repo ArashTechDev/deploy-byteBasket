@@ -166,7 +166,7 @@
 }
 
 /* Form Section */
-.form-section {
+.registration-section {
   background: transparent;
 }
 
@@ -176,6 +176,16 @@
   border-radius: 12px 12px 0 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 0;
+}
+
+.registration-topbar {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
 }
 
 .form-header h2 {

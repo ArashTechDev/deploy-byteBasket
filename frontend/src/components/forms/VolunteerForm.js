@@ -2,7 +2,14 @@
 import React, { useState } from 'react';
 import './VolunteerForm.css';
 
-const VolunteerForm = ({ onSubmit }) => {
+const VolunteerForm = ({
+  onSubmit,
+  foodBanks = [],
+  foodbankId = '',
+  onFoodbankChange = () => {},
+  foodBanksLoading = false,
+  onBack,
+}) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -125,6 +132,13 @@ const VolunteerForm = ({ onSubmit }) => {
   return (
     <div className="volunteer-form-container">
       <form onSubmit={handleSubmit} className="volunteer-form">
+        {onBack && (
+          <div className="form-topbar">
+            <button type="button" className="back-btn" onClick={onBack}>
+              ← Back
+            </button>
+          </div>
+        )}
         <div className="welcome-header">
           <h2>Welcome to Our Community of Change-Makers!</h2>
           <p className="welcome-subtitle">
@@ -138,6 +152,26 @@ const VolunteerForm = ({ onSubmit }) => {
           </div>
         </div>
         
+        {/* Food bank selection */}
+        <div className="form-section">
+          <div className="form-group">
+            <label htmlFor="foodbankSelect">Select Food Bank *</label>
+            <select
+              id="foodbankSelect"
+              value={foodbankId || ''}
+              onChange={onFoodbankChange}
+              disabled={foodBanksLoading}
+            >
+              <option value="">{foodBanksLoading ? 'Loading...' : 'Choose a food bank'}</option>
+              {foodBanks.map((fb) => (
+                <option key={fb._id} value={fb._id}>
+                  {fb.name || 'Unnamed Food Bank'}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Personal Information */}
         <div className="form-section">
           <h3>Personal Information</h3>

@@ -272,21 +272,54 @@ module.exports = {
       if (!user || !user.email) throw new Error('Missing user email');
 
       const transporter = createTransporter();
-      const subject = `Your ByteBasket request ${request.requestId}`;
-      const html = `<!doctype html><html><head><meta charset="utf-8"><title>${request.requestId}</title></head>
-        <body style="font-family: Arial, sans-serif; color: #111827;">
-          <div style="max-width:600px;margin:0 auto;padding:20px;">
-            <h2 style="color:#14b8a6;margin-bottom:8px;">Request Confirmation</h2>
-            <p style="margin:4px 0;"><b>Request ID:</b> ${request.requestId}</p>
-            <p style="margin:4px 0;"><b>Pickup:</b> ${new Date(request.pickupDateTime).toLocaleString()}</p>
-            <p style="margin:4px 0;"><b>Status:</b> ${request.status}</p>
-            <div style="margin:12px 0;">
-              <p style="margin:0 0 6px 0;"><b>Items:</b></p>
-              <ul style="margin:0; padding-left:18px;">${request.items.map(i => `<li>${i.name} × ${i.quantity}</li>`).join('')}</ul>
-            </div>
-            ${request.specialInstructions ? `<p style=\"margin-top:12px;\"><b>Notes:</b> ${request.specialInstructions}</p>` : ''}
+      const subject = `Request Confirmation - ${request.requestId}`;
+
+      const dashboardUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard`;
+
+      const html = `
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #14b8a6; margin: 0;">ByteBasket</h1>
+            <p style="color: #6b7280; margin: 5px 0;">Nourishing Communities, One Byte at a Time</p>
           </div>
-        </body></html>`;
+
+          <div style="background-color: #f9fafb; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+            <h2 style="color: #111827; margin-top: 0;">Request Confirmation</h2>
+            <p style="color: #374151; line-height: 1.6;">
+              Thank you${user.name ? `, <strong>${user.name}</strong>` : ''}! Your request has been received.
+            </p>
+
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin: 0 0 10px 0;">Details</h3>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Request ID:</strong> ${request.requestId}</p>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Pickup:</strong> ${new Date(request.pickupDateTime).toLocaleString()}</p>
+              <p style="color: #92400e; margin: 4px 0;"><strong>Status:</strong> ${request.status}</p>
+              <div style="margin-top: 10px;">
+                <p style="color: #92400e; margin: 0 0 6px 0;"><strong>Items:</strong></p>
+                <ul style="color: #92400e; margin: 0; padding-left: 18px;">${(request.items || []).map(i => `<li>${i.name} × ${i.quantity}</li>`).join('')}</ul>
+              </div>
+              ${request.specialInstructions ? `<p style=\"color: #92400e; margin-top: 10px;\"><strong>Notes:</strong> ${request.specialInstructions}</p>` : ''}
+              ${Array.isArray(request.dietaryRestrictions) && request.dietaryRestrictions.length ? `<p style=\"color: #92400e; margin-top: 6px;\"><strong>Dietary:</strong> ${request.dietaryRestrictions.join(', ')}</p>` : ''}
+              ${request.allergies ? `<p style=\"color: #92400e; margin-top: 6px;\"><strong>Allergies:</strong> ${request.allergies}</p>` : ''}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${dashboardUrl}"
+                 style="background-color: #f97316; color: white; padding: 15px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">
+                View My Requests
+              </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+              You can view your request status anytime from your dashboard.
+            </p>
+          </div>
+
+          <div style="text-align: center; color: #6b7280; font-size: 12px;">
+            <p>Thank you for being part of our mission to nourish communities!</p>
+          </div>
+        </div>
+      `;
 
       const info = await transporter.sendMail({
         from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
@@ -294,14 +327,21 @@ module.exports = {
         subject,
         html,
       });
+
       if (process.env.NODE_ENV === 'development') {
+        console.log('Request confirmation email sent successfully');
+        console.log('Message ID:', info.messageId);
         const preview = nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info);
-        if (preview) console.log('📧 Preview email:', preview);
+        if (preview) console.log('Preview URL:', preview);
       }
-      return info;
+
+      return {
+        success: true,
+        messageId: info.messageId
+      };
     } catch (error) {
       console.error('Error sending request confirmation email:', error);
-      throw error;
+      throw new Error('Failed to send request confirmation email');
     }
   }
 };

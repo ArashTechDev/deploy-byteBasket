@@ -390,38 +390,16 @@ const VolunteerPage = ({ onNavigate }) => {
           );
         }
         return (
-          <div className="form-section">
-            <div className="form-header">
-              <button
-                className="back-btn"
-                onClick={() => setCurrentView('landing')}
-              >
-                ← {t('volunteerPage.buttons.back')}
-              </button>
-              <h2>{t('volunteerPage.registration.title')}</h2>
-              <p>{t('volunteerPage.registration.subtitle')}</p>
-              {error && <div className="error-message">{error}</div>}
-            </div>
-            <div className="form-group" style={{ marginBottom: '1rem' }}>
-              <label htmlFor="foodbankSelect">Select Food Bank *</label>
-              <select
-                id="foodbankSelect"
-                value={foodbankId || ''}
-                onChange={handleFoodbankChange}
-                disabled={foodBanksLoading}
-                className="foodbank-select"
-              >
-                <option value="">{foodBanksLoading ? 'Loading...' : 'Choose a food bank'}</option>
-                {foodBanks.map((fb) => (
-                  <option key={fb._id} value={fb._id}>
-                    {fb.name || 'Unnamed Food Bank'}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className="registration-section">
+            {error && <div className="error-message" style={{marginBottom: '1rem'}}>{error}</div>}
             <VolunteerForm 
               onSubmit={handleRegistrationSubmit}
               loading={loading}
+              foodBanks={foodBanks}
+              foodbankId={foodbankId}
+              onFoodbankChange={handleFoodbankChange}
+              foodBanksLoading={foodBanksLoading}
+              onBack={() => setCurrentView('landing')}
             />
           </div>
         );
