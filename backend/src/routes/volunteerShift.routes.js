@@ -2,10 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const volunteerShiftController = require('../controllers/volunteerShift.controller');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authenticate } = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 /**
  * @route   GET /api/volunteer-shifts
