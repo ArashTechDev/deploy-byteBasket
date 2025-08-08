@@ -23,6 +23,12 @@ const donationRoutes = require('./routes/donation.routes');
 const dietaryPreferencesRoutes = require('./routes/dietaryPreferences.routes');
 const dietaryRestrictionsRoutes = require('./routes/dietaryRestrictions.routes');
 
+// Import foodbank routes - THIS WAS MISSING!
+const foodbankRoutes = require('./api/foodbank');
+
+// Import storage location routes - THIS WAS ALSO MISSING!
+const storageLocationRoutes = require('./api/storageLocations');
+
 // Import volunteer routes
 const volunteerRoutes = require('./routes/volunteer.routes');
 const shiftRoutes = require('./routes/shift.routes');
@@ -130,6 +136,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/foodbanks', foodbankRoutes); // ADD THIS LINE - This was missing!
+app.use('/api/storage', storageLocationRoutes); // ADD THIS LINE - Storage routes were missing!
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/dietary-preferences', dietaryPreferencesRoutes);
@@ -161,6 +169,8 @@ const startServer = async () => {
       );
       console.log(`📍 API Base URL: http://localhost:${PORT}/api`);
       console.log(`🏥 Health Check: http://localhost:${PORT}/api/health`);
+      console.log(`🏪 Food Banks API: http://localhost:${PORT}/api/foodbanks`);
+      console.log(`📦 Storage API: http://localhost:${PORT}/api/storage`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
