@@ -21,7 +21,7 @@ const cartItemSchema = new mongoose.Schema({
   },
   dietary_category: {
     type: String,
-    enum: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
+    enum: ['Vegan', 'Vegetarian', 'Gluten-Free', 'Kosher', 'Halal'],
   },
   added_at: {
     type: Date,

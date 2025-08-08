@@ -8,6 +8,56 @@ import reportsService from '../services/reportsService';
 import { useCart } from '../contexts/CartContext';
 import WishlistModal from '../components/wishlist/WishlistModal';
 
+// Dashboard API calls for real request counts
+const dashboardService = {
+  // Get dashboard data including real request counts
+  getDashboardData: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      };
+
+      // Get user's requests
+      const requestsResponse = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/food-requests/my-requests`,
+        config
+      );
+      const requestsData = await requestsResponse.json();
+
+      // Get cart data (you already have this from useCart)
+      const cartResponse = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/cart`,
+        config
+      );
+      const cartData = await cartResponse.json();
+
+      // Calculate statistics
+      const totalRequests = requestsData.success ? requestsData.data.length : 0;
+      const cartItems = cartData.success ? cartData.data.items.length : 0;
+
+      return {
+        success: true,
+        data: {
+          totalRequests,
+          cartItems,
+          // You can add more dashboard metrics here
+          recentRequests: requestsData.success ? requestsData.data.slice(0, 5) : [],
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+};
+
 const DashboardPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -19,6 +69,13 @@ const DashboardPage = () => {
   // Cart and wishlist states
   const { cart, isUserAuthenticated } = useCart();
   const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
+
+  // Real dashboard data state
+  const [userDashboardData, setUserDashboardData] = useState({
+    totalRequests: 0,
+    cartItems: 0,
+    recentRequests: [],
+  });
 
   // Load user data and dashboard stats
   const loadUserData = useCallback(async () => {
@@ -47,9 +104,28 @@ const DashboardPage = () => {
     }
   }, []);
 
+  // Load real dashboard data for user activity
+  const loadDashboardData = async () => {
+    try {
+      const response = await dashboardService.getDashboardData();
+
+      if (response.success) {
+        setUserDashboardData(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  };
+
   useEffect(() => {
     loadUserData();
   }, [loadUserData]);
+
+  useEffect(() => {
+    if (isUserAuthenticated) {
+      loadDashboardData();
+    }
+  }, [isUserAuthenticated]);
 
   const handleLogout = async () => {
     try {
@@ -287,7 +363,7 @@ const DashboardPage = () => {
         id: 'my-cart',
         title: 'My Cart',
         description: `Review your selected items (${
-          cart?.total_items || 0
+          cart?.total_items || cart?.items?.length || 0
         } items) and submit food requests.`,
         icon: (
           <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center relative">
@@ -304,9 +380,9 @@ const DashboardPage = () => {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5A1 1 0 006.8 19H19M7 13v6a1 1 0 001 1h10a1 1 0 001-1v-6M9 19v2m6-2v2"
               />
             </svg>
-            {cart?.total_items > 0 && (
+            {(cart?.total_items || cart?.items?.length) > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-[10px]">
-                {cart.total_items}
+                {cart?.total_items || cart?.items?.length}
               </span>
             )}
           </div>
@@ -521,9 +597,9 @@ const DashboardPage = () => {
                     />
                   </svg>
                   <span>Cart</span>
-                  {cart?.total_items > 0 && (
+                  {(cart?.total_items || cart?.items?.length) > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cart.total_items}
+                      {cart?.total_items || cart?.items?.length}
                     </span>
                   )}
                 </button>
@@ -631,13 +707,15 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {/* Personal Stats for Recipients/Donors */}
+        {/* Personal Stats for Recipients/Donors - Updated with real data */}
         {isUserAuthenticated && ['recipient', 'donor'].includes(user?.role) && (
           <div className="bg-white rounded-2xl shadow-xl p-6 mt-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">My Activity</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-teal-50 p-4 rounded-lg text-center">
-                <div className="text-2xl font-bold text-teal-600">{cart?.total_items || '0'}</div>
+                <div className="text-2xl font-bold text-teal-600">
+                  {cart?.items?.length || cart?.total_items || '0'}
+                </div>
                 <div className="text-sm text-gray-600">Items in Cart</div>
               </div>
               <div className="bg-rose-50 p-4 rounded-lg text-center">
@@ -648,11 +726,61 @@ const DashboardPage = () => {
               </div>
               <div className="bg-orange-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-orange-600">
-                  {dashboardData?.userStats?.totalRequests || '0'}
+                  {userDashboardData.totalRequests}
                 </div>
                 <div className="text-sm text-gray-600">Total Requests</div>
               </div>
             </div>
+
+            {/* Recent Requests Section */}
+            {userDashboardData.recentRequests.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Requests</h3>
+                <div className="space-y-2">
+                  {userDashboardData.recentRequests.map((request, index) => (
+                    <div
+                      key={request.id || index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm text-gray-700">
+                          Request #{request.id || index + 1}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            request.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : request.status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : request.status === 'rejected'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {request.status || 'pending'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {request.created_at
+                            ? new Date(request.created_at).toLocaleDateString()
+                            : 'Recent'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => handleSectionClick('request-history')}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    View All Requests →
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
