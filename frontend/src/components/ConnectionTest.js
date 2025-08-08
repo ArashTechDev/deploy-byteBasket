@@ -10,21 +10,21 @@ const ConnectionTest = () => {
     const testConnection = async () => {
       setIsLoading(true);
       try {
-        // Test backend health endpoint - Updated to port 5000
-        const healthResponse = await fetch('http://localhost:5000/health');
+        // Test backend health endpoint
+        const healthResponse = await fetch('http://localhost:3001/health');
         const healthData = await healthResponse.json();
-        
-        // Test inventory endpoint - Updated to port 5000
-        const inventoryResponse = await fetch('http://localhost:5000/api/inventory', {
+
+        // Test inventory endpoint
+        const inventoryResponse = await fetch('http://localhost:3001/api/inventory', {
           headers: {
             'Content-Type': 'application/json',
             // Add auth token if available
             ...(localStorage.getItem('authToken') && {
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            })
-          }
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            }),
+          },
         });
-        
+
         let inventoryData = null;
         if (inventoryResponse.ok) {
           inventoryData = await inventoryResponse.json();
@@ -33,29 +33,31 @@ const ConnectionTest = () => {
           if (inventoryResponse.status === 401) {
             inventoryData = { error: '401 Unauthorized - Authentication required' };
           } else {
-            inventoryData = { error: `${inventoryResponse.status} ${inventoryResponse.statusText}` };
+            inventoryData = {
+              error: `${inventoryResponse.status} ${inventoryResponse.statusText}`,
+            };
           }
         }
-        
+
         setStatus('✅ Backend connection successful!');
         setDetails({
           health: healthData,
           inventory: inventoryData,
           apiUrl: process.env.REACT_APP_API_URL,
-          backendPort: '5000', // Updated port
-          frontendPort: window.location.port || '3000'
+          backendPort: '3001',
+          frontendPort: window.location.port || '3000',
         });
       } catch (error) {
         setStatus(`❌ Connection failed: ${error.message}`);
-        setDetails({ 
+        setDetails({
           error: error.message,
           apiUrl: process.env.REACT_APP_API_URL,
           suggestions: [
-            'Check if backend is running on port 5000',
+            'Check if backend is running on port 3001',
             'Verify REACT_APP_API_URL in .env file',
             'Check for CORS issues in browser console',
-            'Ensure backend has CORS enabled for localhost:3000'
-          ]
+            'Ensure backend has CORS enabled for localhost:3000',
+          ],
         });
       } finally {
         setIsLoading(false);
@@ -69,7 +71,7 @@ const ConnectionTest = () => {
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-4">Backend Connection Test</h2>
-        
+
         <div className="mb-4 p-4 rounded-lg bg-gray-50">
           <div className="flex items-center mb-2">
             {isLoading ? (
@@ -85,9 +87,15 @@ const ConnectionTest = () => {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-blue-800 mb-2">Configuration</h3>
                 <ul className="text-sm space-y-1">
-                  <li><strong>API URL:</strong> {details.apiUrl || 'Not set'}</li>
-                  <li><strong>Backend Port:</strong> {details.backendPort}</li>
-                  <li><strong>Frontend Port:</strong> {details.frontendPort}</li>
+                  <li>
+                    <strong>API URL:</strong> {details.apiUrl || 'Not set'}
+                  </li>
+                  <li>
+                    <strong>Backend Port:</strong> {details.backendPort}
+                  </li>
+                  <li>
+                    <strong>Frontend Port:</strong> {details.frontendPort}
+                  </li>
                 </ul>
               </div>
 
@@ -158,7 +166,7 @@ const ConnectionTest = () => {
               Retry Test
             </button>
             <a
-              href="http://localhost:5000/health"
+              href="http://localhost:3001/health"
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
@@ -166,7 +174,7 @@ const ConnectionTest = () => {
               Open Backend Health
             </a>
             <a
-              href="http://localhost:5000/api/inventory"
+              href="http://localhost:3001/api/inventory"
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"

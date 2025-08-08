@@ -1,5 +1,6 @@
 // frontend/src/App.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
@@ -13,7 +14,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import BrowseInventoryPage from './pages/BrowseInventoryPage';
 import ReportsDashboard from './pages/ReportsDashboard';
 import RequestSubmissionPage from './pages/RequestSubmissionPage';
-import InventoryBrowsePage from './pages/InventoryBrowsePage';
+import ShiftManagementPage from './pages/ShiftManagementPage'; // New page for managing shifts
 import Footer from './components/layout/Footer';
 import Header from './components/layout/Header';
 import SignUpForm from './components/forms/SignUpForm';
@@ -27,12 +28,10 @@ import { getCurrentUser } from './services/authService';
 const AuthenticationManager = () => {
   const { refreshCart, isUserAuthenticated } = useCart();
 
-  // Memoize the authentication check function to prevent unnecessary re-renders
   const checkAuthAndRefreshCart = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (token && !isUserAuthenticated) {
-        // Token exists but cart context doesn't know user is authenticated
         const userResponse = await getCurrentUser();
         if (userResponse && userResponse.success) {
           console.log('User authentication confirmed, refreshing cart');
@@ -44,114 +43,33 @@ const AuthenticationManager = () => {
     }
   }, [isUserAuthenticated, refreshCart]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkAuthAndRefreshCart();
   }, [checkAuthAndRefreshCart]);
 
-  return null; // This component doesn't render anything
-};
-
-// Component to handle login success across different pages
-const LoginSuccessHandler = ({ onLoginSuccess, currentPage }) => {
-  const { refreshCart } = useCart();
-
-  // Memoize the login success handler
-  const handleLoginSuccess = useCallback(async () => {
-    console.log('Login success detected, refreshing cart');
-    await refreshCart();
-    if (onLoginSuccess) {
-      onLoginSuccess();
-    }
-  }, [refreshCart, onLoginSuccess]);
-
-  useEffect(() => {
-    // Only set up login success handling if we're on a page that needs it
-    if (currentPage === 'signup' || currentPage === 'dashboard') {
-      console.log(`Login success handler ready for ${currentPage} page`);
-    }
-  }, [currentPage, handleLoginSuccess]);
-
-  return null; // This component doesn't render anything
+  return null;
 };
 
 // Enhanced SignUpPage component with authentication integration
-const SignUpPageWithAuth = ({ onNavigate, onLoginSuccess }) => {
-  const { refreshCart } = useCart();
-
-  // Fixed: Memoize the login success handler to prevent infinite re-renders
-  const handleSignUpLoginSuccess = useCallback(async () => {
-    console.log('SignUp page: Login successful, refreshing cart');
-    try {
-      await refreshCart();
-      // Navigate to dashboard after successful login
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
-    } catch (error) {
-      console.error('Error refreshing cart after login:', error);
-      // Still navigate even if cart refresh fails
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
-    }
-  }, [refreshCart, onLoginSuccess]);
-
-  return <EnhancedSignUpPage onNavigate={onNavigate} onLoginSuccess={handleSignUpLoginSuccess} />;
-};
-
-// Enhanced Dashboard component with logout integration
-const DashboardPageWithAuth = ({ onNavigate, onLogout }) => {
-  const { refreshCart } = useCart();
-
-  // Fixed: Use dependency array properly to prevent infinite loops
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        await refreshCart();
-      } catch (error) {
-        console.log('Failed to refresh cart on dashboard load:', error.message);
-      }
-    };
-
-    loadDashboardData();
-  }, []); // Empty dependency array - only run on mount
-
-  const handleDashboardLogout = useCallback(async () => {
-    try {
-      // Clear cart data on logout
-      // (CartContext will handle this automatically when token is removed)
-      if (onLogout) {
-        onLogout();
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  }, [onLogout]);
-
-  return <DashboardPage onNavigate={onNavigate} onLogout={handleDashboardLogout} />;
-};
-
-// Enhanced SignUpPage component that integrates with cart and auth
-const EnhancedSignUpPage = ({ onNavigate, onLoginSuccess }) => {
+const EnhancedSignUpPage = () => {
   const { t } = useTranslation();
-  const [isSignIn, setIsSignIn] = useState(false);
-  const [showEmailNotification, setShowEmailNotification] = useState(false);
+  const navigate = useNavigate();
+  const [isSignIn, setIsSignIn] = React.useState(false);
+  const [showEmailNotification, setShowEmailNotification] = React.useState(false);
 
   const handleToggleForm = useCallback((showNotification = false) => {
     setIsSignIn(prev => !prev);
     setShowEmailNotification(showNotification);
   }, []);
 
-  const handleLoginSuccessInternal = useCallback(() => {
-    console.log('EnhancedSignUpPage: Login successful');
-    if (onLoginSuccess) {
-      onLoginSuccess();
-    }
-  }, [onLoginSuccess]);
+  const handleLoginSuccess = useCallback(() => {
+    console.log('Login successful, navigating to dashboard');
+    navigate('/dashboard');
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-200">
-      <Header currentPage="signup" onNavigate={onNavigate} />
+      <Header />
 
       {showEmailNotification && (
         <div className="max-w-md mx-auto pt-4 px-4">
@@ -172,13 +90,9 @@ const EnhancedSignUpPage = ({ onNavigate, onLoginSuccess }) => {
 
           <div className="bg-gray-600 rounded-lg p-8">
             {!isSignIn ? (
-              <SignUpForm onToggleForm={handleToggleForm} onNavigate={onNavigate} />
+              <SignUpForm onToggleForm={handleToggleForm} />
             ) : (
-              <SignInForm
-                onToggleForm={handleToggleForm}
-                onNavigate={onNavigate}
-                onLoginSuccess={handleLoginSuccessInternal}
-              />
+              <SignInForm onToggleForm={handleToggleForm} onLoginSuccess={handleLoginSuccess} />
             )}
           </div>
         </div>
@@ -187,82 +101,48 @@ const EnhancedSignUpPage = ({ onNavigate, onLoginSuccess }) => {
   );
 };
 
-// Main App Component
+// Main App Component with React Router
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-
-  // Memoize navigation function to prevent unnecessary re-renders
-  const navigate = useCallback(page => {
-    console.log(`Navigating to: ${page}`);
-    setCurrentPage(page);
-  }, []);
-
-  // Memoize login success handler to prevent infinite loops
-  const handleLoginSuccess = useCallback(() => {
-    console.log('App: Login successful, navigating to dashboard');
-    navigate('dashboard');
-  }, [navigate]);
-
-  // Render the appropriate page based on current route
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage onNavigate={navigate} />;
-
-      case 'signup':
-        return <SignUpPageWithAuth onNavigate={navigate} onLoginSuccess={handleLoginSuccess} />;
-
-      case 'donate':
-        return <DonatePage onNavigate={navigate} />;
-
-      case 'foodbank':
-        return <FoodbankPage onNavigate={navigate} />;
-
-      case 'inventory':
-        return <InventoryPage onNavigate={navigate} />;
-
-      case 'dashboard':
-        return <DashboardPageWithAuth onNavigate={navigate} onLogout={() => navigate('home')} />;
-
-      case 'volunteer':
-        return <VolunteerPage onNavigate={navigate} />;
-
-      case 'contact':
-        return <ContactPage onNavigate={navigate} />;
-
-      case 'email-verification':
-        return <EmailVerificationPage onNavigate={navigate} />;
-
-      case 'browse-inventory':
-        return <BrowseInventoryPage onNavigate={navigate} />;
-
-      case 'reports':
-        return <ReportsDashboard onNavigate={navigate} />;
-
-      case 'request-submission':
-        return <RequestSubmissionPage onNavigate={navigate} />;
-
-      case 'inventory-browse':
-        return <InventoryBrowsePage onNavigate={navigate} />;
-
-      default:
-        return <HomePage onNavigate={navigate} />;
-    }
-  };
-
   return (
     <CartProvider>
-      <div className="App min-h-screen flex flex-col">
-        {/* Authentication and Cart Management */}
-        <AuthenticationManager />
-        <LoginSuccessHandler onLoginSuccess={handleLoginSuccess} currentPage={currentPage} />
+      <Router>
+        <div className="App min-h-screen flex flex-col">
+          {/* Authentication and Cart Management */}
+          <AuthenticationManager />
 
-        {/* Main Content */}
-        <div className="flex-grow">{renderPage()}</div>
+          {/* Main Content */}
+          <div className="flex-grow">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/home" element={<Navigate to="/" replace />} />
+              <Route path="/signup" element={<EnhancedSignUpPage />} />
+              <Route path="/signin" element={<Navigate to="/signup" replace />} />
+              <Route path="/donate" element={<DonatePage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/email-verification" element={<EmailVerificationPage />} />
+              <Route path="/browse-inventory" element={<BrowseInventoryPage />} />
 
-        {/* Footer */}
-        <Footer />
-      </div>
+              {/* Protected Routes - User needs to be logged in */}
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/volunteer" element={<VolunteerPage />} />
+              <Route path="/request-submission" element={<RequestSubmissionPage />} />
+
+              {/* Admin/Staff Routes */}
+              <Route path="/inventory" element={<InventoryPage />} />
+              <Route path="/foodbank" element={<FoodbankPage />} />
+              <Route path="/reports" element={<ReportsDashboard />} />
+              <Route path="/shift-management" element={<ShiftManagementPage />} />
+
+              {/* Catch all route - redirect to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+
+          {/* Footer */}
+          <Footer />
+        </div>
+      </Router>
     </CartProvider>
   );
 };

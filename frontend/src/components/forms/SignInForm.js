@@ -1,12 +1,15 @@
+// frontend/src/components/forms/SignInForm.js
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../../services/authService';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
 
-const SignInForm = ({ onToggleForm, onNavigate }) => {
+const SignInForm = ({ onToggleForm, onLoginSuccess }) => {
   const { t } = useTranslation();
   const { refreshCart } = useCart();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -44,8 +47,12 @@ const SignInForm = ({ onToggleForm, onNavigate }) => {
             // Don't block navigation if cart refresh fails
           }
 
-          // Navigate to dashboard
-          onNavigate('dashboard');
+          // Call onLoginSuccess if provided, otherwise navigate to dashboard
+          if (onLoginSuccess) {
+            onLoginSuccess();
+          } else {
+            navigate('/dashboard');
+          }
         }, 150);
       } else {
         throw new Error(response.message || 'Login failed - no token received');
@@ -168,7 +175,7 @@ const SignInForm = ({ onToggleForm, onNavigate }) => {
 
 SignInForm.propTypes = {
   onToggleForm: PropTypes.func.isRequired,
-  onNavigate: PropTypes.func.isRequired,
+  onLoginSuccess: PropTypes.func, // Made optional since we have fallback navigation
 };
 
 export default SignInForm;

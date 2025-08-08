@@ -1,144 +1,109 @@
+// frontend/src/components/forms/SignUpForm.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { registerUser, resendVerificationEmail } from '../../services/authService';
 import { useTranslation } from 'react-i18next';
 
-const SignUpForm = ({ onToggleForm, onNavigate }) => {
+const SignUpForm = ({ onToggleForm }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    role: '',
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role: '',
   });
 
   const [registrationState, setRegistrationState] = useState({
-    isRegistered: false,
     isLoading: false,
-    userEmail: '',
+    isSuccess: false,
     showResendButton: false,
+    resendLoading: false,
+    message: '',
   });
 
   const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setRegistrationState(prev => ({ ...prev, isLoading: true }));
 
+    // Basic validation
     if (formData.password !== formData.confirmPassword) {
       alert(t('signUpForm.passwordMismatch'));
-      setRegistrationState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
-    if (!formData.role || !formData.name || !formData.email || !formData.password) {
+    if (!formData.name || !formData.email || !formData.password || !formData.role) {
       alert(t('signUpForm.fillAllFields'));
-      setRegistrationState(prev => ({ ...prev, isLoading: false }));
       return;
     }
+
+    setRegistrationState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      const payload = {
-        role: formData.role,
-        name: formData.name,
+      const response = await registerUser({
+        full_name: formData.name,
         email: formData.email,
         password: formData.password,
-      };
-
-      const response = await registerUser(payload);
+        role: formData.role,
+      });
 
       if (response.success) {
         setRegistrationState({
-          isRegistered: true,
           isLoading: false,
-          userEmail: formData.email,
-          showResendButton: false,
+          isSuccess: true,
+          showResendButton: true,
+          resendLoading: false,
+          message: t('signUpForm.registrationSuccess'),
         });
-
-        alert(response.message || t('signUpForm.registrationSuccess'));
-
-        setFormData({
-          role: '',
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-        });
-
-        setTimeout(() => {
-          setRegistrationState(prev => ({ ...prev, showResendButton: true }));
-        }, 30000);
+      } else {
+        throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
-      console.error('Registration error:', error.response);
+      console.error('Registration error:', error);
       setRegistrationState(prev => ({ ...prev, isLoading: false }));
-
-      if (error.response?.data?.errors) {
-        const messages = Object.values(error.response.data.errors)
-          .map(err => err.message)
-          .join('\n');
-        alert(messages);
-      } else if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else {
-        alert(t('signUpForm.registrationFailed'));
-      }
+      alert(error.response?.data?.message || error.message || t('signUpForm.registrationFailed'));
     }
   };
 
   const handleResendVerification = async () => {
-    setRegistrationState(prev => ({ ...prev, isLoading: true }));
+    setRegistrationState(prev => ({ ...prev, resendLoading: true }));
 
     try {
-      const response = await resendVerificationEmail(registrationState.userEmail);
-
-      if (response.success) {
-        alert(t('signUpForm.verificationEmailSent'));
-        setRegistrationState(prev => ({
-          ...prev,
-          isLoading: false,
-          showResendButton: false,
-        }));
-
-        setTimeout(() => {
-          setRegistrationState(prev => ({ ...prev, showResendButton: true }));
-        }, 30000);
-      }
+      await resendVerificationEmail(formData.email);
+      alert(t('signUpForm.verificationEmailSent'));
     } catch (error) {
       console.error('Resend verification error:', error);
-      setRegistrationState(prev => ({ ...prev, isLoading: false }));
-      alert(t('signUpForm.verificationEmailFailed'));
+      alert(t('signUpForm.resendFailed'));
+    } finally {
+      setRegistrationState(prev => ({ ...prev, resendLoading: false }));
     }
   };
 
-  if (registrationState.isRegistered) {
+  if (registrationState.isSuccess) {
     return (
-      <div className="text-center space-y-6">
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-          <div className="flex items-center justify-center mb-2">
-            <span className="text-2xl">📧</span>
-          </div>
-          <h3 className="font-semibold text-lg mb-2">{t('signUpForm.checkYourEmail')}</h3>
-          <p className="text-sm">
-            {t('signUpForm.verificationSentTo')} <strong>{registrationState.userEmail}</strong>.{' '}
-            {t('signUpForm.pleaseCheckInbox')}
-          </p>
+      <div className="text-center space-y-4">
+        <div className="text-green-400 text-lg font-semibold">
+          {t('signUpForm.registrationSuccessTitle')}
         </div>
+        <p className="text-white text-sm">{registrationState.message}</p>
+        <p className="text-gray-300 text-xs">{t('signUpForm.checkEmailInstructions')}</p>
 
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">{t('signUpForm.didntReceiveEmail')}</p>
-
+        <div className="space-y-2">
           {registrationState.showResendButton && (
             <button
               onClick={handleResendVerification}
-              disabled={registrationState.isLoading}
+              disabled={registrationState.resendLoading}
               className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 px-4 rounded-md font-medium transition-colors"
             >
-              {registrationState.isLoading
+              {registrationState.resendLoading
                 ? t('signUpForm.sending')
                 : t('signUpForm.resendVerification')}
             </button>
