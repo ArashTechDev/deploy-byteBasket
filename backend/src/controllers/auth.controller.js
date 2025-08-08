@@ -2,14 +2,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { AppError, catchAsync } = require('../utils/errors');
-const User = require('../db/models/User');
-const {
-  generateVerificationToken,
-  sendVerificationEmail,
-  sendWelcomeEmail,
-} = require('../services/emailService');
+const User = require('../db/models/users/User');
+const { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } = require('../services/emailService');
 
-const generateToken = id => {
+const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
@@ -17,12 +13,14 @@ const generateToken = id => {
 
 const createSendToken = (user, statusCode, res) => {
   const token = generateToken(user._id);
-
+  
   const cookieOptions = {
-    expires: new Date(Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000),
+    expires: new Date(
+      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000
+    ),
     httpOnly: true,
   };
-
+  
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
@@ -64,13 +62,13 @@ const register = async (req, res, next) => {
       password,
       role,
       verificationToken,
-      isVerified: false,
+      isVerified: false
     });
 
     // Send verification email
     try {
       await sendVerificationEmail(newUser, verificationToken);
-
+      
       res.status(201).json({
         success: true,
         message: 'Registration successful! Please check your email to verify your account.',
@@ -80,27 +78,26 @@ const register = async (req, res, next) => {
             name: newUser.name,
             email: newUser.email,
             role: newUser.role,
-            isVerified: newUser.isVerified,
-          },
-        },
+            isVerified: newUser.isVerified
+          }
+        }
       });
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
-
+      
       // Still return success but mention email issue
       res.status(201).json({
         success: true,
-        message:
-          "Registration successful! However, we couldn't send the verification email. Please contact support.",
+        message: 'Registration successful! However, we couldn\'t send the verification email. Please contact support.',
         data: {
           user: {
             id: newUser._id,
             name: newUser.name,
             email: newUser.email,
             role: newUser.role,
-            isVerified: newUser.isVerified,
-          },
-        },
+            isVerified: newUser.isVerified
+          }
+        }
       });
     }
   } catch (error) {
@@ -133,12 +130,7 @@ const login = catchAsync(async (req, res, next) => {
 
   // Check if user is verified
   if (!user.isVerified) {
-    return next(
-      new AppError(
-        'Please verify your email address before logging in. Check your inbox for the verification email.',
-        401
-      )
-    );
+    return next(new AppError('Please verify your email address before logging in. Check your inbox for the verification email.', 401));
   }
 
   // Update last login
@@ -147,6 +139,7 @@ const login = catchAsync(async (req, res, next) => {
 
   createSendToken(user, 200, res);
 });
+
 
 const logout = catchAsync(async (req, res) => {
   res.cookie('jwt', 'loggedout', {
@@ -171,14 +164,12 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   console.log('🔗 Token received:', token);
   console.log('📏 Token length:', token?.length);
   console.log('🗃️ MongoDB URI:', process.env.MONGO_URI ? 'Set' : 'Not set');
-
+  
   const user = await User.findOne({ verificationToken: token });
   console.log('👤 User found:', user ? 'Yes' : 'No');
-
+  
   // Additional debugging: count all users with tokens
-  const usersWithTokens = await User.countDocuments({
-    verificationToken: { $exists: true, $ne: null },
-  });
+  const usersWithTokens = await User.countDocuments({ verificationToken: { $exists: true, $ne: null } });
   console.log('📊 Total users with verification tokens in DB:', usersWithTokens);
 
   if (!user) {
@@ -190,7 +181,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: 'Email already verified. You can now log in.',
-      data: { user: { email: user.email, name: user.name, role: user.role } },
+      data: { user: { email: user.email, name: user.name, role: user.role } }
     });
   }
 
@@ -210,7 +201,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: 'Email verified successfully! You can now log in.',
-    data: { user: { email: user.email, name: user.name, role: user.role } },
+    data: { user: { email: user.email, name: user.name, role: user.role } }
   });
 });
 
@@ -239,10 +230,10 @@ const resendVerificationEmail = catchAsync(async (req, res, next) => {
   // Send verification email
   try {
     await sendVerificationEmail(user, verificationToken);
-
+    
     res.status(200).json({
       success: true,
-      message: 'Verification email sent successfully. Please check your inbox.',
+      message: 'Verification email sent successfully. Please check your inbox.'
     });
   } catch (error) {
     console.error('Email sending failed:', error);
