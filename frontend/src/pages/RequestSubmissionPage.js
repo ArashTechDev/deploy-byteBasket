@@ -46,7 +46,7 @@ const RequestSubmissionPage = () => {
       const requestData = {
         items: cart.items.map(item => ({
           item_name: item.item_name,
-          quantity: item.quantity,
+          quantity: item.quantity, // This is correct according to validation rules
           dietary_category: item.dietary_category,
         })),
         preferredPickupDate: formData.preferredPickupDate,
@@ -75,6 +75,7 @@ const RequestSubmissionPage = () => {
       }
     } catch (error) {
       console.error('Error submitting request:', error);
+      console.error('Error response:', error.response?.data);
       setError(
         error.response?.data?.message ||
           error.message ||

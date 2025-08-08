@@ -1,6 +1,7 @@
 // backend/src/controllers/foodRequest.controller.js
 const FoodRequest = require('../db/models/FoodRequest.model');
 const User = require('../db/models/User');
+const Inventory = require('../db/models/Inventory');
 const { validationResult } = require('express-validator');
 
 class FoodRequestController {
@@ -34,27 +35,62 @@ class FoodRequestController {
         });
       }
 
+      // Process items to ensure they have inventory_ids
+      const processedItems = [];
+
+      for (const item of items) {
+        let inventoryItem;
+
+        // If the item already has an inventory_id, use it
+        if (item.inventory_id) {
+          inventoryItem = await Inventory.findById(item.inventory_id);
+        } else {
+          // Otherwise, try to find matching inventory item by name and foodbank
+          inventoryItem = await Inventory.findOne({
+            item_name: item.item_name,
+            foodbank_id: user.foodbank_id,
+            quantity: { $gte: item.quantity }, // Ensure enough stock
+          });
+        }
+
+        if (!inventoryItem) {
+          return res.status(400).json({
+            success: false,
+            message: `Item "${item.item_name}" not found in inventory or insufficient stock`,
+          });
+        }
+
+        // Check if requested quantity is available
+        if (inventoryItem.quantity < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for "${item.item_name}". Available: ${inventoryItem.quantity}, Requested: ${item.quantity}`,
+          });
+        }
+
+        processedItems.push({
+          inventory_id: inventoryItem._id,
+          item_name: inventoryItem.item_name,
+          quantity_requested: item.quantity,
+          dietary_category: inventoryItem.dietary_category,
+          quantity_fulfilled: 0,
+        });
+      }
+
       // Create the food request
       const foodRequest = new FoodRequest({
         recipient_id: req.user.id,
         foodbank_id: user.foodbank_id,
-        items: items.map(item => ({
-          item_name: item.item_name,
-          quantity_requested: item.quantity,
-          dietary_category: item.dietary_category,
-        })),
-        pickup_date: preferredPickupDate,
+        items: processedItems,
+        preferred_pickup_date: preferredPickupDate, // Note: using preferred_pickup_date (with underscore)
         pickup_time: preferredPickupTime,
         special_instructions: specialInstructions,
-        dietary_restrictions: dietaryRestrictions,
-        allergies: allergies,
         status: 'Pending',
-        request_date: new Date(),
       });
 
       await foodRequest.save();
       await foodRequest.populate('recipient_id', 'name email phone');
-      await foodRequest.populate('foodbank_id', 'name location phone');
+      await foodRequest.populate('foodbank_id', 'name contactEmail contactPhone');
 
       res.status(201).json({
         success: true,
@@ -84,12 +120,13 @@ class FoodRequestController {
       const options = {
         page: parseInt(page),
         limit: parseInt(limit),
-        sort: { request_date: -1 },
+        sort: { createdAt: -1 }, // Note: using createdAt instead of request_date
       };
 
       const requests = await FoodRequest.find(filter)
         .populate('recipient_id', 'name email phone')
-        .populate('foodbank_id', 'name location phone')
+        .populate('foodbank_id', 'name contactEmail contactPhone')
+        .populate('items.inventory_id', 'item_name category')
         .sort(options.sort)
         .limit(options.limit * 1)
         .skip((options.page - 1) * options.limit);
@@ -127,12 +164,13 @@ class FoodRequestController {
       const options = {
         page: parseInt(page),
         limit: parseInt(limit),
-        sort: { request_date: -1 },
+        sort: { createdAt: -1 },
       };
 
       const requests = await FoodRequest.find(filter)
         .populate('recipient_id', 'name email phone')
-        .populate('foodbank_id', 'name location phone')
+        .populate('foodbank_id', 'name contactEmail contactPhone')
+        .populate('items.inventory_id', 'item_name category')
         .sort(options.sort)
         .limit(options.limit * 1)
         .skip((options.page - 1) * options.limit);
@@ -165,7 +203,8 @@ class FoodRequestController {
 
       const request = await FoodRequest.findById(id)
         .populate('recipient_id', 'name email phone')
-        .populate('foodbank_id', 'name location phone');
+        .populate('foodbank_id', 'name contactEmail contactPhone')
+        .populate('items.inventory_id', 'item_name category');
 
       if (!request) {
         return res.status(404).json({
@@ -211,17 +250,15 @@ class FoodRequestController {
       }
 
       request.status = status;
-      if (notes) request.notes = notes;
+      if (notes) {
+        request.notes = notes;
+      }
       request.processed_by = req.user.id;
       request.processed_at = new Date();
 
-      if (status === 'Fulfilled') {
-        request.fulfilled_at = new Date();
-      }
-
       await request.save();
       await request.populate('recipient_id', 'name email phone');
-      await request.populate('foodbank_id', 'name location phone');
+      await request.populate('foodbank_id', 'name contactEmail contactPhone');
 
       res.json({
         success: true,
@@ -242,9 +279,7 @@ class FoodRequestController {
   async getRequestStats(req, res) {
     try {
       const { foodbank_id } = req.query;
-
-      const filter = {};
-      if (foodbank_id) filter.foodbank_id = foodbank_id;
+      const filter = foodbank_id ? { foodbank_id } : {};
 
       const stats = await FoodRequest.aggregate([
         { $match: filter },
@@ -262,10 +297,7 @@ class FoodRequestController {
         success: true,
         data: {
           totalRequests,
-          byStatus: stats.reduce((acc, stat) => {
-            acc[stat._id] = stat.count;
-            return acc;
-          }, {}),
+          statusBreakdown: stats,
         },
       });
     } catch (error) {

@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const foodRequestController = require('../controllers/foodRequest.controller');
-const authMiddleware = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleAuth');
 
 // All routes require authentication

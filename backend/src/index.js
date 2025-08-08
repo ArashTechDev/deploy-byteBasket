@@ -9,8 +9,6 @@ const compression = require('compression');
 const morgan = require('morgan');
 require('dotenv').config();
 
-// CRITICAL: Import all models BEFORE using them in routes
-// This ensures all Mongoose schemas are registered before any route tries to use them
 require('./models'); // This will register all models
 
 const errorHandler = require('./middleware/errorHandler');
@@ -23,10 +21,10 @@ const donationRoutes = require('./routes/donation.routes');
 const dietaryPreferencesRoutes = require('./routes/dietaryPreferences.routes');
 const dietaryRestrictionsRoutes = require('./routes/dietaryRestrictions.routes');
 
-// Import foodbank routes - THIS WAS MISSING!
+// Import foodbank routes
 const foodbankRoutes = require('./api/foodbank');
 
-// Import storage location routes - THIS WAS ALSO MISSING!
+// Import storage location routes
 const storageLocationRoutes = require('./api/storageLocations');
 
 // Import volunteer routes
@@ -38,6 +36,7 @@ const volunteerShiftRoutes = require('./routes/volunteerShift.routes');
 const cartRoutes = require('./routes/cart.routes');
 const wishlistRoutes = require('./routes/wishlist.routes');
 const basicReportsRoutes = require('./routes/basicReports.routes');
+const foodRequestRoutes = require('./routes/foodRequest.routes');
 
 const app = express();
 
@@ -136,8 +135,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/foodbanks', foodbankRoutes); // ADD THIS LINE - This was missing!
-app.use('/api/storage', storageLocationRoutes); // ADD THIS LINE - Storage routes were missing!
+app.use('/api/foodbanks', foodbankRoutes);
+app.use('/api/storage', storageLocationRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/dietary-preferences', dietaryPreferencesRoutes);
@@ -148,6 +147,7 @@ app.use('/api/volunteer-shifts', volunteerShiftRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlists', wishlistRoutes);
 app.use('/api/reports', basicReportsRoutes);
+app.use('/api/food-requests', foodRequestRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);
