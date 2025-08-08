@@ -146,7 +146,7 @@ app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/shifts', shiftRoutes);
 app.use('/api/volunteer-shifts', volunteerShiftRoutes);
 app.use('/api/cart', cartRoutes);
-app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/wishlists', wishlistRoutes);
 app.use('/api/reports', basicReportsRoutes);
 
 // Error handling middleware (must be last)

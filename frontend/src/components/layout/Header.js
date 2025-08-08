@@ -252,7 +252,6 @@ const Header = () => {
   const navigationItems = [
     { key: 'dashboard', label: t('navDashboard') || 'Dashboard', path: '/dashboard' },
     { key: 'volunteer', label: t('navVolunteer') || 'Volunteer', path: '/volunteer' },
-    { key: 'signup', label: t('navSignUp') || 'Sign Up', path: '/signup' },
     { key: 'contact', label: t('navContact') || 'Contact Us', path: '/contact' },
   ];
 
@@ -310,10 +309,6 @@ const Header = () => {
             {/* User Actions */}
             <div className="flex items-center space-x-4">
               {/* Cart Icon - Show for authenticated users */}
-              {isUserAuthenticated && (
-                <CartIcon onClick={handleCartClick} className="hover:bg-gray-100 rounded-lg" />
-              )}
-
               {/* Language Switcher */}
               <LanguageSwitcher />
 
