@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// Use the same dietary category enum as Cart and Inventory models
+const dietaryCategoryEnum = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Kosher', 'Halal'];
+
 const wishlistItemSchema = new mongoose.Schema({
   inventory_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +24,8 @@ const wishlistItemSchema = new mongoose.Schema({
   },
   dietary_category: {
     type: String,
-    enum: ['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'nut_free', 'low_sodium'],
+    enum: dietaryCategoryEnum,
+    default: null,
   },
   added_at: {
     type: Date,

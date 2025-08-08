@@ -15,7 +15,7 @@ import BrowseInventoryPage from './pages/BrowseInventoryPage';
 import ReportsDashboard from './pages/ReportsDashboard';
 import RequestSubmissionPage from './pages/RequestSubmissionPage';
 import ShiftManagementPage from './pages/ShiftManagementPage';
-// NEW: Cart and Request History pages
+import SignInPage from './pages/SignInPage';
 import CartPage from './pages/CartPage';
 import RequestHistoryPage from './pages/RequestHistoryPage';
 import Footer from './components/layout/Footer';
@@ -120,7 +120,7 @@ const App = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/home" element={<Navigate to="/" replace />} />
               <Route path="/signup" element={<EnhancedSignUpPage />} />
-              <Route path="/signin" element={<Navigate to="/signup" replace />} />
+              <Route path="/signin" element={<SignInPage />} />
               <Route path="/donate" element={<DonatePage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/email-verification" element={<EmailVerificationPage />} />

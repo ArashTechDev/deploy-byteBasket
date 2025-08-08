@@ -1,5 +1,6 @@
 // frontend/src/pages/InventoryManagement.js
 import React, { useState, useEffect } from 'react';
+import Header from '../components/layout/Header';
 import {
   Search,
   Filter,
@@ -149,6 +150,7 @@ const InventoryManagement = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <Header />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Inventory Management</h1>
         <div className="flex space-x-3">
