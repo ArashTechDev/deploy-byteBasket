@@ -1,48 +1,55 @@
+// frontend/src/pages/ContactPage.js
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 
-const ContactPage = ({ onNavigate }) => {
+const ContactPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
+  // Header nav shim (remove once Header uses <Link>/useNavigate)
+  const handleHeaderNavigation = (page) => {
+    if (page === 'contact') return;
+    const map = {
+      home: '/',
+      volunteer: '/volunteer',
+      donate: '/donate',
+      dashboard: '/dashboard',
+      signup: '/signup',
+      contact: '/contact',
+      'browse-inventory': '/browse-inventory',
+      inventory: '/inventory',
+      foodbank: '/foodbank',
+      reports: '/reports',
+      'shift-management': '/shift-management',
+    };
+    const to = map[page] || (page?.startsWith('/') ? page : `/${page}`);
+    navigate(to);
+  };
+
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.name.trim()) newErrors.name = t('contact.errors.nameRequired');               // "Name is required"
-    if (!formData.email.trim()) newErrors.email = t('contact.errors.emailRequired');             // "Email is required"
-    if (!formData.subject.trim()) newErrors.subject = t('contact.errors.subjectRequired');       // "Subject is required"
-    if (!formData.message.trim()) newErrors.message = t('contact.errors.messageRequired');       // "Message is required"
+    if (!formData.name.trim()) newErrors.name = t('contact.errors.nameRequired', 'Name is required');
+    if (!formData.email.trim()) newErrors.email = t('contact.errors.emailRequired', 'Email is required');
+    if (!formData.subject.trim()) newErrors.subject = t('contact.errors.subjectRequired', 'Subject is required');
+    if (!formData.message.trim()) newErrors.message = t('contact.errors.messageRequired', 'Message is required');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = t('contact.errors.emailInvalid');                                        // "Please enter a valid email address"
+      newErrors.email = t('contact.errors.emailInvalid', 'Please enter a valid email address');
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -50,43 +57,45 @@ const ContactPage = ({ onNavigate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setIsSubmitting(true);
 
+    // mock submit
     setTimeout(() => {
       setIsSubmitting(false);
       setShowSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-
+      setErrors({});
       setTimeout(() => setShowSuccess(false), 5000);
     }, 1000);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
-      <Header currentPage="contact" onNavigate={onNavigate} />
+      <Header currentPage="contact" onNavigate={handleHeaderNavigation} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-800 mb-6">{t('contact.hero.title')}</h1> {/* "Get in Touch" */}
+          <h1 className="text-5xl font-bold text-gray-800 mb-6">
+            {t('contact.hero.title', 'Get in Touch')}
+          </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            {t('contact.hero.description')}
-            {/* "We'd love to hear from you! Whether you have questions about volunteering, need assistance with donations, or want to learn more about our mission, we're here to help." */}
+            {t(
+              'contact.hero.description',
+              "We'd love to hear from you! Whether you have questions about volunteering, need assistance with donations, or want to learn more about our mission, we're here to help."
+            )}
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
-
           {/* Contact Information */}
           <div className="space-y-8">
-
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('contact.connect.title')}</h2> {/* "Let's Connect" */}
+              <h2 className="text-3xl font-bold text-gray-800 mb-8">
+                {t('contact.connect.title', "Let's Connect")}
+              </h2>
 
               <div className="space-y-6">
-
                 {/* Address */}
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -96,12 +105,13 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.address.title')}</h3> {/* "Visit Us" */}
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {t('contact.address.title', 'Visit Us')}
+                    </h3>
                     <p className="text-gray-600 whitespace-pre-line">
-                      {t('contact.address.line1')}{'\n'}
-                      {t('contact.address.line2')}{'\n'}
-                      {t('contact.address.line3')}
-                      {/* "123 Community Street\nFood Bank District\nCity, Province A1B 2C3" */}
+                      {t('contact.address.line1', '123 Community Street')}{'\n'}
+                      {t('contact.address.line2', 'Food Bank District')}{'\n'}
+                      {t('contact.address.line3', 'City, Province A1B 2C3')}
                     </p>
                   </div>
                 </div>
@@ -114,11 +124,12 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.phone.title')}</h3> {/* "Call Us" */}
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {t('contact.phone.title', 'Call Us')}
+                    </h3>
                     <p className="text-gray-600 whitespace-pre-line">
-                      {t('contact.phone.main')}<br />
-                      {t('contact.phone.emergency')}
-                      {/* "Main Office: (555) 123-4567\nEmergency Line: (555) 987-6543" */}
+                      {t('contact.phone.main', 'Main Office: (555) 123-4567')}<br />
+                      {t('contact.phone.emergency', 'Emergency Line: (555) 987-6543')}
                     </p>
                   </div>
                 </div>
@@ -131,11 +142,12 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.email.title')}</h3> {/* "Email Us" */}
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {t('contact.email.title', 'Email Us')}
+                    </h3>
                     <p className="text-gray-600 whitespace-pre-line">
-                      {t('contact.email.general')}<br />
-                      {t('contact.email.volunteer')}
-                      {/* "General Inquiries: info@bytebasket.org\nVolunteer Support: volunteers@bytebasket.org" */}
+                      {t('contact.email.general', 'General Inquiries: info@bytebasket.org')}<br />
+                      {t('contact.email.volunteer', 'Volunteer Support: volunteers@bytebasket.org')}
                     </p>
                   </div>
                 </div>
@@ -148,16 +160,13 @@ const ContactPage = ({ onNavigate }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{t('contact.hours.title')}</h3> {/* "Office Hours" */}
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {t('contact.hours.title', 'Office Hours')}
+                    </h3>
                     <p className="text-gray-600 whitespace-pre-line">
-                      {t('contact.hours.weekdays')}<br />
-                      {t('contact.hours.saturday')}<br />
-                      {t('contact.hours.sunday')}
-                      {/* 
-                        Monday - Friday: 9:00 AM - 6:00 PM
-                        Saturday: 10:00 AM - 4:00 PM
-                        Sunday: Closed
-                      */}
+                      {t('contact.hours.weekdays', 'Monday - Friday: 9:00 AM - 6:00 PM')}<br />
+                      {t('contact.hours.saturday', 'Saturday: 10:00 AM - 4:00 PM')}<br />
+                      {t('contact.hours.sunday', 'Sunday: Closed')}
                     </p>
                   </div>
                 </div>
@@ -166,26 +175,28 @@ const ContactPage = ({ onNavigate }) => {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">{t('contact.quickActions.title')}</h3> {/* "Quick Actions" */}
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                {t('contact.quickActions.title', 'Quick Actions')}
+              </h3>
 
               <div className="space-y-4">
                 <button
-                  onClick={() => onNavigate('volunteer')}
+                  onClick={() => navigate('/volunteer')}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  🤝 {t('contact.quickActions.volunteer')}
+                  🤝 {t('contact.quickActions.volunteer', 'Volunteer')}
                 </button>
                 <button
-                  onClick={() => onNavigate('donate')}
+                  onClick={() => navigate('/donate')}
                   className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  💝 {t('contact.quickActions.donate')}
+                  💝 {t('contact.quickActions.donate', 'Donate')}
                 </button>
                 <button
-                  onClick={() => onNavigate('dashboard')}
+                  onClick={() => navigate('/dashboard')}
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-lg text-left"
                 >
-                  📊 {t('contact.quickActions.dashboard')}
+                  📊 {t('contact.quickActions.dashboard', 'Dashboard')}
                 </button>
               </div>
             </div>
@@ -193,13 +204,15 @@ const ContactPage = ({ onNavigate }) => {
 
           {/* Contact Form */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('contact.form.title')}</h2> {/* "Send us a Message" */}
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">
+              {t('contact.form.title', 'Send us a Message')}
+            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('contact.form.nameLabel')} *
+                    {t('contact.form.nameLabel', 'Name')} *
                   </label>
                   <input
                     type="text"
@@ -210,14 +223,14 @@ const ContactPage = ({ onNavigate }) => {
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
                       errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder={t('contact.form.namePlaceholder')}
+                    placeholder={t('contact.form.namePlaceholder', 'Your full name')}
                   />
                   {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('contact.form.emailLabel')} *
+                    {t('contact.form.emailLabel', 'Email')} *
                   </label>
                   <input
                     type="email"
@@ -228,7 +241,7 @@ const ContactPage = ({ onNavigate }) => {
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
                       errors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder={t('contact.form.emailPlaceholder')}
+                    placeholder={t('contact.form.emailPlaceholder', 'you@example.com')}
                   />
                   {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
@@ -236,7 +249,7 @@ const ContactPage = ({ onNavigate }) => {
 
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('contact.form.subjectLabel')} *
+                  {t('contact.form.subjectLabel', 'Subject')} *
                 </label>
                 <select
                   id="subject"
@@ -247,21 +260,21 @@ const ContactPage = ({ onNavigate }) => {
                     errors.subject ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
-                  <option value="">{t('contact.form.subjectPlaceholder')}</option>
-                  <option value="volunteer">{t('contact.form.subjectOptions.volunteer')}</option>
-                  <option value="donation">{t('contact.form.subjectOptions.donation')}</option>
-                  <option value="partnership">{t('contact.form.subjectOptions.partnership')}</option>
-                  <option value="support">{t('contact.form.subjectOptions.support')}</option>
-                  <option value="feedback">{t('contact.form.subjectOptions.feedback')}</option>
-                  <option value="media">{t('contact.form.subjectOptions.media')}</option>
-                  <option value="other">{t('contact.form.subjectOptions.other')}</option>
+                  <option value="">{t('contact.form.subjectPlaceholder', 'Choose a subject')}</option>
+                  <option value="volunteer">{t('contact.form.subjectOptions.volunteer', 'Volunteering')}</option>
+                  <option value="donation">{t('contact.form.subjectOptions.donation', 'Donation')}</option>
+                  <option value="partnership">{t('contact.form.subjectOptions.partnership', 'Partnership')}</option>
+                  <option value="support">{t('contact.form.subjectOptions.support', 'Support')}</option>
+                  <option value="feedback">{t('contact.form.subjectOptions.feedback', 'Feedback')}</option>
+                  <option value="media">{t('contact.form.subjectOptions.media', 'Media')}</option>
+                  <option value="other">{t('contact.form.subjectOptions.other', 'Other')}</option>
                 </select>
                 {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('contact.form.messageLabel')} *
+                  {t('contact.form.messageLabel', 'Message')} *
                 </label>
                 <textarea
                   id="message"
@@ -272,18 +285,22 @@ const ContactPage = ({ onNavigate }) => {
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none ${
                     errors.message ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder={t('contact.form.messagePlaceholder')}
+                  placeholder={t('contact.form.messagePlaceholder', 'Tell us how we can help')}
                 />
                 {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
               </div>
 
               {showSuccess && (
-                <div className="bg-white border border-green-200 text-green-800 p-3 rounded-lg">
+                <div
+                  className="bg-white border border-green-200 text-green-800 p-3 rounded-lg"
+                  role="status"
+                  aria-live="polite"
+                >
                   <div className="flex items-center space-x-2">
                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>{t('contact.form.successMessage')}</span> {/* "Message sent successfully!" */}
+                    <span>{t('contact.form.successMessage', 'Message sent successfully!')}</span>
                   </div>
                 </div>
               )}
@@ -303,10 +320,10 @@ const ContactPage = ({ onNavigate }) => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
-                    <span>{t('contact.form.sending')}</span> {/* "Sending..." */}
+                    <span>{t('contact.form.sending', 'Sending...')}</span>
                   </div>
                 ) : (
-                  t('contact.form.sendButton') /* "Send Message" */
+                  t('contact.form.sendButton', 'Send Message')
                 )}
               </button>
             </form>
@@ -316,34 +333,49 @@ const ContactPage = ({ onNavigate }) => {
         {/* FAQ Section */}
         <div className="mt-20">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">{t('contact.faq.title')}</h2> {/* "Frequently Asked Questions" */}
-            <p className="text-xl text-gray-600">{t('contact.faq.subtitle')}</p> {/* "Quick answers to common questions" */}
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              {t('contact.faq.title', 'Frequently Asked Questions')}
+            </h2>
+            <p className="text-xl text-gray-600">
+              {t('contact.faq.subtitle', 'Quick answers to common questions')}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q1.question')}</h3> {/* "How can I become a volunteer?" */}
-              <p className="text-gray-600">{t('contact.faq.q1.answer')}</p>
-              {/* "Simply click on the 'Volunteer' link in our navigation menu and fill out our registration form. We'll review your application and get back to you within 48 hours." */}
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {t('contact.faq.q1.question', 'How can I become a volunteer?')}
+              </h3>
+              <p className="text-gray-600">
+                {t('contact.faq.q1.answer', "Click 'Volunteer' in the navigation and fill out the registration form. We'll get back to you within 48 hours.")}
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q2.question')}</h3> {/* "What types of donations do you accept?" */}
-              <p className="text-gray-600">{t('contact.faq.q2.answer')}</p>
-              {/* "We accept both monetary donations and food items. Non-perishable foods, fresh produce, and packaged goods are always needed. Check our donation page for specific requirements." */}
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {t('contact.faq.q2.question', 'What types of donations do you accept?')}
+              </h3>
+              <p className="text-gray-600">
+                {t('contact.faq.q2.answer', 'We accept monetary donations and food items (non-perishables, fresh produce, packaged goods). See our donation page for details.')}
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q3.question')}</h3> {/* "Are there volunteer opportunities for groups?" */}
-              <p className="text-gray-600">{t('contact.faq.q3.answer')}</p>
-              {/* "Absolutely! We welcome corporate groups, school classes, and community organizations. Contact us to arrange group volunteer sessions and team-building opportunities." */}
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {t('contact.faq.q3.question', 'Are there volunteer opportunities for groups?')}
+              </h3>
+              <p className="text-gray-600">
+                {t('contact.faq.q3.answer', 'Absolutely. We welcome corporate, school, and community groups. Contact us to arrange sessions.')}
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">{t('contact.faq.q4.question')}</h3> {/* "How do you ensure food safety?" */}
-              <p className="text-gray-600">{t('contact.faq.q4.answer')}</p>
-              {/* "Food safety is our top priority. All volunteers receive training on proper food handling, and we follow strict guidelines for food storage, preparation, and distribution." */}
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {t('contact.faq.q4.question', 'How do you ensure food safety?')}
+              </h3>
+              <p className="text-gray-600">
+                {t('contact.faq.q4.answer', 'We train all volunteers in safe food handling and follow strict storage and distribution guidelines.')}
+              </p>
             </div>
           </div>
         </div>

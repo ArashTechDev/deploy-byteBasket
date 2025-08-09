@@ -1,13 +1,17 @@
+// frontend/src/pages/HomePage.js
 import React from 'react';
 import Header from '../components/layout/Header';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
-const HomePage = ({ onNavigate }) => {
+const HomePage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate(); // ✅ use React Router for navigation
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header currentPage="home" onNavigate={onNavigate} />
+      {/* Header no longer receives onNavigate */}
+      <Header currentPage="home" />
 
       {/* Hero Section */}
       <main className="bg-gray-600 text-white">
@@ -21,7 +25,7 @@ const HomePage = ({ onNavigate }) => {
               </h2>
               <div className="flex space-x-6">
                 <button
-                  onClick={() => onNavigate('donate')}
+                  onClick={() => navigate('/donate')} // ✅ navigate with an absolute route
                   className="bg-orange-400 hover:bg-orange-500 text-white px-8 py-3 rounded-full font-medium text-lg transition-colors"
                 >
                   {t('donate', 'Donate')}

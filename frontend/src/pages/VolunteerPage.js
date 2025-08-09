@@ -1,6 +1,7 @@
+// frontend/src/pages/VolunteerPage.js
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import { useNavigate } from 'react-router-dom'; // ✅ ADDED
 import Header from '../components/layout/Header';
 import VolunteerForm from '../components/forms/VolunteerForm';
 import ShiftCalendar from '../components/volunteer/ShiftCalendar';
@@ -10,8 +11,10 @@ import { shiftService } from '../services/shiftService';
 import { volunteerShiftService } from '../services/volunteerShiftService';
 import './VolunteerPage.css';
 
-const VolunteerPage = ({ onNavigate }) => {
+// ❌ removed ({ onNavigate }) — this component no longer expects it
+const VolunteerPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate(); // ✅ router navigation
 
   const [currentView, setCurrentView] = useState('landing'); // landing, register, schedule, myshifts
   const [isRegistered, setIsRegistered] = useState(false);
@@ -26,36 +29,28 @@ const VolunteerPage = ({ onNavigate }) => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Navigation handler for Header component
+  // ✅ Header navigation shim using the router (keeps Header working if it still calls onNavigate)
   const handleHeaderNavigation = (page) => {
     if (page === 'volunteer') {
       setCurrentView('landing');
       return;
     }
-    
-    if (onNavigate) {
-      onNavigate(page);
-    } else {
-      switch(page) {
-        case 'home':
-          window.location.href = '/';
-          break;
-        case 'dashboard':
-          window.location.href = '/dashboard';
-          break;
-        case 'signup':
-          window.location.href = '/signup';
-          break;
-        case 'contact':
-          window.location.href = '/contact';
-          break;
-        case 'donate':
-          window.location.href = '/donate';
-          break;
-        default:
-          break;
-      }
-    }
+    const map = {
+      home: '/',
+      dashboard: '/dashboard',
+      signup: '/signup',
+      contact: '/contact',
+      donate: '/donate',
+      // add any other keys your Header might send:
+      'browse-inventory': '/browse-inventory',
+      inventory: '/inventory',
+      foodbank: '/foodbank',
+      reports: '/reports',
+      'shift-management': '/shift-management',
+      cart: '/cart',
+    };
+    const to = map[page] || (page?.startsWith('/') ? page : `/${page}`);
+    navigate(to);
   };
 
   useEffect(() => {
@@ -130,7 +125,7 @@ const VolunteerPage = ({ onNavigate }) => {
           activity: t('volunteerPage.mockShifts.foodSorting'),
           spotsAvailable: 3,
           totalSpots: 5,
-          location: t('volunteerPage.mockShifts.mainWarehouse')
+          location: t('volunteerPage.mockShifts.mainWarehouse'),
         },
         {
           id: 'mock-2',
@@ -139,7 +134,7 @@ const VolunteerPage = ({ onNavigate }) => {
           activity: t('volunteerPage.mockShifts.foodDistribution'),
           spotsAvailable: 2,
           totalSpots: 4,
-          location: t('volunteerPage.mockShifts.communityCenter')
+          location: t('volunteerPage.mockShifts.communityCenter'),
         },
         {
           id: 'mock-3',
@@ -148,8 +143,8 @@ const VolunteerPage = ({ onNavigate }) => {
           activity: t('volunteerPage.mockShifts.inventoryManagement'),
           spotsAvailable: 4,
           totalSpots: 6,
-          location: t('volunteerPage.mockShifts.mainWarehouse')
-        }
+          location: t('volunteerPage.mockShifts.mainWarehouse'),
+        },
       ]);
     } finally {
       setLoading(false);
@@ -162,8 +157,8 @@ const VolunteerPage = ({ onNavigate }) => {
       const apiShifts = Array.isArray(response?.data?.volunteer_shifts)
         ? response.data.volunteer_shifts
         : Array.isArray(response?.data)
-          ? response.data
-          : [];
+        ? response.data
+        : [];
       const transformedShifts = volunteerShiftService.transformVolunteerShifts(apiShifts);
       setUserShifts(transformedShifts);
     } catch {
@@ -179,7 +174,7 @@ const VolunteerPage = ({ onNavigate }) => {
       const volunteerData = volunteerService.transformRegistrationData({
         ...formData,
         user_id: userId,
-        foodbank_id: foodbankId
+        foodbank_id: foodbankId,
       });
 
       const response = await volunteerService.createVolunteer(volunteerData);
@@ -195,7 +190,6 @@ const VolunteerPage = ({ onNavigate }) => {
       setCurrentView('schedule');
 
       setTimeout(() => setShowRegistrationSuccess(false), 5000);
-
     } catch (error) {
       setError(error.message || t('volunteerPage.errors.registerFail'));
     } finally {
@@ -220,12 +214,10 @@ const VolunteerPage = ({ onNavigate }) => {
       );
 
       await volunteerShiftService.assignVolunteerToShift(assignmentData);
-
       await loadUserShifts(volunteerId);
 
       alert(t('volunteerPage.alerts.successSignUp', { activity: shift.activity, date: shift.date }));
       setCurrentView('myshifts');
-
     } catch (error) {
       setError(error.message || t('volunteerPage.errors.signUpFail'));
       alert(t('volunteerPage.alerts.errorSignUp', { error: error.message }));
@@ -239,7 +231,7 @@ const VolunteerPage = ({ onNavigate }) => {
       setLoading(true);
       setError(null);
 
-      const volunteerShift = userShifts.find(shift => shift.id === shiftId);
+      const volunteerShift = userShifts.find((s) => s.id === shiftId);
       if (!volunteerShift) {
         throw new Error(t('volunteerPage.errors.shiftNotFound'));
       }
@@ -253,7 +245,6 @@ const VolunteerPage = ({ onNavigate }) => {
       await loadUserShifts(volunteerId);
 
       alert(t('volunteerPage.alerts.shiftCancelled'));
-
     } catch (error) {
       setError(error.message || t('volunteerPage.errors.cancelFail'));
       alert(t('volunteerPage.alerts.errorCancel', { error: error.message }));
@@ -262,12 +253,11 @@ const VolunteerPage = ({ onNavigate }) => {
     }
   };
 
+  // ✅ use router to go to signup if not authenticated
   const handleNavigation = (view) => {
     if (view === 'register') {
       if (!isAuthenticated) {
-        if (onNavigate) {
-          onNavigate('signup');
-        }
+        navigate('/signup');
         return;
       }
       if (isRegistered) {
@@ -307,16 +297,15 @@ const VolunteerPage = ({ onNavigate }) => {
               </div>
 
               <div className="cta-section">
-                <button 
+                <button
                   className="cta-button primary"
                   onClick={() => handleNavigation('register')}
                 >
                   {isRegistered
                     ? t('volunteerPage.landing.buttons.primaryViewSchedule')
-                    : (isAuthenticated
-                      ? t('volunteerPage.landing.buttons.primaryRegister')
-                      : t('volunteerPage.landing.buttons.primarySignInRegister')
-                    )}
+                    : isAuthenticated
+                    ? t('volunteerPage.landing.buttons.primaryRegister')
+                    : t('volunteerPage.landing.buttons.primarySignInRegister')}
                 </button>
 
                 {isRegistered && (
@@ -339,10 +328,7 @@ const VolunteerPage = ({ onNavigate }) => {
               <div className="success-message">
                 <h2>✅ {t('volunteerPage.registration.alreadyRegisteredTitle')}</h2>
                 <p>{t('volunteerPage.registration.alreadyRegisteredDescription')}</p>
-                <button
-                  className="cta-button"
-                  onClick={() => setCurrentView('schedule')}
-                >
+                <button className="cta-button" onClick={() => setCurrentView('schedule')}>
                   {t('volunteerPage.registration.viewAvailableShiftsButton')}
                 </button>
               </div>
@@ -352,20 +338,14 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="form-section">
             <div className="form-header">
-              <button
-                className="back-btn"
-                onClick={() => setCurrentView('landing')}
-              >
+              <button className="back-btn" onClick={() => setCurrentView('landing')}>
                 ← {t('volunteerPage.buttons.back')}
               </button>
               <h2>{t('volunteerPage.registration.title')}</h2>
               <p>{t('volunteerPage.registration.subtitle')}</p>
               {error && <div className="error-message">{error}</div>}
             </div>
-            <VolunteerForm 
-              onSubmit={handleRegistrationSubmit}
-              loading={loading}
-            />
+            <VolunteerForm onSubmit={handleRegistrationSubmit} loading={loading} />
           </div>
         );
 
@@ -375,10 +355,7 @@ const VolunteerPage = ({ onNavigate }) => {
             <div className="registration-required">
               <h2>{t('volunteerPage.registrationRequired.title')}</h2>
               <p>{t('volunteerPage.registrationRequired.description')}</p>
-              <button
-                className="cta-button"
-                onClick={() => setCurrentView('register')}
-              >
+              <button className="cta-button" onClick={() => setCurrentView('register')}>
                 {t('volunteerPage.registrationRequired.registerNow')}
               </button>
             </div>
@@ -387,10 +364,7 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="schedule-section">
             <div className="schedule-header">
-              <button
-                className="back-btn"
-                onClick={() => setCurrentView('landing')}
-              >
+              <button className="back-btn" onClick={() => setCurrentView('landing')}>
                 ← {t('volunteerPage.buttons.backToHome')}
               </button>
               <div className="header-content">
@@ -398,11 +372,9 @@ const VolunteerPage = ({ onNavigate }) => {
                 <p>{t('volunteerPage.schedule.welcomeBack', { userName })}</p>
                 {error && <div className="error-message">{error}</div>}
               </div>
-              <button
-                className="my-shifts-btn"
-                onClick={() => setCurrentView('myshifts')}
-              >
-                {t('volunteerPage.schedule.myShifts')} ({(userShifts || []).filter(s => !['cancelled','completed'].includes(s.status)).length})
+              <button className="my-shifts-btn" onClick={() => setCurrentView('myshifts')}>
+                {t('volunteerPage.schedule.myShifts')}{' '}
+                {`(${(userShifts || []).filter((s) => !['cancelled', 'completed'].includes(s.status)).length})`}
               </button>
             </div>
             {loading && <div className="loading-message">{t('volunteerPage.loading.loadingShifts')}</div>}
@@ -422,10 +394,7 @@ const VolunteerPage = ({ onNavigate }) => {
             <div className="registration-required">
               <h2>{t('volunteerPage.registrationRequired.title')}</h2>
               <p>{t('volunteerPage.registrationRequired.description')}</p>
-              <button
-                className="cta-button"
-                onClick={() => setCurrentView('register')}
-              >
+              <button className="cta-button" onClick={() => setCurrentView('register')}>
                 {t('volunteerPage.registrationRequired.registerNow')}
               </button>
             </div>
@@ -434,28 +403,18 @@ const VolunteerPage = ({ onNavigate }) => {
         return (
           <div className="myshifts-section">
             <div className="myshifts-header">
-              <button
-                className="back-btn"
-                onClick={() => setCurrentView('schedule')}
-              >
+              <button className="back-btn" onClick={() => setCurrentView('schedule')}>
                 ← {t('volunteerPage.buttons.backToSchedule')}
               </button>
               <div className="header-actions">
-                <button
-                  className="schedule-btn"
-                  onClick={() => setCurrentView('schedule')}
-                >
+                <button className="schedule-btn" onClick={() => setCurrentView('schedule')}>
                   + {t('volunteerPage.myShifts.scheduleMoreShifts')}
                 </button>
               </div>
             </div>
             {error && <div className="error-message">{error}</div>}
             {loading && <div className="loading-message">{t('volunteerPage.loading.loadingUserShifts')}</div>}
-            <MyShiftsPanel
-              userShifts={userShifts}
-              onCancelShift={handleCancelShift}
-              loading={loading}
-            />
+            <MyShiftsPanel userShifts={userShifts} onCancelShift={handleCancelShift} loading={loading} />
           </div>
         );
 
@@ -468,7 +427,7 @@ const VolunteerPage = ({ onNavigate }) => {
     <div className="volunteer-page">
       <Header
         currentPage="volunteer"
-        onNavigate={handleHeaderNavigation}
+        onNavigate={handleHeaderNavigation} // ✅ works for old Header; safe to remove once Header uses <Link>/useNavigate
       />
 
       {showRegistrationSuccess && (
@@ -476,21 +435,14 @@ const VolunteerPage = ({ onNavigate }) => {
           <div className="success-content">
             <span className="success-icon">🎉</span>
             <span>{t('volunteerPage.successBanner.welcomeMessage', { userName })}</span>
-            <button
-              className="close-banner"
-              onClick={() => setShowRegistrationSuccess(false)}
-            >
+            <button className="close-banner" onClick={() => setShowRegistrationSuccess(false)}>
               ×
             </button>
           </div>
         </div>
       )}
 
-      <div className="volunteer-container">
-        {renderContent()}
-      </div>
-
-      
+      <div className="volunteer-container">{renderContent()}</div>
     </div>
   );
 };
