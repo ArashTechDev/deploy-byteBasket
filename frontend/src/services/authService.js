@@ -1,7 +1,7 @@
 // frontend/src/services/authService.js
 import axios from 'axios';
 
-const API = 'http://localhost:3001/api/auth';
+const API = `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/auth`;
 
 // Consistent token key - using 'authToken' throughout the app
 const TOKEN_KEY = 'authToken';

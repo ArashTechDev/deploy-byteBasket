@@ -41,7 +41,11 @@ const createSendToken = (user, statusCode, res) => {
 
 const register = async (req, res, next) => {
   try {
-    let { name, email, password, role = 'donor' } = req.body;
+    let { name, full_name, email, password, role = 'donor' } = req.body;
+
+    if (!name && full_name) {
+      name = full_name;
+    }
 
     if (!name || !email || !password) {
       return next(new AppError('Please provide name, email and password', 400));

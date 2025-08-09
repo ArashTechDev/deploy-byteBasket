@@ -49,6 +49,7 @@ const SignUpForm = ({ onToggleForm }) => {
 
     try {
       const response = await registerUser({
+        name: formData.name,
         full_name: formData.name,
         email: formData.email,
         password: formData.password,
