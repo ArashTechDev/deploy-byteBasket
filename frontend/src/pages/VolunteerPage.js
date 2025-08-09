@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import VolunteerForm from '../components/forms/VolunteerForm';
 import ShiftCalendar from '../components/volunteer/ShiftCalendar';
 import MyShiftsPanel from '../components/volunteer/MyShiftsPanel';
@@ -491,7 +490,7 @@ const VolunteerPage = ({ onNavigate }) => {
         {renderContent()}
       </div>
 
-      <Footer />
+      
     </div>
   );
 };
