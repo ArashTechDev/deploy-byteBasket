@@ -4,30 +4,46 @@ const crypto = require('crypto');
 
 // Create reusable transporter object using SMTP transport
 const createTransporter = () => {
-  // For development, you can use a service like Ethereal Email for testing
-  // In production, use a real email service like SendGrid, Mailgun, etc.
+  // Prefer SMTP when fully configured
+  const hasSmtpCreds =
+    !!process.env.SMTP_HOST && !!process.env.SMTP_USER && !!process.env.SMTP_PASS;
 
-  if (process.env.NODE_ENV === 'development') {
-    // For development - using Gmail (you'll need to set up app password)
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_APP_PASSWORD, // Your Gmail app password
-      },
-    });
-  } else {
-    // For production - use a professional email service
+  if (hasSmtpCreds) {
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const secure = port === 465; // TLS on 465
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false, // true for 465, false for other ports
+      port,
+      secure,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
   }
+
+  // Fallback: Gmail via app password if provided
+  if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD.replace(/\s+/g, ''),
+      },
+    });
+  }
+
+  // As a last resort, if in development and no creds provided, use Ethereal suggestion
+  if (process.env.NODE_ENV === 'development') {
+    throw new Error(
+      'Email transport not configured. Provide SMTP_HOST/SMTP_USER/SMTP_PASS or EMAIL_USER/EMAIL_APP_PASSWORD.'
+    );
+  }
+
+  // In production without credentials, throw explicit error
+  throw new Error(
+    'Email transport not configured for production. Set SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS (or EMAIL_USER/EMAIL_APP_PASSWORD).'
+  );
 };
 
 // Generate verification token
