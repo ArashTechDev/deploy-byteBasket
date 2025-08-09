@@ -33,29 +33,30 @@ const SignUpForm = ({ onToggleForm }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-
+  
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
       alert(t('signUpForm.passwordMismatch'));
       return;
     }
-
     if (!formData.name || !formData.email || !formData.password || !formData.role) {
       alert(t('signUpForm.fillAllFields'));
       return;
     }
-
+  
     setRegistrationState(prev => ({ ...prev, isLoading: true }));
-
+  
     try {
-      const response = await registerUser({
-        full_name: formData.name,
+      // ✅ match backend: name/email/password/role
+      const res = await registerUser({
+        name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role,
       });
-
-      if (response.success) {
+  
+      // ✅ Axios response shape
+      if (res.success) {
         setRegistrationState({
           isLoading: false,
           isSuccess: true,
@@ -64,14 +65,22 @@ const SignUpForm = ({ onToggleForm }) => {
           message: t('signUpForm.registrationSuccess'),
         });
       } else {
-        throw new Error(response.message || 'Registration failed');
+        throw new Error(res?.data?.message || 'Registration failed');
       }
     } catch (error) {
+      // ✅ show server JSON error if available
+      const msg =
+        error?.response?.data?.message ||
+        (typeof error?.response?.data === 'string' ? error.response.data : null) ||
+        error?.message ||
+        t('signUpForm.registrationFailed');
+  
       console.error('Registration error:', error);
       setRegistrationState(prev => ({ ...prev, isLoading: false }));
-      alert(error.response?.data?.message || error.message || t('signUpForm.registrationFailed'));
+      alert(msg);
     }
   };
+  
 
   const handleResendVerification = async () => {
     setRegistrationState(prev => ({ ...prev, resendLoading: true }));

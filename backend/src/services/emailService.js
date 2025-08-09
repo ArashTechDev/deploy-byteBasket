@@ -42,7 +42,7 @@ const sendVerificationEmail = async (user, verificationToken) => {
 
     const verificationUrl = `${
       process.env.CLIENT_URL || 'http://localhost:3000'
-    }/verify-email?token=${verificationToken}`;
+    }/email-verification?token=${verificationToken}`;
 
     const mailOptions = {
       from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,

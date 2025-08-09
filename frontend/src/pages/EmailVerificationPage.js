@@ -66,7 +66,7 @@ const EmailVerificationPage = ({ onNavigate }) => {
     if (onNavigate) {
       onNavigate('signup'); // This will show the sign-in form
     } else {
-      window.location.href = '/signup';
+      window.location.href = '/signin';
     }
   };
 
