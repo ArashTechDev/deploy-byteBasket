@@ -3,31 +3,52 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 // Create reusable transporter object using SMTP transport
-const createTransporter = () => {
-  // For development, you can use a service like Ethereal Email for testing
-  // In production, use a real email service like SendGrid, Mailgun, etc.
-
-  if (process.env.NODE_ENV === 'development') {
-    // For development - using Gmail (you'll need to set up app password)
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_APP_PASSWORD, // Your Gmail app password
-      },
-    });
-  } else {
-    // For production - use a professional email service
+const createTransporter = async () => {
+  // Prefer explicit SMTP settings if provided
+  if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      throw new Error('SMTP credentials missing: set SMTP_USER and SMTP_PASS');
+    }
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false, // true for 465, false for other ports
+      port: Number(process.env.SMTP_PORT),
+      secure: String(process.env.SMTP_PORT) === '465',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
   }
+
+  // Next, support Gmail via app password when configured
+  if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD,
+      },
+    });
+  }
+
+  // In development, automatically create an Ethereal test account
+  if (process.env.NODE_ENV !== 'production') {
+    const testAccount = await nodemailer.createTestAccount();
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+
+  // If we get here in production, credentials are missing
+  throw new Error(
+    'Email transport not configured. Set SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS or EMAIL_USER/EMAIL_APP_PASSWORD.'
+  );
 };
 
 // Generate verification token
@@ -38,7 +59,7 @@ const generateVerificationToken = () => {
 // Send verification email
 const sendVerificationEmail = async (user, verificationToken) => {
   try {
-    const transporter = createTransporter();
+    const transporter = await createTransporter();
 
     const verificationUrl = `${
       process.env.CLIENT_URL || 'http://localhost:3000'
@@ -91,7 +112,10 @@ const sendVerificationEmail = async (user, verificationToken) => {
     if (process.env.NODE_ENV === 'development') {
       console.log('Verification email sent successfully');
       console.log('Message ID:', info.messageId);
-      console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log('Preview URL:', previewUrl);
+      }
     }
 
     return {
@@ -107,7 +131,7 @@ const sendVerificationEmail = async (user, verificationToken) => {
 // Send welcome email after verification
 const sendWelcomeEmail = async user => {
   try {
-    const transporter = createTransporter();
+    const transporter = await createTransporter();
 
     const mailOptions = {
       from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
