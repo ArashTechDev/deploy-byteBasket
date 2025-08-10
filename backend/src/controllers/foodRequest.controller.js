@@ -3,6 +3,10 @@ const FoodRequest = require('../db/models/FoodRequest.model');
 const User = require('../db/models/User');
 const Inventory = require('../db/models/Inventory');
 const { validationResult } = require('express-validator');
+const {
+  sendFoodRequestConfirmation,
+  sendNewFoodRequestNotification,
+} = require('../services/emailService');
 
 class FoodRequestController {
   // Create a new food request
@@ -91,6 +95,25 @@ class FoodRequestController {
       await foodRequest.save();
       await foodRequest.populate('recipient_id', 'name email phone');
       await foodRequest.populate('foodbank_id', 'name contactEmail contactPhone');
+
+      // Fire-and-forget email notifications (non-blocking for client)
+      // Intentionally not awaiting both in series; do not fail the request on email issues
+      try {
+        // Send confirmation to recipient
+        sendFoodRequestConfirmation(foodRequest.recipient_id, foodRequest).catch(err =>
+          console.error('sendFoodRequestConfirmation error:', err.message)
+        );
+
+        // Notify food bank if contact email exists
+        if (foodRequest.foodbank_id?.contactEmail) {
+          sendNewFoodRequestNotification(foodRequest.foodbank_id, foodRequest).catch(err =>
+            console.error('sendNewFoodRequestNotification error:', err.message)
+          );
+        }
+      } catch (notificationError) {
+        // Log and continue; do not block response
+        console.error('Food request notification error:', notificationError.message);
+      }
 
       res.status(201).json({
         success: true,

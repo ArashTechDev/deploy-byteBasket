@@ -191,9 +191,21 @@ export const CartProvider = ({ children }) => {
 
   // Method to manually refresh cart after login
   const refreshCart = async () => {
-    if (state.isUserAuthenticated) {
-      await loadCart();
+    // After login, token is stored but isUserAuthenticated may still be false
+    // Sync auth state from storage, then load cart
+    const token =
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('token') ||
+      sessionStorage.getItem('authToken') ||
+      sessionStorage.getItem('token');
+
+    if (!token) {
+      dispatch({ type: 'SET_USER_AUTHENTICATED', payload: false });
+      return;
     }
+
+    dispatch({ type: 'SET_USER_AUTHENTICATED', payload: true });
+    await loadCart();
   };
 
   const value = {

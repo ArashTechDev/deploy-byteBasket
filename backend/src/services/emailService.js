@@ -20,6 +20,20 @@ const createTransporter = async () => {
     });
   }
 
+  // Use Resend via SMTP if API key is provided
+  if (process.env.EMAIL_API_KEY || process.env.RESEND_API_KEY) {
+    const resendApiKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
+    return nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465, // you can switch to 587 if needed
+      secure: true, // 465 uses SSL; for 587 set secure: false
+      auth: {
+        user: 'resend',
+        pass: resendApiKey,
+      },
+    });
+  }
+
   // Next, support Gmail via app password when configured
   if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
     return nodemailer.createTransport({
@@ -65,8 +79,11 @@ const sendVerificationEmail = async (user, verificationToken) => {
       process.env.CLIENT_URL || 'http://localhost:3000'
     }/email-verification?token=${verificationToken}`;
 
+    const fromAddress =
+      process.env.EMAIL_FROM || `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`;
+
     const mailOptions = {
-      from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
+      from: fromAddress,
       to: user.email,
       subject: 'Welcome to ByteBasket - Please Verify Your Email',
       html: `
@@ -133,8 +150,11 @@ const sendWelcomeEmail = async user => {
   try {
     const transporter = await createTransporter();
 
+    const fromAddress =
+      process.env.EMAIL_FROM || `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`;
+
     const mailOptions = {
-      from: `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`,
+      from: fromAddress,
       to: user.email,
       subject: 'Welcome to ByteBasket - Your Account is Verified!',
       html: `
@@ -216,3 +236,114 @@ module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
 };
+/**
+ * Send a confirmation email to the recipient after a food request is created.
+ */
+const sendFoodRequestConfirmation = async (recipientUser, foodRequest) => {
+  try {
+    const transporter = await createTransporter();
+
+    const fromAddress =
+      process.env.EMAIL_FROM || `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`;
+
+    const itemsListHtml = (foodRequest.items || [])
+      .map(
+        item => `
+          <tr>
+            <td style="padding: 6px 8px; border: 1px solid #e5e7eb;">${item.item_name}</td>
+            <td style="padding: 6px 8px; border: 1px solid #e5e7eb; text-align: right;">${item.quantity_requested}</td>
+          </tr>`
+      )
+      .join('');
+
+    const pickupDate = foodRequest.preferred_pickup_date
+      ? new Date(foodRequest.preferred_pickup_date).toLocaleDateString()
+      : 'TBD';
+    const pickupTime = foodRequest.pickup_time || 'TBD';
+
+    const mailOptions = {
+      from: fromAddress,
+      to: recipientUser.email,
+      subject: 'Your food request has been received',
+      html: `
+        <div style="max-width: 640px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <h2 style="color: #111827;">Hi ${recipientUser.name || 'there'},</h2>
+          <p style="color: #374151;">We have received your food request. Here are the details:</p>
+
+          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin: 16px 0;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="background-color: #f3f4f6;">
+                  <th style="text-align: left; padding: 8px; border: 1px solid #e5e7eb;">Item</th>
+                  <th style="text-align: right; padding: 8px; border: 1px solid #e5e7eb;">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsListHtml}
+              </tbody>
+            </table>
+          </div>
+
+          <p style="color: #374151;">Preferred pickup: <strong>${pickupDate}</strong> at <strong>${pickupTime}</strong></p>
+          <p style="color: #374151;">Status: <strong>${foodRequest.status}</strong></p>
+
+          <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">If you did not make this request, please contact support.</p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Notify the food bank that a new request has been submitted.
+ */
+const sendNewFoodRequestNotification = async (foodbank, foodRequest) => {
+  try {
+    if (!foodbank?.contactEmail) {
+      return { success: false, error: 'Food bank contact email not set' };
+    }
+
+    const transporter = await createTransporter();
+
+    const fromAddress =
+      process.env.EMAIL_FROM || `"ByteBasket" <${process.env.EMAIL_USER || 'noreply@bytebasket.com'}>`;
+
+    const items = (foodRequest.items || [])
+      .map(item => `${item.item_name} x ${item.quantity_requested}`)
+      .join(', ');
+
+    const pickupDate = foodRequest.preferred_pickup_date
+      ? new Date(foodRequest.preferred_pickup_date).toLocaleDateString()
+      : 'TBD';
+    const pickupTime = foodRequest.pickup_time || 'TBD';
+
+    const mailOptions = {
+      from: fromAddress,
+      to: foodbank.contactEmail,
+      subject: `New food request from ${foodRequest.recipient_id?.name || 'a recipient'}`,
+      html: `
+        <div style="max-width: 640px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <h2 style="color: #111827;">New Food Request Submitted</h2>
+          <p style="color: #374151;">Recipient: <strong>${foodRequest.recipient_id?.name || foodRequest.recipient_id?.email || ''}</strong></p>
+          <p style="color: #374151;">Items: ${items}</p>
+          <p style="color: #374151;">Preferred pickup: <strong>${pickupDate}</strong> at <strong>${pickupTime}</strong></p>
+          <p style="color: #374151;">Request ID: <code>${String(foodRequest._id)}</code></p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+module.exports.sendFoodRequestConfirmation = sendFoodRequestConfirmation;
+module.exports.sendNewFoodRequestNotification = sendNewFoodRequestNotification;

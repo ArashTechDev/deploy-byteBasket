@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import { useCart } from '../contexts/CartContext';
 import foodRequestService from '../services/foodRequestService';
+import { getCurrentUser } from '../services/authService';
 
 const RequestSubmissionPage = () => {
   const navigate = useNavigate();
@@ -26,6 +27,24 @@ const RequestSubmissionPage = () => {
       navigate('/browse-inventory');
     }
   }, [cart.items.length, navigate, isSubmitting]);
+
+  // Ensure only recipients can submit requests to avoid 403 from backend
+  useEffect(() => {
+    const verifyRole = async () => {
+      try {
+        const res = await getCurrentUser();
+        const role = res?.data?.role;
+        if (role !== 'recipient') {
+          alert('Only recipient accounts can submit requests.');
+          navigate('/dashboard');
+        }
+      } catch (e) {
+        // If user is not authenticated, redirect to sign in
+        navigate('/signin');
+      }
+    };
+    verifyRole();
+  }, [navigate]);
 
   const handleInputChange = e => {
     const { name, value } = e.target;
